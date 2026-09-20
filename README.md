@@ -67,9 +67,10 @@ These are enforced in code, not just in this file:
 4. **Failures are reported as failures.** If no mirror yields a playable
    stream, the app says which mirrors were tried and why the last one failed
    (`MirrorResolver.lastFailure`) instead of showing a spinner forever.
-5. **Unsupported hosts are named as unsupported.** `mfw09.org` (SPA) and
-   `streamtape.com` are listed as mirrors but no playlist is claimed for them;
-   see `RECONNAISSANCE.md` §2.3.
+5. **Unsupported hosts are named as unsupported.** The reconnaissance found no
+   playlist behind `mfw09.org` (a JavaScript SPA) or `streamtape.com`, so they
+   are tried last and a failure on them is reported as a failure instead of
+   being papered over — see `RECONNAISSANCE.md` §2.3.
 6. **A downloaded episode is never silently deleted.** The download cache does
    not evict; when it is full the app refuses a new download and says how much
    space is used, instead of dropping an older episode.
@@ -104,20 +105,24 @@ app/src/main/java/com/jcversa/canta/
 ├── AppViewModel.kt            one ViewModel for catalogue, detail, player, library
 ├── model/                     Anime, Episode, MirrorResult/QualityTrack (+ JSON codecs)
 ├── scraper/
-│   ├── ScraperUtils.kt        Http (OkHttp), Selectors, absSrc, VF/VOSTFR slug helpers
+│   ├── ScraperUtils.kt        Http (OkHttp + block detection), Selectors, absSrc, VF/VOSTFR slugs
 │   ├── VoirAnimeScraper.kt    catalogue, search, detail, episode list, mirrors, host switcher
-│   └── NakanimeScraper.kt     XOR-decoded catalogue/search/episodes/sources APIs
+│   └── NakanimeScraper.kt     XOR-decoded catalogue/search/seasons/sources APIs
 ├── extractor/
-│   ├── VideoExtractor.kt      MirrorResolver: per-mirror timeout, host priority, lastFailure
-│   ├── VidmolyExtractor.kt    player setup → master.m3u8 (VidMoly family, ≤26 urlset tries)
+│   ├── VideoExtractor.kt      MirrorResolver (timeout, host priority, lastFailure) plus
+│   │                          GenericExtractor: StreamScanner, the packed-JS unpacker
+│   │                          and the VidMoly urlset/variant URL helpers
+│   ├── VidmolyExtractor.kt    player setup → the variant playlist (VidMoly family)
 │   ├── VoeExtractor.kt        Voe redirect chain (≤3 hops) + payload decode
-│   ├── GenericExtractor.kt    last resort: scan page/JS for a playlist URL
 │   └── QualityGuard.kt        master parsing, variant choice, measured sizes, fast lane
 ├── manager/
 │   ├── DownloadManager.kt     Media3 offline: two caches, per-request headers, DownloadService
-│   ├── FavoritesManager.kt / HistoryManager.kt / WatchlistManager.kt
-│   └── …                      DataStore-backed stores
-├── ui/                        Compose screens (catalogue, detail, player, downloads, library, settings)
+│   └── FavoritesManager.kt / HistoryManager.kt / WatchlistManager.kt   (DataStore stores)
+├── ui/
+│   ├── CatalogueScreen.kt, DetailScreen.kt, PlayerScreen.kt,
+│   │   DownloadsScreen.kt, FavoritesScreen.kt, SettingsScreen.kt
+│   ├── components/Components.kt   RemoteImage, badges, cards, loading/error/empty states
+│   └── theme/Theme.kt             AMOLED black and light Material 3 colour schemes
 └── worker/EpisodeWatcherWorker.kt
 ```
 
