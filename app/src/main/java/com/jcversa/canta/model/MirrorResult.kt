@@ -51,7 +51,14 @@ data class MirrorResult(
     val headers: Map<String, String> = emptyMap(),
     val availableTracks: List<QualityTrack> = emptyList(),
     val downgradeNote: String? = null,
-    val isHls: Boolean = true
+    val isHls: Boolean = true,
+    /**
+     * True when this stream comes from a finished download's own stored URL
+     * rather than from a live mirror resolution: the UI then says so instead of
+     * pretending it just scraped something, and the player reads the offline
+     * cache.
+     */
+    val offlinePlayback: Boolean = false
 ) {
     /** Headers Media3 must replay on every manifest and segment request. */
     fun playbackHeaders(): Map<String, String> = buildMap {

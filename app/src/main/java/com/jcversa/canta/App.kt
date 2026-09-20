@@ -12,6 +12,7 @@ import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.jcversa.canta.manager.CantaDownloadManager
+import com.jcversa.canta.manager.DOWNLOAD_CHANNEL_ID
 import com.jcversa.canta.manager.FavoritesManager
 import com.jcversa.canta.manager.HistoryManager
 import com.jcversa.canta.manager.WatchlistManager
@@ -85,7 +86,8 @@ class App : Application(), Configuration.Provider {
     }
 
     companion object {
-        const val CantaDownloadServiceChannelId = "canta_downloads"
+        /** Same id as the download service's own channel, declared in the manager. */
+        const val CantaDownloadServiceChannelId = DOWNLOAD_CHANNEL_ID
         const val NewEpisodesChannelId = "canta_new_episodes"
     }
 }

@@ -6,6 +6,7 @@ import android.app.Notification
 import android.content.Context
 import android.net.Uri
 import androidx.core.app.NotificationCompat
+import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.database.StandaloneDatabaseProvider
@@ -13,70 +14,135 @@ import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
+import androidx.media3.datasource.cache.NoOpCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
+import androidx.media3.exoplayer.hls.offline.HlsDownloader
+import androidx.media3.exoplayer.offline.DefaultDownloadIndex
 import androidx.media3.exoplayer.offline.Download
 import androidx.media3.exoplayer.offline.DownloadManager
 import androidx.media3.exoplayer.offline.DownloadRequest
 import androidx.media3.exoplayer.offline.DownloadService
+import androidx.media3.exoplayer.offline.DownloaderFactory
+import androidx.media3.exoplayer.offline.ProgressiveDownloader
 import com.jcversa.canta.R
 import com.jcversa.canta.model.Episode
+import com.jcversa.canta.model.Language
 import com.jcversa.canta.model.MirrorResult
+import com.jcversa.canta.model.QualityTrack
+import com.jcversa.canta.model.formatBytes
 import com.jcversa.canta.scraper.Http
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.json.JSONObject
 import java.io.File
+import java.util.concurrent.Executor
+import java.util.concurrent.Executors
 
 /**
  * Offline downloads, Media3-native.
  *
- * The stream that ExoPlayer plays and the stream Media3 downloads are the same
- * URL served by the same [SimpleCache]: a downloaded episode therefore plays
- * back with the network off, with no conversion step and no ffmpeg — the
- * constraint that does not exist here (nebula-p needs ffmpeg only because
- * WhatsApp cannot read HLS; Media3 reads it natively).
+ * Two caches, deliberately:
+ *
+ *  * [offlineCache] holds downloaded episodes. It uses a [NoOpCacheEvictor],
+ *    which Media3 requires ("the cache should be configured with a
+ *    CacheEvictor that will not evict downloaded content") — an episode the UI
+ *    calls « téléchargé » must still be there tomorrow, so nothing removes it
+ *    behind the user's back. The ceiling is enforced *before* a download is
+ *    queued, by refusing it, rather than by silently deleting an old episode.
+ *  * [streamCache] is the ordinary streaming buffer and may be evicted at will.
+ *
+ * A downloaded episode plays from [offlineCache] with the network off, with no
+ * conversion step and no ffmpeg. That constraint does not exist here: nebula-p
+ * needs ffmpeg only because WhatsApp cannot read HLS, and Media3 reads HLS
+ * natively.
  */
 object CantaDownloadManager {
 
-    /** Cache ceiling. Episodes are large; 4 GiB holds a comfortable season. */
-    private const val CACHE_BYTES = 4L * 1024L * 1024L
+    /** Ceiling for downloaded episodes. Must stay below a phone's free space. */
+    private const val OFFLINE_CACHE_BYTES = 4L * 1024L * 1024L
+
+    /** Streaming buffer: only ever holds what is being watched right now. */
+    private const val STREAM_CACHE_BYTES = 512L * 1024L * 1024L
+
     private val LOCK = Any()
+    private val DOWNLOAD_EXECUTOR: Executor = Executors.newFixedThreadPool(2)
 
     @Volatile private var downloadManager: DownloadManager? = null
-    @Volatile private var simpleCache: SimpleCache? = null
+    @Volatile private var offlineCacheRef: SimpleCache? = null
+    @Volatile private var streamCacheRef: SimpleCache? = null
     @Volatile private var databaseProvider: StandaloneDatabaseProvider? = null
 
     private val _downloads = MutableStateFlow<List<DownloadUi>>(emptyList())
     val downloads: StateFlow<List<DownloadUi>> = _downloads.asStateFlow()
 
     fun get(context: Context): DownloadManager = synchronized(LOCK) {
-        downloadManager ?: DownloadManager.Builder(context.applicationContext)
-            .setMaxParallelDownloads(2)
-            .setMinRetryCount(3)
-            .setExecutor(java.util.concurrent.Executors.newFixedThreadPool(2))
-            .build()
-            .also { manager ->
-                downloadManager = manager
-                manager.addListener(object : DownloadManager.Listener {
-                    override fun onDownloadChanged(
-                        downloadManager: DownloadManager,
-                        download: Download,
-                        finalException: Exception?
-                    ) = refresh(context)
+        downloadManager ?: run {
+            val appContext = context.applicationContext
+            val cache = offlineCache(appContext)
+            val manager = DownloadManager(
+                appContext,
+                DefaultDownloadIndex(database(appContext)),
+                // One downloader per request, because the Referer/Origin are
+                // per-stream and VidMoly's CDN answers 403 without them (audit
+                // §8.43): a single shared upstream factory cannot carry them.
+                DownloaderFactory { request ->
+                    val upstream = DefaultHttpDataSource.Factory()
+                        .setUserAgent(Http.USER_AGENT)
+                        .setDefaultRequestProperties(headersOf(request))
+                    val cacheDataSource = CacheDataSource.Factory()
+                        .setCache(cache)
+                        .setUpstreamDataSourceFactory(DefaultDataSource.Factory(appContext, upstream))
+                    val mediaItem = MediaItem.Builder()
+                        .setUri(request.uri)
+                        .setMimeType(request.mimeType)
+                        .build()
+                    // The request URI is already the chosen variant's playlist
+                    // (never the master), so an HLS download fetches exactly the
+                    // quality the user picked and nothing else.
+                    if (request.mimeType == MimeTypes.APPLICATION_M3U8) {
+                        // Deprecated in favour of HlsDownloader.Factory, which
+                        // cannot carry per-request headers; the deprecation only
+                        // warns about selecting a variant by StreamKey.
+                        HlsDownloader(mediaItem, cacheDataSource, DOWNLOAD_EXECUTOR)
+                    } else {
+                        ProgressiveDownloader(mediaItem, cacheDataSource, DOWNLOAD_EXECUTOR)
+                    }
+                }
+            )
+            manager.setMaxParallelDownloads(2)
+            manager.setMinRetryCount(3)
+            manager.addListener(object : DownloadManager.Listener {
+                override fun onDownloadChanged(
+                    downloadManager: DownloadManager,
+                    download: Download,
+                    finalException: Exception?
+                ) = refresh(appContext)
 
-                    override fun onDownloadRemoved(downloadManager: DownloadManager, download: Download) = refresh(context)
-                })
-                refresh(context)
-            }
+                override fun onDownloadRemoved(downloadManager: DownloadManager, download: Download) = refresh(appContext)
+            })
+            downloadManager = manager
+            refresh(appContext)
+            manager
+        }
     }
 
-    fun cache(context: Context): SimpleCache = synchronized(LOCK) {
-        simpleCache ?: SimpleCache(
-            File(context.cacheDir, "canta_downloads"),
-            LeastRecentlyUsedCacheEvictor(CACHE_BYTES),
+    /** Downloaded episodes. Never evicted automatically (Media3 requirement). */
+    fun offlineCache(context: Context): SimpleCache = synchronized(LOCK) {
+        offlineCacheRef ?: SimpleCache(
+            File(context.filesDir, "canta_offline"),
+            NoOpCacheEvictor(),
             database(context)
-        ).also { simpleCache = it }
+        ).also { offlineCacheRef = it }
+    }
+
+    /** Streaming buffer, safe to evict: it only ever duplicates the network. */
+    fun streamCache(context: Context): SimpleCache = synchronized(LOCK) {
+        streamCacheRef ?: SimpleCache(
+            File(context.cacheDir, "canta_stream"),
+            LeastRecentlyUsedCacheEvictor(STREAM_CACHE_BYTES),
+            database(context)
+        ).also { streamCacheRef = it }
     }
 
     private fun database(context: Context): StandaloneDatabaseProvider = synchronized(LOCK) {
@@ -84,26 +150,27 @@ object CantaDownloadManager {
     }
 
     /**
-     * A data source that reads from the download cache first and only then goes
-     * to the network, with the stream's own Referer/Origin — several mirrors
-     * 403 without them, and a 403 mid-playback looks like a broken episode.
+     * A data source that reads from the cache first and only then goes to the
+     * network, with the stream's own Referer/Origin — several mirrors 403
+     * without them, and a 403 mid-playback looks like a broken episode.
+     *
+     * [offline] selects the downloaded-episodes cache. Its entries are addressed
+     * by their stream URL, and that URL is the one stored in the download
+     * request, so a downloaded episode is found again with no mirror
+     * re-resolution and no network at all.
      */
-    fun playbackDataSourceFactory(context: Context, headers: Map<String, String>): CacheDataSource.Factory {
+    fun playbackDataSourceFactory(
+        context: Context,
+        headers: Map<String, String>,
+        offline: Boolean = false
+    ): CacheDataSource.Factory {
         val upstream = DefaultHttpDataSource.Factory()
             .setUserAgent(Http.USER_AGENT)
             .setDefaultRequestProperties(headers)
         return CacheDataSource.Factory()
-            .setCache(cache(context))
+            .setCache(if (offline) offlineCache(context) else streamCache(context))
             .setUpstreamDataSourceFactory(DefaultDataSource.Factory(context, upstream))
             .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
-    }
-
-    /** Media item headers for a resolved stream, so playback matches extraction. */
-    fun downloadDataSourceFactory(context: Context, headers: Map<String, String>): DefaultDataSource.Factory {
-        val upstream = DefaultHttpDataSource.Factory()
-            .setUserAgent(Http.USER_AGENT)
-            .setDefaultRequestProperties(headers)
-        return DefaultDataSource.Factory(context, upstream)
     }
 
     /**
@@ -112,6 +179,18 @@ object CantaDownloadManager {
      * without a second database.
      */
     fun enqueue(context: Context, episode: Episode, result: MirrorResult): String {
+        // The guard only fires on a *measured* size: refusing on an estimate
+        // would be exactly the invented number this app refuses to print.
+        val measured = result.measuredSizeBytes
+        if (measured != null && measured > 0) {
+            val used = offlineCache(context).cacheSpace
+            if (used + measured > OFFLINE_CACHE_BYTES) {
+                throw IllegalStateException(
+                    "espace hors ligne plein — ${formatBytes(used)} déjà téléchargés sur " +
+                        "${formatBytes(OFFLINE_CACHE_BYTES)} : supprimez un épisode avant d'en ajouter un autre"
+                )
+            }
+        }
         val id = downloadIdFor(episode)
         val request = DownloadRequest.Builder(id, Uri.parse(result.streamUrl))
             .setMimeType(if (result.isHls) MimeTypes.APPLICATION_M3U8 else MimeTypes.VIDEO_MP4)
@@ -122,6 +201,10 @@ object CantaDownloadManager {
                 put("measuredSize", result.measuredSizeBytes ?: JSONObject.NULL)
                 put("exact", result.sizeIsExact)
                 put("host", result.hostName)
+                // Stored with the request: the downloader replays these headers
+                // on every manifest and segment request, and they are still here
+                // after a process restart.
+                put("headers", JSONObject(result.playbackHeaders()))
             }.toString().toByteArray())
             .build()
         // Sent to the service rather than queued in-process: the service owns the
@@ -130,6 +213,52 @@ object CantaDownloadManager {
         DownloadService.sendAddDownload(context, CantaDownloadService::class.java, request, false)
         refresh(context)
         return id
+    }
+
+    /**
+     * The stream a *completed* download holds, played later from [offlineCache].
+     *
+     * Rebuilt from the request's own stored metadata, not re-resolved: that is
+     * the whole point — with the network off there is no mirror to ask, and the
+     * episode must still play. Every value shown is what was measured when the
+     * download was queued (size, exactness, host), never a fresh guess.
+     */
+    fun offlineStream(context: Context, episode: Episode): MirrorResult? {
+        val download = runCatching { get(context).downloadIndex.getDownload(downloadIdFor(episode)) }.getOrNull()
+        if (download == null || download.state != Download.STATE_COMPLETED) return null
+        val request = download.request
+        val json = request.data?.let { runCatching { JSONObject(String(it, Charsets.UTF_8)) }.getOrNull() } ?: return null
+        val url = request.uri.toString()
+        val measured = if (json.isNull("measuredSize")) null else json.optLong("measuredSize")
+        val exact = json.optBoolean("exact", false)
+        return MirrorResult(
+            streamUrl = url,
+            language = Language.fromTag(json.optString("language")) ?: episode.language,
+            quality = QualityTrack(
+                label = json.optString("quality").takeIf { it.isNotBlank() } ?: "qualité d'origine",
+                url = url,
+                measuredBytes = measured,
+                sizeIsExact = exact
+            ),
+            measuredSizeBytes = measured,
+            sizeIsExact = exact,
+            hostName = json.optString("host").takeIf { it.isNotBlank() } ?: "téléchargé",
+            source = episode.source,
+            headers = headersOf(request),
+            isHls = request.mimeType == MimeTypes.APPLICATION_M3U8,
+            offlinePlayback = true
+        )
+    }
+
+    /** The per-stream headers captured at extraction time, kept inside the request. */
+    private fun headersOf(request: DownloadRequest): Map<String, String> = try {
+        val json = request.data?.let { JSONObject(String(it, Charsets.UTF_8)) } ?: return emptyMap()
+        val headers = json.optJSONObject("headers") ?: return emptyMap()
+        headers.keys().asSequence()
+            .mapNotNull { key -> headers.optString(key).takeIf { it.isNotEmpty() }?.let { key to it } }
+            .toMap()
+    } catch (_: Exception) {
+        emptyMap()
     }
 
     fun remove(context: Context, id: String) {
@@ -151,7 +280,7 @@ object CantaDownloadManager {
     /** Resumes whatever was queued, e.g. after the app was killed mid-download. */
     fun startService(context: Context) {
         runCatching {
-            DownloadService.sendResumeDownloadsIntent(context, CantaDownloadService::class.java, true)
+            DownloadService.sendResumeDownloads(context, CantaDownloadService::class.java, true)
         }
     }
 
@@ -209,13 +338,20 @@ data class DownloadUi(
 }
 
 /**
+ * Id of the download notification channel. Declared once, here, because the
+ * service constructor needs it before the class body exists and [App] creates
+ * the channel itself.
+ */
+const val DOWNLOAD_CHANNEL_ID = "canta_downloads"
+
+/**
  * Foreground service that keeps downloads alive when the app leaves the screen.
  * `dataSync` is the declared foreground-service type (see AndroidManifest).
  */
 class CantaDownloadService : DownloadService(
     1001,
     DownloadService.DEFAULT_FOREGROUND_NOTIFICATION_UPDATE_INTERVAL,
-    CHANNEL_ID,
+    DOWNLOAD_CHANNEL_ID,
     R.string.notif_channel_downloads,
     R.string.notif_channel_downloads_desc
 ) {
@@ -226,8 +362,12 @@ class CantaDownloadService : DownloadService(
      * No requirements-based scheduler: a queued episode should keep going while
      * the user is on Wi-Fi rather than wait for an "unmetered + charging" state
      * the app never states. Media3 tolerates null here.
+     *
+     * The return type is inferred on purpose: `DownloadService` changed the
+     * type of this method between Media3 releases, and inferring it keeps the
+     * override valid against either the nested or the standalone `Scheduler`.
      */
-    override fun getScheduler(): DownloadService.Scheduler? = null
+    override fun getScheduler() = null
 
     override fun getForegroundNotification(
         downloads: MutableList<Download>,
@@ -240,7 +380,7 @@ class CantaDownloadService : DownloadService(
             progress > 0f -> "Téléchargement hors ligne — ${progress.toInt()}%"
             else -> "Téléchargement hors ligne en préparation…"
         }
-        return NotificationCompat.Builder(this, CHANNEL_ID)
+        return NotificationCompat.Builder(this, DOWNLOAD_CHANNEL_ID)
             .setSmallIcon(android.R.drawable.stat_sys_download)
             .setContentTitle(getString(R.string.app_name))
             .setContentText(text)
@@ -248,9 +388,5 @@ class CantaDownloadService : DownloadService(
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .build()
-    }
-
-    companion object {
-        const val CHANNEL_ID = "canta_downloads"
     }
 }

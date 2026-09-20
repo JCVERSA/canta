@@ -262,6 +262,15 @@ class AppViewModel(private val app: App) : ViewModel() {
     fun playEpisode(episode: Episode, quality: String? = _qualityRequest.value) {
         _currentEpisode.value = episode
         _qualityRequest.value = quality
+        // A finished download is played from its own stored stream: no mirror
+        // lookup at all. That is what makes playback work with the network off,
+        // and it also stops the app from resolving a mirror it will not use.
+        container.downloads.offlineStream(app, episode)?.let { offline ->
+            _playerError.value = null
+            _resolving.value = false
+            _stream.value = offline
+            return
+        }
         viewModelScope.launch {
             _resolving.value = true
             _playerError.value = null

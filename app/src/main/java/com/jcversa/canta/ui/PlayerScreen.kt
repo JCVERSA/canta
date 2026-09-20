@@ -85,12 +85,17 @@ fun PlayerScreen(
     var playbackFailure by remember { mutableStateOf<String?>(null) }
 
     val streamUrl = stream?.streamUrl
+    val offline = stream?.offlinePlayback == true
     val exoPlayer = remember(streamUrl) {
         val current = stream ?: return@remember null
         ExoPlayer.Builder(context)
             .setMediaSourceFactory(
                 DefaultMediaSourceFactory(
-                    CantaDownloadManager.playbackDataSourceFactory(context, current.playbackHeaders())
+                    CantaDownloadManager.playbackDataSourceFactory(
+                        context,
+                        current.playbackHeaders(),
+                        current.offlinePlayback
+                    )
                 )
             )
             .build()
@@ -150,8 +155,8 @@ fun PlayerScreen(
             }
             TextButton(
                 onClick = { episode?.let(viewModel::download) },
-                enabled = stream != null
-            ) { Text("Télécharger") }
+                enabled = stream != null && !offline
+            ) { Text(if (offline) "Téléchargé" else "Télécharger") }
         }
 
         AndroidView(
@@ -186,6 +191,15 @@ fun PlayerScreen(
                         text = current.hostName,
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                if (current.offlinePlayback) {
+                    Text(
+                        text = "Lecture hors ligne — épisode téléchargé, aucune connexion nécessaire. " +
+                            "Le fichier se lit depuis le stockage de l'app, sans repasser par un miroir.",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
 
@@ -248,7 +262,7 @@ fun PlayerScreen(
                     }
                 }
 
-                if (selectedQuality == null) {
+                if (selectedQuality == null && !current.offlinePlayback) {
                     Text(
                         text = "Sélection automatique : 480P puis 360P, jamais une étiquette inventée. " +
                             "Si un flux « 480P » dépasse 200 Mo mesurés, l'app bascule sur la variante plus légère et l'écrit ici.",
