@@ -1,32 +1,29 @@
 job: preview-apk
-sha: a92df5b954d4d2fddff16a5b3d2e4aa74deb8f07
-date: Sun Sep 20 22:13:27 UTC 2026
+sha: 07b8d9af7749c95b1059b82f0e9fa8ce186efe73
+date: Sun Sep 20 22:36:30 UTC 2026
 
 To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.7.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
 Daemon will be stopped at the end of the build 
-
-> Configure project :app
-w: file:///home/runner/work/canta/canta/app/build.gradle.kts:20:9: 'val resourceConfigurations: MutableSet<String>' is deprecated. Support for resource configurations will be removed. For language resource configurations in applications, use androidResources.localeFilters.
-
 > Task :app:preBuild UP-TO-DATE
 > Task :app:prePreviewBuild UP-TO-DATE
 > Task :app:mergePreviewJniLibFolders
 > Task :app:mergePreviewNativeLibs
-> Task :app:checkPreviewDuplicateClasses
 > Task :app:generatePreviewBuildConfig
+> Task :app:checkPreviewDuplicateClasses
 > Task :app:generatePreviewResources FROM-CACHE
 > Task :app:packagePreviewResources FROM-CACHE
 > Task :app:processPreviewNavigationResources FROM-CACHE
 > Task :app:stripPreviewDebugSymbols
 > Task :app:parsePreviewLocalResources FROM-CACHE
 > Task :app:extractPreviewNativeSymbolTables FROM-CACHE
-> Task :app:mergePreviewNativeDebugMetadata
 > Task :app:generatePreviewRFile FROM-CACHE
+> Task :app:mergePreviewNativeDebugMetadata
 > Task :app:javaPreCompilePreview FROM-CACHE
 > Task :app:mergePreviewArtProfile
+> Task :app:checkPreviewAarMetadata
 > Task :app:mapPreviewSourceSetPaths
 > Task :app:compilePreviewNavigationResources FROM-CACHE
-> Task :app:checkPreviewAarMetadata
+> Task :app:mergePreviewResources FROM-CACHE
 > Task :app:createPreviewCompatibleScreenManifests
 > Task :app:extractDeepLinksPreview FROM-CACHE
 > Task :app:processPreviewMainManifest
@@ -35,35 +32,94 @@ w: file:///home/runner/work/canta/canta/app/build.gradle.kts:20:9: 'val resource
 > Task :app:mergePreviewStartupProfile
 > Task :app:generatePreviewAssets UP-TO-DATE
 > Task :app:mergePreviewAssets
-> Task :app:compressPreviewAssets
+> Task :app:processPreviewManifestForPackage
+> Task :app:compressPreviewAssets FROM-CACHE
 > Task :app:extractPreviewVersionControlInfo
-> Task :app:mergePreviewResources
+> Task :app:processPreviewResources
 > Task :app:validateSigningPreview
 > Task :app:writePreviewAppMetadata
 > Task :app:writePreviewSigningConfigVersions
-> Task :app:processPreviewManifestForPackage
-> Task :app:processPreviewResources
 
 > Task :app:compilePreviewKotlin
-e: file:///home/runner/work/canta/canta/app/src/main/java/com/jcversa/canta/manager/DownloadManager.kt:54:44 Unresolved reference 'Builder'.
-e: file:///home/runner/work/canta/canta/app/src/main/java/com/jcversa/canta/manager/DownloadManager.kt:59:14 Cannot infer type for type parameter 'T'. Specify it explicitly.
-e: file:///home/runner/work/canta/canta/app/src/main/java/com/jcversa/canta/manager/DownloadManager.kt:59:21 Cannot infer type for type parameter 'T'. Specify it explicitly.
-e: file:///home/runner/work/canta/canta/app/src/main/java/com/jcversa/canta/manager/DownloadManager.kt:61:25 Unresolved reference 'addListener'.
-e: file:///home/runner/work/canta/canta/app/src/main/java/com/jcversa/canta/manager/DownloadManager.kt:153:9 Cannot infer type for type parameter 'R'. Specify it explicitly.
-e: file:///home/runner/work/canta/canta/app/src/main/java/com/jcversa/canta/manager/DownloadManager.kt:154:29 Unresolved reference 'sendResumeDownloadsIntent'.
-e: file:///home/runner/work/canta/canta/app/src/main/java/com/jcversa/canta/manager/DownloadManager.kt:230:50 Unresolved reference 'Scheduler'.
+w: file:///home/runner/work/canta/canta/app/src/main/java/com/jcversa/canta/manager/DownloadManager.kt:1:13 Annotation 'androidx.media3.common.util.UnstableApi' is not annotated with '@RequiresOptIn'. '@OptIn' has no effect.
+w: file:///home/runner/work/canta/canta/app/src/main/java/com/jcversa/canta/manager/DownloadManager.kt:107:25 'constructor(p0: MediaItem, p1: CacheDataSource.Factory, p2: Executor): HlsDownloader' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/canta/canta/app/src/main/java/com/jcversa/canta/manager/DownloadManager.kt:230:32 Unnecessary safe call on a non-null receiver of type 'ByteArray'.
+w: file:///home/runner/work/canta/canta/app/src/main/java/com/jcversa/canta/manager/DownloadManager.kt:255:32 Unnecessary safe call on a non-null receiver of type 'ByteArray'.
+w: file:///home/runner/work/canta/canta/app/src/main/java/com/jcversa/canta/ui/DownloadsScreen.kt:127:79 Unnecessary non-null assertion (!!) on a non-null receiver of type 'Episode'.
 
-> Task :app:compilePreviewKotlin FAILED
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1789942372954.json
+> Task :app:compilePreviewJavaWithJavac
+> Task :app:mergePreviewGeneratedProguardFiles
+> Task :app:processPreviewJavaRes
+> Task :app:expandPreviewArtProfileWildcards
+> Task :app:mergePreviewJavaResource
+> Task :app:producePreviewComposeMapping
+> Task :app:generatePreviewLintVitalReportModel
+> Task :app:reportPreviewComposeMappingErrors
+> Task :app:minifyPreviewWithR8
+> Task :app:lintVitalAnalyzePreview
+
+> Task :app:lintVitalReportPreview
+Lint found 1 error. First failure:
+/home/runner/work/canta/canta/app/src/main/AndroidManifest.xml:12: Error: Remove androidx.work.WorkManagerInitializer from your AndroidManifest.xml when using on-demand initialization. [RemoveWorkManagerInitializer from androidx.work]
+    <application
+    ^
+
+
+> Task :app:lintVitalPreview FAILED
+/home/runner/work/canta/canta/app/src/main/AndroidManifest.xml:12: Error: Remove androidx.work.WorkManagerInitializer from your AndroidManifest.xml when using on-demand initialization. [RemoveWorkManagerInitializer from androidx.work]
+    <application
+    ^
+
+   Explanation for issues of type "RemoveWorkManagerInitializer":
+   If an android.app.Application implements
+   androidx.work.Configuration.Provider,
+   the default androidx.startup.InitializationProvider needs to be removed
+   from the
+   AndroidManifest.xml file.
+
+   Vendor: Android Open Source Project
+   Identifier: androidx.work
+   Feedback: https://issuetracker.google.com/issues/new?component=409906
+
+1 error
+
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1789943603738.json
 
 [Incubating] Problems report is available at: file:///home/runner/work/canta/canta/build/reports/problems/problems-report.html
 
 FAILURE: Build failed with an exception.
 
 * What went wrong:
-Execution failed for task ':app:compilePreviewKotlin' (registered by plugin 'com.android.internal.application').
-> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.btapi.BuildToolsApiCompilationWork
-   > Compilation error. See log for more details
+Execution failed for task ':app:lintVitalPreview' (registered by plugin 'com.android.internal.application').
+> Lint found fatal errors while assembling a release target.
+  
+  Fix the issues identified by lint, or create a baseline to see only new errors.
+  To create a baseline, run `gradlew updateLintBaseline` after adding the following to the module's build.gradle file:
+  ```
+  android {
+      lint {
+          baseline = file("lint-baseline.xml")
+      }
+  }
+  ```
+  For more details, see https://developer.android.com/studio/write/lint#snapshot
+  
+  /home/runner/work/canta/canta/app/src/main/AndroidManifest.xml:12: Error: Remove androidx.work.WorkManagerInitializer from your AndroidManifest.xml when using on-demand initialization. [RemoveWorkManagerInitializer from androidx.work]
+      <application
+      ^
+  
+     Explanation for issues of type "RemoveWorkManagerInitializer":
+     If an android.app.Application implements
+     androidx.work.Configuration.Provider,
+     the default androidx.startup.InitializationProvider needs to be removed
+     from the
+     AndroidManifest.xml file.
+  
+     Vendor: Android Open Source Project
+     Identifier: androidx.work
+     Feedback: https://issuetracker.google.com/issues/new?component=409906
+  
+  1 error
 
 * Try:
 > Run with --info or --debug option to get more log output.
@@ -71,7 +127,7 @@ Execution failed for task ':app:compilePreviewKotlin' (registered by plugin 'com
 > Get more help at https://help.gradle.org.
 
 * Exception is:
-org.gradle.api.tasks.TaskExecutionException: Execution failed for task ':app:compilePreviewKotlin' (registered by plugin 'com.android.internal.application').
+org.gradle.api.tasks.TaskExecutionException: Execution failed for task ':app:lintVitalPreview' (registered by plugin 'com.android.internal.application').
 	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.lambda$executeIfValid$1(ExecuteActionsTaskExecuter.java:135)
 	at org.gradle.internal.Try$Failure.ifSuccessfulOrElse(Try.java:288)
 	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.executeIfValid(ExecuteActionsTaskExecuter.java:133)
@@ -103,57 +159,47 @@ org.gradle.api.tasks.TaskExecutionException: Execution failed for task ':app:com
 	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.execute(DefaultTaskExecutionGraph.java:328)
 	at org.gradle.execution.plan.DefaultPlanExecutor$ExecutorWorker.execute(DefaultPlanExecutor.java:459)
 	at org.gradle.execution.plan.DefaultPlanExecutor$ExecutorWorker.run(DefaultPlanExecutor.java:376)
-	at org.gradle.execution.plan.DefaultPlanExecutor.process(DefaultPlanExecutor.java:111)
-	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph.executeWithServices(DefaultTaskExecutionGraph.java:146)
-	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph.execute(DefaultTaskExecutionGraph.java:131)
-	at org.gradle.execution.SelectedTaskExecutionAction.execute(SelectedTaskExecutionAction.java:35)
-	at org.gradle.execution.BuildOperationFiringBuildWorkerExecutor$ExecuteTasks.call(BuildOperationFiringBuildWorkerExecutor.java:54)
-	at org.gradle.execution.BuildOperationFiringBuildWorkerExecutor$ExecuteTasks.call(BuildOperationFiringBuildWorkerExecutor.java:43)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:210)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:205)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:67)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:60)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:167)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:60)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:54)
-	at org.gradle.execution.BuildOperationFiringBuildWorkerExecutor.execute(BuildOperationFiringBuildWorkerExecutor.java:40)
-	at org.gradle.internal.build.DefaultBuildLifecycleController.lambda$executeTasks$0(DefaultBuildLifecycleController.java:323)
-	at org.gradle.internal.model.StateTransitionController.doTransition(StateTransitionController.java:324)
-	at org.gradle.internal.model.StateTransitionController.lambda$tryTransition$0(StateTransitionController.java:235)
-	at org.gradle.internal.work.DefaultSynchronizer.withLock(DefaultSynchronizer.java:45)
-	at org.gradle.internal.model.StateTransitionController.tryTransition(StateTransitionController.java:235)
-	at org.gradle.internal.build.DefaultBuildLifecycleController.executeTasks(DefaultBuildLifecycleController.java:314)
-	at org.gradle.internal.build.DefaultBuildWorkGraphController$DefaultBuildWorkGraph.runWork(DefaultBuildWorkGraphController.java:220)
-	at org.gradle.internal.work.DefaultWorkerLeaseService.lambda$runAndReleaseLocks$0(DefaultWorkerLeaseService.java:302)
-	at org.gradle.internal.work.ResourceLockStatistics$1.measure(ResourceLockStatistics.java:43)
-	at org.gradle.internal.work.DefaultWorkerLeaseService.runAndReleaseLocks(DefaultWorkerLeaseService.java:300)
-	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocksAcquired(DefaultWorkerLeaseService.java:296)
-	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocks(DefaultWorkerLeaseService.java:288)
-	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:131)
-	at org.gradle.composite.internal.DefaultBuildController.doRun(DefaultBuildController.java:182)
-	at org.gradle.composite.internal.DefaultBuildController$BuildOpRunnable.lambda$run$0(DefaultBuildController.java:199)
-	at org.gradle.internal.operations.CurrentBuildOperationRef.with(CurrentBuildOperationRef.java:84)
-	at org.gradle.composite.internal.DefaultBuildController$BuildOpRunnable.run(DefaultBuildController.java:199)
 	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:65)
 	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:47)
-Caused by: org.gradle.workers.internal.DefaultWorkerExecutor$WorkExecutionException: A failure occurred while executing org.jetbrains.kotlin.compilerRunner.btapi.BuildToolsApiCompilationWork
-	at org.gradle.workers.internal.DefaultWorkerExecutor$WorkItemExecution.waitForCompletion(DefaultWorkerExecutor.java:273)
-	at org.gradle.internal.work.DefaultAsyncWorkTracker.lambda$waitForItemsAndGatherFailures$2(DefaultAsyncWorkTracker.java:132)
-	at org.gradle.internal.Factories$1.create(Factories.java:30)
-	at org.gradle.internal.work.DefaultWorkerLeaseService.lambda$withoutLocksBlocking$0(DefaultWorkerLeaseService.java:412)
-	at org.gradle.internal.work.ResourceLockStatistics$1.measure(ResourceLockStatistics.java:43)
-	at org.gradle.internal.work.DefaultWorkerLeaseService.withoutLocksBlocking(DefaultWorkerLeaseService.java:407)
-	at org.gradle.internal.work.DefaultWorkerLeaseService.blocking(DefaultWorkerLeaseService.java:257)
-	at org.gradle.internal.work.DefaultWorkerLeaseService.blocking(DefaultWorkerLeaseService.java:239)
-	at org.gradle.internal.work.DefaultAsyncWorkTracker.lambda$waitForItemsAndGatherFailures$1(DefaultAsyncWorkTracker.java:128)
-	at org.gradle.internal.Factories$1.create(Factories.java:30)
-	at org.gradle.internal.resources.AbstractResourceLockRegistry.whileDisallowingLockChanges(AbstractResourceLockRegistry.java:51)
-	at org.gradle.internal.work.DefaultWorkerLeaseService.whileDisallowingProjectLockChanges(DefaultWorkerLeaseService.java:262)
-	at org.gradle.internal.work.DefaultAsyncWorkTracker.waitForItemsAndGatherFailures(DefaultAsyncWorkTracker.java:127)
-	at org.gradle.internal.work.DefaultAsyncWorkTracker.waitForItemsAndGatherFailures(DefaultAsyncWorkTracker.java:93)
-	at org.gradle.internal.work.DefaultAsyncWorkTracker.waitForAll(DefaultAsyncWorkTracker.java:79)
-	at org.gradle.internal.work.DefaultAsyncWorkTracker.waitForCompletion(DefaultAsyncWorkTracker.java:67)
-	at org.gradle.api.internal.tasks.execution.TaskExecution$3.run(TaskExecution.java:267)
+Caused by: java.lang.RuntimeException: Lint found fatal errors while assembling a release target.
+
+Fix the issues identified by lint, or create a baseline to see only new errors.
+To create a baseline, run `gradlew updateLintBaseline` after adding the following to the module's build.gradle file:
+```
+android {
+    lint {
+        baseline = file("lint-baseline.xml")
+    }
+}
+```
+For more details, see https://developer.android.com/studio/write/lint#snapshot
+
+/home/runner/work/canta/canta/app/src/main/AndroidManifest.xml:12: Error: Remove androidx.work.WorkManagerInitializer from your AndroidManifest.xml when using on-demand initialization. [RemoveWorkManagerInitializer from androidx.work]
+    <application
+    ^
+
+   Explanation for issues of type "RemoveWorkManagerInitializer":
+   If an android.app.Application implements
+   androidx.work.Configuration.Provider,
+   the default androidx.startup.InitializationProvider needs to be removed
+   from the
+   AndroidManifest.xml file.
+
+   Vendor: Android Open Source Project
+   Identifier: androidx.work
+   Feedback: https://issuetracker.google.com/issues/new?component=409906
+
+1 error
+	at com.android.build.gradle.internal.lint.AndroidLintWorkAction$Companion.maybeThrowException(AndroidLintWorkAction.kt:232)
+	at com.android.build.gradle.internal.lint.AndroidLintTextOutputTask.doTaskAction(AndroidLintTextOutputTask.kt:113)
+	at com.android.build.gradle.internal.tasks.NonIncrementalTask$taskAction$$inlined$recordTaskAction$1.invoke(BaseTask.kt:72)
+	at com.android.build.gradle.internal.tasks.Blocks.recordSpan(Blocks.java:51)
+	at com.android.build.gradle.internal.tasks.NonIncrementalTask.taskAction(NonIncrementalTask.kt:71)
+	at org.gradle.internal.reflect.JavaMethod.invoke(JavaMethod.java:125)
+	at org.gradle.api.internal.project.taskfactory.StandardTaskAction.doExecute(StandardTaskAction.java:58)
+	at org.gradle.api.internal.project.taskfactory.StandardTaskAction.execute(StandardTaskAction.java:51)
+	at org.gradle.api.internal.project.taskfactory.StandardTaskAction.execute(StandardTaskAction.java:29)
+	at org.gradle.api.internal.tasks.execution.TaskExecution$3.run(TaskExecution.java:259)
 	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:30)
 	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:27)
 	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:67)
@@ -194,13 +240,8 @@ Caused by: org.gradle.workers.internal.DefaultWorkerExecutor$WorkExecutionExcept
 	at org.gradle.internal.execution.steps.ResolveInputChangesStep.executeMutable(ResolveInputChangesStep.java:28)
 	at org.gradle.internal.execution.steps.MutableStep.execute(MutableStep.java:26)
 	at org.gradle.internal.execution.steps.BuildCacheStep.executeWithoutCache(BuildCacheStep.java:189)
-	at org.gradle.internal.execution.steps.BuildCacheStep.executeAndStoreInCache(BuildCacheStep.java:145)
-	at org.gradle.internal.execution.steps.BuildCacheStep.lambda$executeWithCache$3(BuildCacheStep.java:104)
-	at org.gradle.internal.execution.steps.BuildCacheStep.lambda$executeWithCache$1(BuildCacheStep.java:104)
-	at org.gradle.internal.Try$Success.map(Try.java:170)
-	at org.gradle.internal.execution.steps.BuildCacheStep.executeWithCache(BuildCacheStep.java:88)
-	at org.gradle.internal.execution.steps.BuildCacheStep.lambda$execute$0(BuildCacheStep.java:75)
-	at org.gradle.internal.Either$Left.fold(Either.java:116)
+	at org.gradle.internal.execution.steps.BuildCacheStep.lambda$execute$1(BuildCacheStep.java:76)
+	at org.gradle.internal.Either$Right.fold(Either.java:176)
 	at org.gradle.internal.execution.caching.CachingState.fold(CachingState.java:62)
 	at org.gradle.internal.execution.steps.BuildCacheStep.execute(BuildCacheStep.java:74)
 	at org.gradle.internal.execution.steps.BuildCacheStep.execute(BuildCacheStep.java:49)
@@ -228,7 +269,7 @@ Caused by: org.gradle.workers.internal.DefaultWorkerExecutor$WorkExecutionExcept
 	at org.gradle.internal.execution.steps.CaptureMutableStateBeforeExecutionStep.execute(CaptureMutableStateBeforeExecutionStep.java:65)
 	at org.gradle.internal.execution.steps.CaptureMutableStateBeforeExecutionStep.execute(CaptureMutableStateBeforeExecutionStep.java:45)
 	at org.gradle.internal.execution.steps.SkipEmptyMutableWorkStep.executeWithNonEmptySources(SkipEmptyMutableWorkStep.java:210)
-	at org.gradle.internal.execution.steps.SkipEmptyMutableWorkStep.executeMutable(SkipEmptyMutableWorkStep.java:90)
+	at org.gradle.internal.execution.steps.SkipEmptyMutableWorkStep.executeMutable(SkipEmptyMutableWorkStep.java:85)
 	at org.gradle.internal.execution.steps.SkipEmptyMutableWorkStep.executeMutable(SkipEmptyMutableWorkStep.java:53)
 	at org.gradle.internal.execution.steps.MutableStep.execute(MutableStep.java:26)
 	at org.gradle.internal.execution.steps.legacy.MarkSnapshottingInputsStartedStep.execute(MarkSnapshottingInputsStartedStep.java:38)
@@ -254,42 +295,8 @@ Caused by: org.gradle.workers.internal.DefaultWorkerExecutor$WorkExecutionExcept
 	at org.gradle.internal.execution.steps.IdentifyStep.execute(IdentifyStep.java:38)
 	at org.gradle.internal.execution.impl.DefaultExecutionEngine$1.execute(DefaultExecutionEngine.java:68)
 	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.executeIfValid(ExecuteActionsTaskExecuter.java:132)
-	... 61 more
-Caused by: org.jetbrains.kotlin.gradle.tasks.CompilationErrorException: Compilation error. See log for more details
-	at org.jetbrains.kotlin.gradle.tasks.TasksUtilsKt.throwExceptionIfCompilationFailed(tasksUtils.kt:21)
-	at org.jetbrains.kotlin.compilerRunner.btapi.BuildToolsApiCompilationWork.execute(BuildToolsApiCompilationWork.kt:320)
-	at org.gradle.workers.internal.DefaultWorkerServer.execute(DefaultWorkerServer.java:68)
-	at org.gradle.workers.internal.NoIsolationWorkerFactory$1$1.create(NoIsolationWorkerFactory.java:64)
-	at org.gradle.workers.internal.NoIsolationWorkerFactory$1$1.create(NoIsolationWorkerFactory.java:61)
-	at org.gradle.internal.classloader.ClassLoaderUtils.executeInClassloader(ClassLoaderUtils.java:103)
-	at org.gradle.workers.internal.NoIsolationWorkerFactory$1.lambda$execute$0(NoIsolationWorkerFactory.java:61)
-	at org.gradle.workers.internal.AbstractWorker$1.call(AbstractWorker.java:44)
-	at org.gradle.workers.internal.AbstractWorker$1.call(AbstractWorker.java:41)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:210)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:205)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:67)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:60)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:167)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:60)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:54)
-	at org.gradle.workers.internal.AbstractWorker.executeWrappedInBuildOperation(AbstractWorker.java:41)
-	at org.gradle.workers.internal.NoIsolationWorkerFactory$1.execute(NoIsolationWorkerFactory.java:58)
-	at org.gradle.workers.internal.DefaultWorkerExecutor.lambda$submitWork$1(DefaultWorkerExecutor.java:169)
-	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.runExecution(DefaultConditionalExecutionQueue.java:191)
-	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.access$600(DefaultConditionalExecutionQueue.java:112)
-	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner$1.run(DefaultConditionalExecutionQueue.java:168)
-	at org.gradle.internal.Factories$1.create(Factories.java:30)
-	at org.gradle.internal.work.DefaultWorkerLeaseService.lambda$runAndReleaseLocks$0(DefaultWorkerLeaseService.java:302)
-	at org.gradle.internal.work.ResourceLockStatistics$1.measure(ResourceLockStatistics.java:43)
-	at org.gradle.internal.work.DefaultWorkerLeaseService.runAndReleaseLocks(DefaultWorkerLeaseService.java:300)
-	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocksAcquired(DefaultWorkerLeaseService.java:296)
-	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocks(DefaultWorkerLeaseService.java:288)
-	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:131)
-	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:137)
-	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.runBatch(DefaultConditionalExecutionQueue.java:163)
-	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.run(DefaultConditionalExecutionQueue.java:125)
-	... 2 more
+	... 30 more
 
 
-BUILD FAILED in 37s
-33 actionable tasks: 24 executed, 9 from cache
+BUILD FAILED in 3m 10s
+45 actionable tasks: 34 executed, 11 from cache
