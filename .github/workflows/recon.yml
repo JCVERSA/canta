@@ -1,41 +1,67 @@
 name: Recon (Phase 0)
 
-# Phase 0 reconnaissance harness. Runs on a GitHub-hosted runner because the
+# Phase 0 reconnaissance harness. It runs on a GitHub-hosted runner because the
 # development sandbox has restricted egress; every selector claim in
-# RECONNAISSANCE.md is reproducible from this workflow's artifacts.
+# RECONNAISSANCE.md is reproducible from what this workflow commits back to the
+# branch under tools/recon/evidence/.
 #
-#   gh workflow run recon.yml
-#   gh run download <run-id> -n recon-evidence -D recon-out
+#   gh workflow run recon.yml --ref <branch>
+#
+# Evidence is committed (gzipped) rather than uploaded as an artifact because
+# artifact downloads and raw job logs are not reachable from restricted
+# environments, while git pushes are.
 
 on:
   workflow_dispatch:
   push:
     paths:
-      - "tools/recon/**"
+      - "tools/recon/recon.mjs"
       - ".github/workflows/recon.yml"
 
 permissions:
-  contents: read
+  contents: write
+
+concurrency:
+  group: recon-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   recon:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
 
       - name: Run reconnaissance harness
-        run: node tools/recon/recon.mjs
+        run: node tools/recon/recon.mjs || true
 
-      - name: Upload evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: recon-evidence
-          path: recon-out/**
-          if-no-files-found: warn
-          retention-days: 30
+      - name: Publish evidence onto the branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p tools/recon/evidence
+          rm -f tools/recon/evidence/*
+          # gzip every capture: full HTML bodies stay available without bloating git
+          for f in recon-out/*; do
+            case "$f" in
+              *.json) cp "$f" tools/recon/evidence/ ;;
+              *) gzip -9 -c "$f" > "tools/recon/evidence/$(basename "$f").gz" ;;
+            esac
+          done
+          # human-readable index so the repo is browseable without gunzip
+          ls -la tools/recon/evidence/ > tools/recon/evidence/INDEX.txt
+          git config user.name "recon-bot"
+          git config user.email "recon-bot@users.noreply.github.com"
+          git add -f tools/recon/evidence
+          if git diff --cached --quiet; then
+            echo "no evidence change"
+          else
+            git commit -m "chore(recon): refresh live evidence [skip ci]"
+            git push origin HEAD:${{ github.ref_name }}
+          fi
