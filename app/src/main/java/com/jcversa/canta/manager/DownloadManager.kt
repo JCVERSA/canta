@@ -59,8 +59,13 @@ import java.util.concurrent.Executors
  */
 object CantaDownloadManager {
 
-    /** Ceiling for downloaded episodes. Must stay below a phone's free space. */
-    private const val OFFLINE_CACHE_BYTES = 4L * 1024L * 1024L
+    /**
+     * Ceiling for downloaded episodes: 4 GiB, i.e. a real season of 480P
+     * episodes (measured: ~92 MiB for 24 minutes) rather than a number that
+     * would refuse every download. The cache never evicts; when it is full the
+     * app refuses the next download and says how much is used.
+     */
+    private const val OFFLINE_CACHE_BYTES = 4L * 1024L * 1024L * 1024L
 
     /** Streaming buffer: only ever holds what is being watched right now. */
     private const val STREAM_CACHE_BYTES = 512L * 1024L * 1024L
@@ -101,9 +106,12 @@ object CantaDownloadManager {
                     // (never the master), so an HLS download fetches exactly the
                     // quality the user picked and nothing else.
                     if (request.mimeType == MimeTypes.APPLICATION_M3U8) {
-                        // Deprecated in favour of HlsDownloader.Factory, which
-                        // cannot carry per-request headers; the deprecation only
-                        // warns about selecting a variant by StreamKey.
+                        // Media3 deprecates this constructor in favour of
+                        // HlsDownloader.Factory because it can be built around a
+                        // StreamKey; this app never selects a variant inside the
+                        // downloader (the request URI *is* the resolved variant's
+                        // playlist), so the behaviour is identical and the hint
+                        // stays a warning rather than turning into an error.
                         HlsDownloader(mediaItem, cacheDataSource, DOWNLOAD_EXECUTOR)
                     } else {
                         ProgressiveDownloader(mediaItem, cacheDataSource, DOWNLOAD_EXECUTOR)

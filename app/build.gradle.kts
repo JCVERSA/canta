@@ -17,7 +17,13 @@ android {
         targetSdk = 36
         versionCode = (project.findProperty("versionCode") as String?)?.toIntOrNull() ?: 1
         versionName = (project.findProperty("versionName") as String?) ?: "$baseVersion-dev"
-        resourceConfigurations += listOf("en", "fr")
+    }
+
+    // Only the two locales the UI and the scrapers actually emit. AGP removed
+    // `resourceConfigurations` in favour of this DSL, which is the same filter
+    // applied where AGP 9 expects it.
+    androidResources {
+        localeFilters += listOf("en", "fr")
     }
 
     buildTypes {
