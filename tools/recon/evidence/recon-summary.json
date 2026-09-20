@@ -1,0 +1,515 @@
+{
+  "generatedAt": "2026-09-20T21:49:03.415Z",
+  "node": "v20.20.2",
+  "steps": {
+    "versions": {
+      "versions": {
+        "agp": {
+          "latest": "9.5.0-alpha06",
+          "latestStable": "9.4.1",
+          "stableTail": [
+            "9.3.0",
+            "9.3.1",
+            "9.3.2",
+            "9.3.3",
+            "9.4.0",
+            "9.4.1"
+          ]
+        },
+        "kotlin": {
+          "latest": "2.4.20",
+          "latestStable": "2.4.20",
+          "stableTail": [
+            "2.3.10",
+            "2.3.20",
+            "2.3.21",
+            "2.4.0",
+            "2.4.10",
+            "2.4.20"
+          ]
+        },
+        "composeBom": {
+          "latest": "2026.09.00",
+          "latestStable": "2026.09.00",
+          "stableTail": [
+            "2026.05.00",
+            "2026.05.01",
+            "2026.06.00",
+            "2026.06.01",
+            "2026.08.00",
+            "2026.09.00"
+          ]
+        },
+        "media3": {
+          "latest": "1.11.1",
+          "latestStable": "1.11.1",
+          "stableTail": [
+            "1.9.3",
+            "1.9.4",
+            "1.10.0",
+            "1.10.1",
+            "1.11.0",
+            "1.11.1"
+          ]
+        },
+        "media3Session": {
+          "latest": "1.11.1",
+          "latestStable": "1.11.1",
+          "stableTail": [
+            "1.9.3",
+            "1.9.4",
+            "1.10.0",
+            "1.10.1",
+            "1.11.0",
+            "1.11.1"
+          ]
+        },
+        "work": {
+          "latest": "2.12.0-rc01",
+          "latestStable": "2.11.2",
+          "stableTail": [
+            "2.10.3",
+            "2.10.4",
+            "2.10.5",
+            "2.11.0",
+            "2.11.1",
+            "2.11.2"
+          ]
+        },
+        "datastore": {
+          "latest": "1.3.0-alpha11",
+          "latestStable": "1.2.1",
+          "stableTail": [
+            "1.1.4",
+            "1.1.5",
+            "1.1.6",
+            "1.1.7",
+            "1.2.0",
+            "1.2.1"
+          ]
+        },
+        "navigation": {
+          "latest": "2.10.1",
+          "latestStable": "2.10.1",
+          "stableTail": [
+            "2.9.5",
+            "2.9.6",
+            "2.9.7",
+            "2.9.8",
+            "2.10.0",
+            "2.10.1"
+          ]
+        },
+        "activityCompose": {
+          "latest": "1.14.0-alpha02",
+          "latestStable": "1.13.0",
+          "stableTail": [
+            "1.12.0",
+            "1.12.1",
+            "1.12.2",
+            "1.12.3",
+            "1.12.4",
+            "1.13.0"
+          ]
+        },
+        "lifecycle": {
+          "latest": "2.12.0-alpha03",
+          "latestStable": "2.11.0",
+          "stableTail": [
+            "2.9.1",
+            "2.9.2",
+            "2.9.3",
+            "2.9.4",
+            "2.10.0",
+            "2.11.0"
+          ]
+        },
+        "coil": {
+          "latest": "3.6.3",
+          "latestStable": "3.6.3",
+          "stableTail": [
+            "3.4.0",
+            "3.5.0",
+            "3.6.0",
+            "3.6.1",
+            "3.6.2",
+            "3.6.3"
+          ]
+        },
+        "jsoup": {
+          "latest": "1.23.2",
+          "latestStable": "1.23.2",
+          "stableTail": [
+            "1.21.1",
+            "1.21.2",
+            "1.22.1",
+            "1.22.2",
+            "1.23.1",
+            "1.23.2"
+          ]
+        },
+        "okhttp": {
+          "latest": "5.5.0",
+          "latestStable": "5.5.0",
+          "stableTail": [
+            "5.2.3",
+            "5.3.0",
+            "5.3.1",
+            "5.3.2",
+            "5.4.0",
+            "5.5.0"
+          ]
+        },
+        "gradle": "9.7.1"
+      }
+    },
+    "voir-anime.catalogue": {},
+    "voir-anime.home": {
+      "probes": {
+        "wp-content (WordPress)": true,
+        "madara theme marker": true,
+        ".page-item-detail": 20,
+        ".post-title": 20,
+        ".item-summary / .item-thumb": 37,
+        ".c-tabs-item__content": 8,
+        ".eplister (episode list)": 0,
+        ".epl-num/.epl-title/.epl-date": 0,
+        ".chapter-item": 44,
+        "a[href*=\"/anime/\"]": 64,
+        "episode slug -NN-vf/": 36,
+        "iframe tags": 0,
+        "embed-*.html": 0,
+        "voembed": 0,
+        "vidmoly": 0,
+        "sibnet": 0,
+        "sendvid": 0,
+        "voe": 0,
+        "cloudflare challenge": false
+      },
+      "bytes": 215256
+    },
+    "voir-anime.search": {
+      "probes": {
+        "wp-content (WordPress)": true,
+        "madara theme marker": true,
+        ".page-item-detail": 4,
+        ".post-title": 14,
+        ".item-summary / .item-thumb": 5,
+        ".c-tabs-item__content": 18,
+        ".eplister (episode list)": 0,
+        ".epl-num/.epl-title/.epl-date": 0,
+        ".chapter-item": 12,
+        "a[href*=\"/anime/\"]": 31,
+        "episode slug -NN-vf/": 1,
+        "iframe tags": 0,
+        "embed-*.html": 0,
+        "voembed": 0,
+        "vidmoly": 0,
+        "sibnet": 0,
+        "sendvid": 0,
+        "voe": 0,
+        "cloudflare challenge": false
+      },
+      "bytes": 206766
+    },
+    "voir-anime.detail": {
+      "probes": {
+        "wp-content (WordPress)": true,
+        "madara theme marker": true,
+        ".page-item-detail": 4,
+        ".post-title": 5,
+        ".item-summary / .item-thumb": 5,
+        ".c-tabs-item__content": 8,
+        ".eplister (episode list)": 0,
+        ".epl-num/.epl-title/.epl-date": 0,
+        ".chapter-item": 12,
+        "a[href*=\"/anime/\"]": 1112,
+        "episode slug -NN-vf/": 1108,
+        "iframe tags": 0,
+        "embed-*.html": 0,
+        "voembed": 0,
+        "vidmoly": 0,
+        "sibnet": 0,
+        "sendvid": 0,
+        "voe": 0,
+        "cloudflare challenge": false
+      },
+      "bytes": 556343,
+      "firstEpisodes": [
+        {
+          "url": "https://voir-anime.to/anime/one-piece-vf/one-piece-1110-vf",
+          "slug": "one-piece-1110-vf",
+          "snippet": " One Piece - 1110 VF - 1110 "
+        },
+        {
+          "url": "https://voir-anime.to/anime/one-piece-vf/one-piece-1109-vf",
+          "slug": "one-piece-1109-vf",
+          "snippet": " One Piece - 1109 VF - 1109 "
+        },
+        {
+          "url": "https://voir-anime.to/anime/one-piece-vf/one-piece-1108-vf",
+          "slug": "one-piece-1108-vf",
+          "snippet": " One Piece - 1108 VF - 1108 "
+        },
+        {
+          "url": "https://voir-anime.to/anime/one-piece-vf/one-piece-1107-vf",
+          "slug": "one-piece-1107-vf",
+          "snippet": " One Piece - 1107 VF - 1107 "
+        },
+        {
+          "url": "https://voir-anime.to/anime/one-piece-vf/one-piece-1106-vf",
+          "slug": "one-piece-1106-vf",
+          "snippet": " One Piece - 1106 VF - 1106 "
+        }
+      ]
+    },
+    "voir-anime.episode": {
+      "probes": {
+        "wp-content (WordPress)": true,
+        "madara theme marker": true,
+        ".page-item-detail": 4,
+        ".post-title": 4,
+        ".item-summary / .item-thumb": 5,
+        ".c-tabs-item__content": 8,
+        ".eplister (episode list)": 0,
+        ".epl-num/.epl-title/.epl-date": 0,
+        ".chapter-item": 12,
+        "a[href*=\"/anime/\"]": 5,
+        "episode slug -NN-vf/": 2230,
+        "iframe tags": 5,
+        "embed-*.html": 2,
+        "voembed": 2,
+        "vidmoly": 0,
+        "sibnet": 0,
+        "sendvid": 0,
+        "voe": 1,
+        "cloudflare challenge": false
+      },
+      "bytes": 556560,
+      "embedUrls": [
+        "https://voembed.net/embed-zxtqco5wxp3d.html"
+      ]
+    },
+    "nakanime.catalogue": {},
+    "nakanime.search": {
+      "firstItem": {
+        "backdrop_url": "https://image.tmdb.org/t/p/original/2rmK7mnchw9Xr3XdiTFSxTTLXqv.jpg",
+        "color": "#e49335",
+        "episode_count": 1182,
+        "format": "TV",
+        "genres": [
+          "Action & Adventure",
+          "Comédie",
+          "Animation"
+        ],
+        "id": "16",
+        "is_adult": false,
+        "languages": [
+          "VF",
+          "VOSTFR"
+        ],
+        "logo_url": "https://image.tmdb.org/t/p/original/cgz4g7uCmFd5I7LoBQhBiVXT4SE.png",
+        "overview": "Il fut un temps où Gold Roger était le plus grand de tous les pirates, le \"Roi des Pirates\" était son surnom. A sa mort, son trésor d'une valeur inestimable connu sous le nom de \"One Piece\" fut caché quelque part sur \"Grand Line\". De nombreux pirates sont partis à la recherche de ce trésor mais tous sont morts avant même de l'atteindre. Monkey D. Luffy rêve de retrouver ce trésor légendaire et de devenir le nouveau \"Roi des Pirates\". Après avoir mangé un fruit du démon, il possède un pouvoir lui permettant de réaliser son rêve. Il lui faut maintenant trouver un équipage pour partir à l'aventure !",
+        "popularity": 751736,
+        "poster_url": "https://image.tmdb.org/t/p/w500/oag7edI9flSMawmNySEiSEJAbrf.jpg",
+        "season": "FALL",
+        "season_year": 1999,
+        "slug": "one-piece",
+        "status": "RELEASING",
+        "tags": [
+          "Armes à Feu",
+          "Fugitif",
+          "Transgenre",
+          "Démons",
+          "Dieux",
+          "Fée",
+          "Désert",
+          "Nourriture",
+          "Cgi",
+          "Fantastique",
+          "Aromantique",
+          "Dragons",
+          "Asexuel",
+          "Cyborg",
+          "Henshin",
+          "Kabuki",
+          "Dystopique",
+          "Espionnage",
+          "Post-apocalyptique",
+          "Kuudere",
+          "Voyage",
+          "Guerre",
+          "anti-héros",
+          "Pirates",
+          "Politique",
+          "Saut dans le Temps",
+          "Samouraï",
+          "Amour Non Réciproque",
+          "Comédie",
+          "anthropomorphisme",
+          "Drame",
+          "Amis",
+          "Pirate",
+          "Bateau",
+          "Ship",
+          "Mer",
+          "Combat",
+          "Trésor",
+          "Océan",
+          "Libération",
+          "Amitié",
+          "Civilisation Perdue",
+          "Conspiration",
+          "Fantastique",
+          "Tragédie",
+          "Anachronisme",
+          "Famille choisie",
+          "Aventurier",
+          "Crime",
+          "Manipulation du Temps",
+          "Anges",
+          "animation",
+          "Ships",
+          "Métamorphose",
+          "One Piece",
+          "Quête",
+          "Fantastique",
+          "Personnage Monkey D. Luffy",
+          "Pirate",
+          "aventure",
+          "Drame",
+          "Comédie",
+          "Navigateur",
+          "Géante",
+          "Mer",
+          "Trésor",
+          "Archéologue",
+          "Katana",
+          "Médecin",
+          "Flibustier",
+          "Amitié",
+          "Bien contre mal",
+          "Fruit",
+          "Épée Katana",
+          "Chapeau de paille",
+          "Numéro 1 dans le titre de la série",
+          "Aventure de quête",
+          "animation anime",
+          "Fanservice",
+          "Numéro dans le titre",
+          "Super-héros",
+          "Animation mature",
+          "Satire",
+          "intelligence artificielle",
+          "Shonen",
+          "Shonen",
+          "anime",
+          "animation",
+          "battle royale",
+          "Comédie",
+          "Prison",
+          "Fille monstre",
+          "Robots",
+          "Philosophie",
+          "Squelette",
+          "Esclavage",
+          "Comédie Burlesque",
+          "Super Pouvoir",
+          "action et aventure",
+          "Distribution Ensemble",
+          "Animaux",
+          "Médecine",
+          "Garçon monstre",
+          "Vengeance",
+          "Escrime",
+          "action",
+          "action",
+          "aventure",
+          "aventure",
+          "adapté d'un manga",
+          "Mariage",
+          "Sirène",
+          "Protagoniste masculin",
+          "Distribution adulte"
+        ],
+        "title": "One Piece",
+        "title_original": "ワンピース",
+        "trending": 158,
+        "vote_average": 8.7
+      }
+    },
+    "nakanime.episode": {},
+    "embeds": {
+      "captured": [
+        {
+          "url": "https://voembed.net/embed-zxtqco5wxp3d.html",
+          "manifestUrl": "https://prx-1316-ant.vmget.online/hls2/01/02824/zxtqco5wxp3d_n/master.m3u8?t=hXjFKKNnMUtQQWm5xucpO4Qu2gAdsX5oJSF-AlqqDSc=&s=1789940951&e=43200&v=&srv=res-v3i-s4&i=0.4&sp=0&asn=8075",
+          "variants": [
+            {
+              "advertised": {
+                "RESOLUTION": "1920x1080",
+                "BANDWIDTH": 3338770,
+                "CODECS": "avc1.640028,mp4a.40.2"
+              },
+              "mediaPlaylistStatus": 200,
+              "isMediaPlaylist": true,
+              "segmentCount": 144,
+              "measured": {
+                "durationSeconds": 1430.85,
+                "firstSegmentBytes": 5757688,
+                "firstSegmentStatus": 200,
+                "firstSegmentMethod": "HEAD",
+                "measuredTotalBytes": 823836484,
+                "advertisedTotalBytes": 597158212
+              },
+              "url": "https://prx-1316-ant.vmget.online/hls2/01/02824/zxtqco5wxp3d_n/index-v1-a1.m3u8?t=hXjFKKNnMUtQQWm5xucpO4Qu2gAdsX5oJSF-AlqqDSc=&s=1789940951&e=43200&v=&srv=res-v3i-s4&i=0.4&sp=0&asn=8075"
+            }
+          ],
+          "matrix": [
+            {
+              "candidate": "voir-anime (site)",
+              "master": 200,
+              "variant": 200,
+              "segment": 200
+            },
+            {
+              "candidate": "player origin",
+              "master": 200,
+              "variant": 200,
+              "segment": 200
+            },
+            {
+              "candidate": "player origin slash",
+              "master": 200,
+              "variant": 200,
+              "segment": 200
+            },
+            {
+              "candidate": "vidmoly.biz",
+              "master": 200,
+              "variant": 200,
+              "segment": 200
+            },
+            {
+              "candidate": "no referer",
+              "master": 200,
+              "variant": 200,
+              "segment": 200
+            }
+          ],
+          "isMaster": true
+        }
+      ]
+    },
+    "direct-probe": {}
+  },
+  "va": {
+    "episodeUrl": "https://voir-anime.to/anime/one-piece-vf/one-piece-1110-vf",
+    "embeds": [
+      "https://voembed.net/embed-zxtqco5wxp3d.html"
+    ]
+  },
+  "nak": {
+    "animeId": "16"
+  }
+}
