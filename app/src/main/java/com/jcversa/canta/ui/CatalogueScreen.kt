@@ -49,7 +49,8 @@ import com.jcversa.canta.ui.components.LoadingState
 @Composable
 fun CatalogueScreen(
     viewModel: AppViewModel,
-    onOpenAnime: (Anime) -> Unit
+    onOpenAnime: (Anime) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val items by viewModel.catalogue.collectAsStateWithLifecycle()
     val loading by viewModel.catalogueLoading.collectAsStateWithLifecycle()
@@ -70,7 +71,7 @@ fun CatalogueScreen(
         if (shouldLoadMore && !loading && query.isBlank()) viewModel.loadCatalogue(reset = false)
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = modifier.fillMaxSize()) {
         OutlinedTextField(
             value = query,
             onValueChange = viewModel::onQueryChange,

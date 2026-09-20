@@ -369,6 +369,15 @@ class AppViewModel(private val app: App) : ViewModel() {
         container.downloads.refresh(app)
     }
 
+    /** Media3 pauses/resumes the whole queue; the UI exposes it as one switch. */
+    fun pauseAllDownloads() {
+        container.downloads.pauseAll(app)
+    }
+
+    fun resumeAllDownloads() {
+        container.downloads.resumeAll(app)
+    }
+
     fun currentDetailAnime(): Anime? = selectedAnime
 
     private fun describe(error: Throwable): String = when (error) {

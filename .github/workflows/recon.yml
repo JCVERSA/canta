@@ -65,7 +65,20 @@ jobs:
           git add -f tools/recon/evidence
           if git diff --cached --quiet; then
             echo "no evidence change"
-          else
-            git commit -m "chore(recon): refresh live evidence [skip ci]"
-            git push origin HEAD:${{ github.ref_name }}
+            exit 0
           fi
+          git commit -m "chore(recon): refresh live evidence [skip ci]"
+          # The branch can move while the harness runs. Retry on top of it rather
+          # than losing the run: this evidence is the only thing the development
+          # sandbox can read (job logs and artifacts are unreachable there).
+          for attempt in 1 2 3; do
+            if git push origin HEAD:${{ github.ref_name }}; then
+              echo "evidence published"
+              exit 0
+            fi
+            echo "push attempt ${attempt} rejected - rebasing"
+            git pull --rebase --autostash origin ${{ github.ref_name }} || true
+            sleep $((attempt * 3))
+          done
+          echo "evidence push failed after 3 attempts"
+          exit 1

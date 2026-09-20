@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.item
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -33,7 +32,7 @@ import com.jcversa.canta.ui.components.LanguageToggle
  * disclaimer — which belongs in the app, not only in the README.
  */
 @Composable
-fun SettingsScreen(viewModel: AppViewModel) {
+fun SettingsScreen(viewModel: AppViewModel, modifier: Modifier = Modifier) {
     val language by viewModel.language.collectAsStateWithLifecycle()
     val watchlist by viewModel.watchlist.collectAsStateWithLifecycle()
     var watcherEnabled by remember { mutableStateOf(true) }
@@ -41,7 +40,7 @@ fun SettingsScreen(viewModel: AppViewModel) {
     LazyColumn(
         contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier.fillMaxSize()
+        modifier = modifier.fillMaxSize()
     ) {
         item {
             Text("Réglages", style = MaterialTheme.typography.titleLarge)

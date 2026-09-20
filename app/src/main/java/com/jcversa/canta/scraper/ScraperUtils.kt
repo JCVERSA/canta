@@ -207,10 +207,16 @@ object Selectors {
 
     // --- voir-anime.to (WordPress + Madara) — verified 2026-09-20 -------------
     const val VA_CARD = "div.page-item-detail"
+    /**
+     * Search results are not `div.page-item-detail` at all (verified 2026-09-20:
+     * 10 hits, 0 detail blocks). They live in `div.row.c-tabs-item__content`, with
+     * the thumb under `.tab-thumb` and the title in `h3.h4`.
+     */
+    const val VA_CARD_SEARCH = "div.row.c-tabs-item__content"
     const val VA_CARD_TITLE_SEARCH = "h3.h4 > a[href]"
     const val VA_CARD_TITLE_HOME = "h3.h5 > a[href]"
     const val VA_CARD_LINK = "div.item-thumb a[href]"
-    const val VA_CARD_IMAGE = "div.item-thumb img"
+    const val VA_CARD_IMAGE = "div.item-thumb img, div.tab-thumb img"
     const val VA_DETAIL_TITLE = "div.post-title h1"
     const val VA_DETAIL_COVER = "div.summary_image img"
     const val VA_DETAIL_SYNOPSIS = "div.description-summary div.summary__content"
@@ -222,6 +228,12 @@ object Selectors {
     const val VA_EPISODE_CONTAINER = "div.page-content-listing"
     const val VA_PLAYER_FRAME = "div#chapter-video-frame iframe[src]"
     const val VA_PLAYER_ANY_IFRAME = "div.reading-content iframe[src]"
+    /**
+     * The site's own player switcher. Each option's `data-redirect` is a *page*
+     * (`/anime/<slug>/<episode>/?host=<label>`), not an embed: opening it renders
+     * that host's player. Used only when the default page carries no player.
+     */
+    const val VA_HOST_OPTION = "select.host-select option[data-redirect]"
 
     /** `var thisChapterSources = {"LECTEUR myTV":"<iframe src=\"…\">", …};` */
     val VA_CHAPTER_SOURCES = Regex("""var\s+thisChapterSources\s*=\s*(\{[\s\S]*?\});""")
@@ -236,7 +248,12 @@ object Selectors {
 
     /** `-NN-vf` / `-NN-vostfr` episode slugs (films/OAVs carry no number). */
     val VA_EPISODE_SLUG_NUMBER = Regex("""-(\d+)-(vf|vostfr)/?$""", RegexOption.IGNORE_CASE)
-    val VA_EPISODE_SLUG_MOVIE = Regex("""^(film|oav|movie)-|-(film|oav|movie)$""", RegexOption.IGNORE_CASE)
+    /**
+     * Films/OAVs have no episode number: `one-piece-film-red-vf` is one entry,
+     * not episode 0. The marker is a `-film-`/`-oav-`/`-movie-` slug segment —
+     * anchored, so a series whose title merely contains "film" is unaffected.
+     */
+    val VA_EPISODE_SLUG_MOVIE = Regex("""-(film|oav|movie)(s)?(-|$)""", RegexOption.IGNORE_CASE)
 
     fun parse(html: String, baseUrl: String): Document = Jsoup.parse(html, baseUrl)
 }

@@ -19,4 +19,19 @@ git config user.name "Canta CI"
 git config user.email "ci@jcversa.invalid"
 git add -f .ci-logs
 git commit -m "ci: build log for ${GITHUB_SHA:-local} [skip ci]" >/dev/null
-git push origin "HEAD:${GITHUB_REF_NAME:-main}" || echo "push failed; log stays in the workspace"
+
+# The branch may have moved while the job ran (a developer pushing a fix is the
+# normal case, not the exception). Rebase onto it and retry: a log that never
+# lands is a log that does not exist for anyone developing from a restricted
+# environment, which is the entire reason this step exists.
+BRANCH="${GITHUB_REF_NAME:-main}"
+for attempt in 1 2 3; do
+  if git push origin "HEAD:${BRANCH}"; then
+    echo "published .ci-logs to ${BRANCH}"
+    exit 0
+  fi
+  echo "push attempt ${attempt} rejected - rebasing onto origin/${BRANCH}"
+  git pull --rebase --autostash origin "${BRANCH}" || true
+  sleep $((attempt * 3))
+done
+echo "push failed after 3 attempts; log stays in the workspace"

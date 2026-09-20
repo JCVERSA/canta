@@ -1,3 +1,5 @@
+@file:OptIn(androidx.media3.common.util.UnstableApi::class)
+
 package com.jcversa.canta.manager
 
 import android.app.Notification
@@ -5,6 +7,7 @@ import android.content.Context
 import android.net.Uri
 import androidx.core.app.NotificationCompat
 import androidx.media3.common.MimeTypes
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.database.StandaloneDatabaseProvider
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.DefaultHttpDataSource
@@ -121,8 +124,10 @@ object CantaDownloadManager {
                 put("host", result.hostName)
             }.toString().toByteArray())
             .build()
-        get(context).addDownloadRequest(request)
-        startService(context)
+        // Sent to the service rather than queued in-process: the service owns the
+        // DownloadManager's lifetime, so a download queued while the UI is alive
+        // survives the UI being killed.
+        DownloadService.sendAddDownload(context, CantaDownloadService::class.java, request, false)
         refresh(context)
         return id
     }
@@ -217,6 +222,11 @@ class CantaDownloadService : DownloadService(
 
     override fun getDownloadManager(): DownloadManager = CantaDownloadManager.get(this)
 
+    /**
+     * No requirements-based scheduler: a queued episode should keep going while
+     * the user is on Wi-Fi rather than wait for an "unmetered + charging" state
+     * the app never states. Media3 tolerates null here.
+     */
     override fun getScheduler(): DownloadService.Scheduler? = null
 
     override fun getForegroundNotification(

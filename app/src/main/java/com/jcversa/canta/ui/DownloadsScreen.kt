@@ -28,7 +28,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.media3.exoplayer.offline.Download
 import com.jcversa.canta.AppViewModel
 import com.jcversa.canta.model.Episode
 import com.jcversa.canta.model.formatBytes
@@ -45,13 +44,14 @@ import com.jcversa.canta.ui.components.LanguageBadge
 @Composable
 fun DownloadsScreen(
     viewModel: AppViewModel,
-    onPlay: (Episode) -> Unit
+    onPlay: (Episode) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val downloads by viewModel.downloads.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) { viewModel.refreshDownloads() }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = modifier.fillMaxSize()) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -60,7 +60,10 @@ fun DownloadsScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text("Hors ligne", style = MaterialTheme.typography.titleLarge)
-            TextButton(onClick = { viewModel.downloads.value.firstOrNull() }) { Text("") }
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                TextButton(onClick = viewModel::pauseAllDownloads) { Text("Tout suspendre") }
+                TextButton(onClick = viewModel::resumeAllDownloads) { Text("Reprendre") }
+            }
         }
 
         if (downloads.isEmpty()) {
@@ -127,9 +130,9 @@ fun DownloadsScreen(
                                     }
                                 }
                                 if (item.isDownloading) {
-                                    TextButton(onClick = { viewModel.downloads.value.firstOrNull() }) {
+                                    TextButton(onClick = viewModel::pauseAllDownloads) {
                                         Icon(Icons.Filled.Pause, contentDescription = null)
-                                        Text("")
+                                        Text("Suspendre")
                                     }
                                 }
                                 IconButton(onClick = { viewModel.removeDownload(item.id) }) {

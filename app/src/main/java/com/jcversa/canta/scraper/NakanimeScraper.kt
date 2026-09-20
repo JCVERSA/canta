@@ -168,14 +168,19 @@ object NakanimeScraper {
      */
     fun parseSeasonsScript(html: String): List<Season> {
         val doc = Selectors.parse(html, ORIGIN)
+        var found: List<Season> = emptyList()
         for (script in doc.select("script")) {
             val body = script.data().trim()
             if (!body.contains("\"animeId\"") || !body.contains("\"seasons\"")) continue
-            runCatching {
-                val root = JSONObject(body)
-                val seasons = root.optJSONArray("seasons") ?: return@runCatching emptyList()
-                return parseSeasons(seasons)
+            val parsed = runCatching<Unit> {
+                val seasons = JSONObject(body).optJSONArray("seasons")
+                if (seasons != null) {
+                    found = parseSeasons(seasons)
+                }
             }
+            // A script tag that advertises the fields but does not parse is not a
+            // match; keep looking rather than throwing the page away.
+            if (parsed.isSuccess && found.isNotEmpty()) return found
         }
         return emptyList()
     }

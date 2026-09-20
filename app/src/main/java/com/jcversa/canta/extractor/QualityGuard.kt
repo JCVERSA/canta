@@ -174,7 +174,7 @@ object QualityGuard {
             val measuredPicked = measure(decision.track, headers)
             decision = pick(merged.map { if (it.url == measuredPicked.url) measuredPicked else it }, requestedQuality)
         }
-        decision to merged.map { track -> if (track.url == decision.track.url) decision.track else track }
+        merged.map { track -> if (track.url == decision.track.url) decision.track else track } to decision
     }
 
     // --------------------------------------------------------------- selection

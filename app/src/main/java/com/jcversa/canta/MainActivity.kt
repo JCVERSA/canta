@@ -1,14 +1,15 @@
 package com.jcversa.canta
 
 import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.core.content.ContextCompat
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Download
@@ -22,14 +23,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.navigation.NavDestination.Companion.hierarchy
-import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
+import androidx.core.content.ContextCompat
 import com.jcversa.canta.manager.CantaDownloadManager
 import com.jcversa.canta.ui.CatalogueScreen
 import com.jcversa.canta.ui.DetailScreen
@@ -43,7 +41,8 @@ class MainActivity : ComponentActivity() {
 
     private val viewModel: AppViewModel by viewModels { AppViewModel.factory(application as App) }
 
-    private val notificationPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
+    private val notificationPermission =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,21 +50,21 @@ class MainActivity : ComponentActivity() {
         askForNotificationPermission()
         setContent {
             CantaTheme {
-                CantaRoot(viewModel, openSeriesId = intent?.getStringExtra(EXTRA_OPEN_SERIES_ID))
+                CantaRoot(viewModel)
             }
         }
     }
 
     override fun onStart() {
         super.onStart()
-        // Resume anything the download service left queued (e.g. process death).
+        // Resume anything the download service left queued (e.g. after process death).
         CantaDownloadManager.startService(this)
     }
 
     private fun askForNotificationPermission() {
         if (Build.VERSION.SDK_INT < 33) return
         val granted = ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) ==
-            android.content.pm.PackageManager.PERMISSION_GRANTED
+            PackageManager.PERMISSION_GRANTED
         if (!granted) notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
     }
 
@@ -74,37 +73,54 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-private data class Tab(val route: String, val label: String, val icon: ImageVector)
+/**
+ * Screens without a navigation library.
+ *
+ * The app has seven destinations and one branch point; `androidx.navigation`
+ * would add a dependency whose current release requires minSdk 24, while this
+ * app supports 23 (Android 6). A small explicit stack is the honest trade: the
+ * back behaviour is one function, and there is no deep-link surface to support.
+ */
+private enum class Screen { CATALOGUE, FAVORITES, DOWNLOADS, SETTINGS, DETAIL, PLAYER }
+
+private data class Tab(val screen: Screen, val label: String, val icon: ImageVector)
 
 private val TABS = listOf(
-    Tab("catalogue", "Catalogue", Icons.Filled.VideoLibrary),
-    Tab("favorites", "Favoris", Icons.Filled.Favorite),
-    Tab("downloads", "Hors ligne", Icons.Filled.Download),
-    Tab("settings", "Réglages", Icons.Filled.Settings)
+    Tab(Screen.CATALOGUE, "Catalogue", Icons.Filled.VideoLibrary),
+    Tab(Screen.FAVORITES, "Favoris", Icons.Filled.Favorite),
+    Tab(Screen.DOWNLOADS, "Hors ligne", Icons.Filled.Download),
+    Tab(Screen.SETTINGS, "Réglages", Icons.Filled.Settings)
 )
 
 @Composable
-private fun CantaRoot(viewModel: AppViewModel, openSeriesId: String?) {
-    val navController = rememberNavController()
-    val backStackEntry by navController.currentBackStackEntryAsState()
-    val currentDestination = backStackEntry?.destination
-    val showBar = currentDestination?.route in TABS.map { it.route }
+private fun CantaRoot(viewModel: AppViewModel) {
+    val stack = remember { mutableStateListOf(Screen.CATALOGUE) }
+    val current = stack.last()
+
+    fun go(screen: Screen) {
+        stack.add(screen)
+    }
+
+    fun goTab(screen: Screen) {
+        // Tabs are roots: selecting one clears whatever was pushed on top.
+        stack.clear()
+        stack.add(screen)
+    }
+
+    fun back() {
+        if (stack.size > 1) stack.removeAt(stack.lastIndex)
+    }
+
+    BackHandler(enabled = stack.size > 1) { back() }
 
     Scaffold(
         bottomBar = {
-            if (showBar) {
+            if (TABS.any { it.screen == current }) {
                 NavigationBar {
                     TABS.forEach { tab ->
-                        val selected = currentDestination?.hierarchy?.any { it.route == tab.route } == true
                         NavigationBarItem(
-                            selected = selected,
-                            onClick = {
-                                navController.navigate(tab.route) {
-                                    popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            },
+                            selected = current == tab.screen,
+                            onClick = { if (current != tab.screen) goTab(tab.screen) },
                             icon = { Icon(tab.icon, contentDescription = tab.label) },
                             label = { Text(tab.label) }
                         )
@@ -113,57 +129,52 @@ private fun CantaRoot(viewModel: AppViewModel, openSeriesId: String?) {
             }
         }
     ) { padding ->
-        NavHost(
-            navController = navController,
-            startDestination = "catalogue",
-            modifier = Modifier.padding(padding)
-        ) {
-            composable("catalogue") {
-                CatalogueScreen(
-                    viewModel = viewModel,
-                    onOpenAnime = { anime ->
-                        viewModel.openAnime(anime)
-                        navController.navigate("detail")
-                    }
-                )
-            }
-            composable("detail") {
-                DetailScreen(
-                    viewModel = viewModel,
-                    onBack = { navController.popBackStack() },
-                    onPlayEpisode = { episode ->
-                        viewModel.playEpisode(episode)
-                        navController.navigate("player")
-                    }
-                )
-            }
-            composable("player") {
-                PlayerScreen(
-                    viewModel = viewModel,
-                    onBack = { navController.popBackStack() }
-                )
-            }
-            composable("favorites") {
-                FavoritesScreen(
-                    viewModel = viewModel,
-                    onOpenAnime = { anime ->
-                        viewModel.openAnime(anime)
-                        navController.navigate("detail")
-                    }
-                )
-            }
-            composable("downloads") {
-                DownloadsScreen(
-                    viewModel = viewModel,
-                    onPlay = { episode ->
-                        viewModel.playEpisode(episode)
-                        navController.navigate("player")
-                    }
-                )
-            }
-            composable("settings") {
-                SettingsScreen(viewModel = viewModel)
-            }
+        val modifier = Modifier.padding(padding)
+        when (current) {
+            Screen.CATALOGUE -> CatalogueScreen(
+                viewModel = viewModel,
+                onOpenAnime = { anime ->
+                    viewModel.openAnime(anime)
+                    go(Screen.DETAIL)
+                },
+                modifier = modifier
+            )
+
+            Screen.DETAIL -> DetailScreen(
+                viewModel = viewModel,
+                onBack = { back() },
+                onPlayEpisode = { episode ->
+                    viewModel.playEpisode(episode)
+                    go(Screen.PLAYER)
+                },
+                modifier = modifier
+            )
+
+            Screen.PLAYER -> PlayerScreen(
+                viewModel = viewModel,
+                onBack = { back() },
+                modifier = modifier
+            )
+
+            Screen.FAVORITES -> FavoritesScreen(
+                viewModel = viewModel,
+                onOpenAnime = { anime ->
+                    viewModel.openAnime(anime)
+                    go(Screen.DETAIL)
+                },
+                modifier = modifier
+            )
+
+            Screen.DOWNLOADS -> DownloadsScreen(
+                viewModel = viewModel,
+                onPlay = { episode ->
+                    viewModel.playEpisode(episode)
+                    go(Screen.PLAYER)
+                },
+                modifier = modifier
+            )
+
+            Screen.SETTINGS -> SettingsScreen(viewModel = viewModel, modifier = modifier)
         }
     }
 }

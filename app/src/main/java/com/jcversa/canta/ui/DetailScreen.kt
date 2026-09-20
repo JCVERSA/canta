@@ -14,7 +14,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Notifications
@@ -23,7 +23,7 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -60,7 +60,8 @@ import com.jcversa.canta.ui.components.RemoteImage
 fun DetailScreen(
     viewModel: AppViewModel,
     onBack: () -> Unit,
-    onPlayEpisode: (Episode) -> Unit
+    onPlayEpisode: (Episode) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val detail by viewModel.detail.collectAsStateWithLifecycle()
     val loading by viewModel.detailLoading.collectAsStateWithLifecycle()
@@ -76,7 +77,7 @@ fun DetailScreen(
     val isWatched = anime != null && watchlist.any { it.id == anime.id }
     val lastWatched = anime?.let { series -> history.firstOrNull { it.seriesId == series.id } }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = modifier.fillMaxSize()) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -84,7 +85,7 @@ fun DetailScreen(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            IconButton(onClick = onBack) { Icon(Icons.Filled.ArrowBack, contentDescription = "Retour") }
+            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour") }
             Text(
                 text = anime?.title ?: "Détail",
                 style = MaterialTheme.typography.titleMedium,
@@ -274,7 +275,7 @@ private fun EpisodeRow(episode: Episode, progress: Float?, onPlay: () -> Unit) {
                     modifier = Modifier.fillMaxWidth()
                 )
             }
-            Divider(color = MaterialTheme.colorScheme.outlineVariant)
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
         }
     }
 }

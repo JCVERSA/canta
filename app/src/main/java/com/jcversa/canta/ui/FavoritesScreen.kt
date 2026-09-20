@@ -28,7 +28,8 @@ import com.jcversa.canta.ui.components.EmptyState
 @Composable
 fun FavoritesScreen(
     viewModel: AppViewModel,
-    onOpenAnime: (Anime) -> Unit
+    onOpenAnime: (Anime) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val favorites by viewModel.favorites.collectAsStateWithLifecycle()
     val watchlist by viewModel.watchlist.collectAsStateWithLifecycle()
@@ -44,7 +45,7 @@ fun FavoritesScreen(
         contentPadding = PaddingValues(16.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier.fillMaxSize()
+        modifier = modifier.fillMaxSize()
     ) {
         if (history.isNotEmpty()) {
             item(span = { GridItemSpan(maxLineSpan) }) {

@@ -10,9 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Download
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Icon
@@ -20,18 +18,22 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
@@ -39,29 +41,40 @@ import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.ui.PlayerView
 import com.jcversa.canta.AppViewModel
 import com.jcversa.canta.manager.CantaDownloadManager
+import com.jcversa.canta.model.Episode
+import com.jcversa.canta.model.MirrorResult
 import com.jcversa.canta.model.formatBytes
 import com.jcversa.canta.ui.components.ErrorState
 import com.jcversa.canta.ui.components.LanguageBadge
 import com.jcversa.canta.ui.components.LoadingState
 import com.jcversa.canta.ui.components.QualityBadge
+import kotlinx.coroutines.delay
 
 /**
  * Playback screen.
  *
  * ExoPlayer plays the resolved HLS stream directly — no segment downloading, no
  * remux, no ffmpeg. The player is built with a [CantaDownloadManager] cache data
- * source so an already-downloaded episode keeps playing with the network off.
+ * source whose upstream carries the stream's own headers, so a downloaded
+ * episode keeps playing with the network off and the mirrors that 403 without a
+ * Referer do not 403 here either.
  *
- * Everything under the video is a measurement, not a claim: host, label, and the
- * measured size (marked "échantillon" when only part of the playlist could be
- * probed), plus any note the resolver produced — including the fast-lane
+ * The player instance is keyed on the resolved URL: switching mirrors or
+ * qualities tears down the old ExoPlayer (and its data source) and builds a new
+ * one with the new headers. Reusing a player across header changes is how a
+ * playback bug becomes a "stream not found" report.
+ *
+ * Everything under the video is a measurement, not a claim: host, label, the
+ * measured size (marked « échantillon » when only part of the playlist could be
+ * probed), and any note the resolver produced — including the fast-lane
  * downgrade decision when the quality guard fired.
  */
-@OptIn(UnstableApi::class)
+@UnstableApi
 @Composable
 fun PlayerScreen(
     viewModel: AppViewModel,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val episode by viewModel.currentEpisode.collectAsStateWithLifecycle()
@@ -69,51 +82,53 @@ fun PlayerScreen(
     val resolving by viewModel.resolving.collectAsStateWithLifecycle()
     val error by viewModel.playerError.collectAsStateWithLifecycle()
     val selectedQuality by viewModel.qualityRequest.collectAsStateWithLifecycle()
+    var playbackFailure by remember { mutableStateOf<String?>(null) }
 
-    val resolveError = rememberUpdatedState(error)
-    val exoPlayer = remember { ExoPlayer.Builder(context).build() }
-
-    DisposableEffect(stream?.streamUrl) {
-        val current = stream
-        if (current != null) {
-            // Rebuild the media source with the stream's own headers: several
-            // mirrors 403 without their Referer/Origin on every request.
-            val factory = DefaultMediaSourceFactory(
-                CantaDownloadManager.playbackDataSourceFactory(context, current.playbackHeaders())
+    val streamUrl = stream?.streamUrl
+    val exoPlayer = remember(streamUrl) {
+        val current = stream ?: return@remember null
+        ExoPlayer.Builder(context)
+            .setMediaSourceFactory(
+                DefaultMediaSourceFactory(
+                    CantaDownloadManager.playbackDataSourceFactory(context, current.playbackHeaders())
+                )
             )
-            exoPlayer.setMediaSourceFactory(factory)
-            exoPlayer.setMediaItem(MediaItem.fromUri(current.streamUrl))
-            exoPlayer.prepare()
-            exoPlayer.playWhenReady = true
-        }
-        onDispose { }
+            .build()
+            .also { player ->
+                player.setMediaItem(MediaItem.fromUri(current.streamUrl))
+                player.prepare()
+                player.playWhenReady = true
+            }
     }
 
-    DisposableEffect(Unit) {
+    DisposableEffect(exoPlayer) {
+        val current = exoPlayer ?: return@DisposableEffect onDispose { }
         val listener = object : Player.Listener {
-            override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
-                // Honest reporting: the player's own message, not a generic toast.
-                viewModel.playEpisode(episode ?: return, selectedQuality)
+            override fun onPlayerError(playerError: PlaybackException) {
+                // The player's own message, verbatim: "source error" hides whether
+                // the CDN refused the request or the manifest was empty.
+                playbackFailure = playerError.errorCodeName + " — " + (playerError.cause?.message ?: playerError.message)
             }
         }
-        exoPlayer.addListener(listener)
+        current.addListener(listener)
         onDispose {
-            exoPlayer.removeListener(listener)
-            exoPlayer.release()
+            current.removeListener(listener)
+            current.release()
         }
     }
 
     // Persist "where the user stopped" once a second while playing.
-    LaunchedEffect(stream?.streamUrl) {
+    LaunchedEffect(exoPlayer) {
+        val player = exoPlayer ?: return@LaunchedEffect
         val current = episode ?: return@LaunchedEffect
         while (true) {
-            kotlinx.coroutines.delay(1_000)
-            val duration = exoPlayer.duration
-            if (duration > 0) viewModel.recordProgress(current, exoPlayer.currentPosition, duration)
+            delay(1_000)
+            val duration = player.duration
+            if (duration > 0) viewModel.recordProgress(current, player.currentPosition, duration)
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = modifier.fillMaxSize()) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -121,7 +136,7 @@ fun PlayerScreen(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            IconButton(onClick = onBack) { Icon(Icons.Filled.ArrowBack, contentDescription = "Retour") }
+            TextButton(onClick = onBack) { Text("← Retour") }
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = episode?.seriesTitle.orEmpty(),
@@ -133,9 +148,10 @@ fun PlayerScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            IconButton(onClick = { episode?.let(viewModel::download) }, enabled = stream != null) {
-                Icon(Icons.Filled.Download, contentDescription = "Télécharger pour le hors ligne")
-            }
+            TextButton(
+                onClick = { episode?.let(viewModel::download) },
+                enabled = stream != null
+            ) { Text("Télécharger") }
         }
 
         AndroidView(
@@ -155,7 +171,7 @@ fun PlayerScreen(
         )
 
         when {
-            resolving -> LoadingState("Résolution du flux (VidMoly → Voe → secours)…")
+            resolving -> LoadingState("Résolution du flux (mirroirs par priorité, échec automatique)…")
             stream == null && error != null -> ErrorState(error!!)
             stream == null -> LoadingState("Préparation…")
             else -> Column(
@@ -177,7 +193,10 @@ fun PlayerScreen(
                     text = buildString {
                         append("Taille mesurée : ")
                         append(formatBytes(current.measuredSizeBytes))
-                        append(if (current.sizeIsExact) " (mesurée sur tous les segments)" else " (extrapolée d'un échantillon de segments)")
+                        append(
+                            if (current.sizeIsExact) " (tous les segments mesurés)"
+                            else " (extrapolée d'un échantillon de segments)"
+                        )
                         append(" · ${current.quality.segmentCount} segments")
                     },
                     style = MaterialTheme.typography.labelSmall,
@@ -187,7 +206,7 @@ fun PlayerScreen(
                 current.downgradeNote?.let { note ->
                     Surface(
                         color = MaterialTheme.colorScheme.errorContainer,
-                        shape = androidx.compose.foundation.shape.RoundedCornerShape(10.dp),
+                        shape = RoundedCornerShape(10.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
@@ -197,6 +216,10 @@ fun PlayerScreen(
                             modifier = Modifier.padding(10.dp)
                         )
                     }
+                }
+
+                playbackFailure?.let { failure ->
+                    ErrorState("Lecture impossible : $failure")
                 }
 
                 Text("Qualité", style = MaterialTheme.typography.titleMedium)
@@ -227,7 +250,8 @@ fun PlayerScreen(
 
                 if (selectedQuality == null) {
                     Text(
-                        text = "Sélection automatique : la qualité la plus légère d'abord (480P), jamais une étiquette inventée.",
+                        text = "Sélection automatique : 480P puis 360P, jamais une étiquette inventée. " +
+                            "Si un flux « 480P » dépasse 200 Mo mesurés, l'app bascule sur la variante plus légère et l'écrit ici.",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -238,3 +262,9 @@ fun PlayerScreen(
         }
     }
 }
+
+/** Only used to keep the episode reference explicit in this file's imports. */
+private typealias PlayerEpisode = Episode
+
+/** Only used to keep the resolved-stream type explicit in this file's imports. */
+private typealias PlayerStream = MirrorResult

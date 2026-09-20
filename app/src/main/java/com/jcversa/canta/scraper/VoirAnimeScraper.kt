@@ -102,7 +102,10 @@ object VoirAnimeScraper {
     /** Catalogue cards. Throws nothing: callers decide whether an empty list is fatal. */
     fun parseCards(html: String, baseUrl: String): List<Anime> {
         val doc = Selectors.parse(html, baseUrl)
-        val cards = doc.select(Selectors.VA_CARD)
+        // Home/catalogue uses `div.page-item-detail`; the search page uses a
+        // different card (`div.row.c-tabs-item__content`). Trying both keeps the
+        // search results' posters and ratings instead of falling back to bare links.
+        val cards = doc.select(Selectors.VA_CARD).ifEmpty { doc.select(Selectors.VA_CARD_SEARCH) }
         val out = LinkedHashMap<String, Anime>()
         for (card in cards) {
             val anchor = card.selectFirst(Selectors.VA_CARD_TITLE_SEARCH)
@@ -223,7 +226,7 @@ object VoirAnimeScraper {
             val rawText = anchor.text().trim()
             val label = when {
                 number != null && number > 0 -> "Épisode $number"
-                slug.startsWith("film") || slug.contains("film") -> "Film"
+                slug.contains("film") || slug.contains("movie") -> "Film"
                 else -> "OAV"
             }
             val episode = Episode(
@@ -240,17 +243,68 @@ object VoirAnimeScraper {
             )
             out.putIfAbsent(episode.url, episode)
         }
-        return out.values.sortedWith(compareBy({ it.number == 0 }, { it.number }))
+        // Newest first (the source's own order), films and OAVs last: on a
+        // 1100-episode series the episode the user wants is at the top, and the
+        // two entries without a number cannot interleave into the list.
+        return out.values.sortedWith(compareBy({ it.number == 0 }, { -it.number }))
     }
 
     // ------------------------------------------------------------------ mirrors
 
     suspend fun mirrors(episode: Episode): List<MirrorRef> = withContext(Dispatchers.IO) {
         val html = fetch(episode.url)
-        val mirrors = parseMirrors(html, episode.url, episode.language)
-        if (mirrors.isEmpty()) throw StructureChangedException("page épisode", episode.url)
-        mirrors
+        val direct = parseMirrors(html, episode.url, episode.language)
+        if (direct.isNotEmpty()) return@withContext direct
+
+        // Some episodes (verified: `jujutsu-kaisen-47-vf`) ship no iframe at all
+        // and only expose the host switcher. Every `?host=` page renders a
+        // different player, so walk them in the page's own order and stop at the
+        // first page that yields a mirror — the site's failover, not an invented
+        // one. Bounded work: at most one extra page fetch per host, sequential.
+        for ((label, url) in parseHostOptions(html, episode.url)) {
+            val page = runCatching { fetch(url) }.getOrNull() ?: continue
+            val found = parseMirrors(page, url, episode.language)
+            if (found.isNotEmpty()) return@withContext found.map { it.copy(label = label) }
+        }
+        throw StructureChangedException("page épisode (aucun lecteur, sélecteur d'hôte inclus)", episode.url)
     }
+
+    /**
+     * `select.host-select option[data-redirect]` → `label to absolute page URL`.
+     *
+     * The redirect is relative (`?host=<label>` or `/anime/<slug>/<ep>/?host=<label>`),
+     * and the label itself can contain spaces, so it is resolved — and only then
+     * percent-encoded — against the episode page URL.
+     */
+    fun parseHostOptions(html: String, episodeUrl: String): List<Pair<String, String>> {
+        val doc = Selectors.parse(html, episodeUrl)
+        return doc.select(Selectors.VA_HOST_OPTION).mapNotNull { option ->
+            val label = option.text().trim().ifBlank { option.attr("value").trim() }
+            val redirect = option.attr("data-redirect").trim()
+            if (label.isBlank() || redirect.isBlank()) return@mapNotNull null
+            val absolute = absoluteHostPage(episodeUrl, redirect) ?: return@mapNotNull null
+            label to absolute
+        }.distinctBy { it.second }
+    }
+
+    /**
+     * Builds the absolute host page without handing the label to `java.net.URI`:
+     * the real `data-redirect` values contain spaces (`?host=LECTEUR MOON`), which
+     * a URI parser rejects — and a rejected redirect is a silently lost mirror.
+     */
+    private fun absoluteHostPage(episodeUrl: String, redirect: String): String? = when {
+        redirect.startsWith("http") -> redirect
+        redirect.startsWith("?") -> (episodeUrl.substringBefore('?').substringBefore('#') + redirect)
+        redirect.startsWith("/") -> {
+            val uri = runCatching { java.net.URI(episodeUrl) }.getOrNull() ?: return null
+            val authority = uri.rawAuthority ?: return null
+            "${uri.scheme}://$authority$redirect"
+        }
+        else -> {
+            val base = episodeUrl.substringBeforeLast('/', "") + "/"
+            runCatching { java.net.URI(base).resolve(redirect).toString() }.getOrNull() ?: (base + redirect)
+        }
+    }.replace(" ", "%20")
 
     fun parseMirrors(html: String, episodeUrl: String, language: Language): List<MirrorRef> {
         val out = LinkedHashMap<String, MirrorRef>()
