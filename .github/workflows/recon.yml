@@ -43,6 +43,7 @@ jobs:
         run: |
           node tools/recon/recon.mjs || true
           if [ -f tools/recon/recon2.mjs ]; then node tools/recon/recon2.mjs || true; fi
+          if [ -f tools/recon/recon3.mjs ]; then node tools/recon/recon3.mjs || true; fi
 
       - name: Publish evidence onto the branch
         shell: bash
