@@ -1,0 +1,12 @@
+job: debug-apk
+w: file:///home/runner/work/canta/canta/app/build.gradle.kts:20:9: 'val resourceConfigurations: MutableSet<String>' is deprecated. Support for resource configurations will be removed. For language resource configurations in applications, use androidResources.localeFilters.
+e: file:///home/runner/work/canta/canta/app/src/main/java/com/jcversa/canta/manager/DownloadManager.kt:54:44 Unresolved reference 'Builder'.
+e: file:///home/runner/work/canta/canta/app/src/main/java/com/jcversa/canta/manager/DownloadManager.kt:59:14 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///home/runner/work/canta/canta/app/src/main/java/com/jcversa/canta/manager/DownloadManager.kt:59:21 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///home/runner/work/canta/canta/app/src/main/java/com/jcversa/canta/manager/DownloadManager.kt:61:25 Unresolved reference 'addListener'.
+e: file:///home/runner/work/canta/canta/app/src/main/java/com/jcversa/canta/manager/DownloadManager.kt:153:9 Cannot infer type for type parameter 'R'. Specify it explicitly.
+e: file:///home/runner/work/canta/canta/app/src/main/java/com/jcversa/canta/manager/DownloadManager.kt:154:29 Unresolved reference 'sendResumeDownloadsIntent'.
+e: file:///home/runner/work/canta/canta/app/src/main/java/com/jcversa/canta/manager/DownloadManager.kt:230:50 Unresolved reference 'Scheduler'.
+> Task :app:compileDebugKotlin FAILED
+FAILURE: Build failed with an exception.
+* What went wrong:
