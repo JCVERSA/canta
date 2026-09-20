@@ -48,6 +48,26 @@
             </intent-filter>
         </service>
 
+        <!--
+            WorkManager is initialised on demand: App implements
+            Configuration.Provider, so the library's own startup initialiser has
+            to be removed from the merged manifest. Left in place it initialises
+            WorkManager with default settings before the provider is consulted,
+            and the app's configuration is silently ignored (this is also what
+            lint's RemoveWorkManagerInitializer check fails the release build
+            on).
+        -->
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
+        </provider>
+
     </application>
 
 </manifest>
