@@ -1,0 +1,85 @@
+{
+  "generatedAt": "2026-09-20T21:51:00.344Z",
+  "pass": 2,
+  "catalogue": {
+    "home": {
+      "status": 200,
+      "bytes": 215256,
+      "index": 24766,
+      "cardBlock": "-tabs-item .c-tabs-item__content .tab-summary .post-content .post-content_item.mg_genres .summary-content, body.page .c-page-content .c-page .c-page__content .page-content-listing .page-listing-item .page-item-detail .item-summary .list-chapter .chapter-item .vol a:hover, #hover-infor .item_thumb .post-title a, body.manga-page .version-chap:before, body.manga-page .content-readmore:hover, body.manga-page .chapter-readmore:hover, .icon-load-info, .c-blog-post .entry-header .entry-meta .post-on .c-blog__date .post-category a:hover, .woocommerce ul.products li.product .price, .woocommerce div.entry-summary p.price, .woocommerce div.entry-summary form.cart .variations .label, .woocommerce div.entry-summary form.cart .quantity-text, .widget_product_categories .product-categories li a:hover, .woocommerce ul.products li.product h2:hover, .woocommerce .c-woo-breadcrumb a:hover, .site-header .c-s",
+      "itemSummary": "<div class=\"item-summary\"> <div class=\"post-title font-title\"> <h3 class=\"h5\"> <a href=\"https://voir-anime.to/anime/one-piece/\">One Piece</a> </h3> </div>",
+      "titleAnchor": null,
+      "imgTag": "<img class=\"img-responsive\" src=\"https://voir-anime.to/wp-content/uploads/2019/12/vato.png\" alt=\"Voiranime\"/>",
+      "vfSlugTitles": [],
+      "rows": []
+    },
+    "vf": {
+      "status": 200,
+      "bytes": 214874,
+      "index": 24766,
+      "cardBlock": "-tabs-item .c-tabs-item__content .tab-summary .post-content .post-content_item.mg_genres .summary-content, body.page .c-page-content .c-page .c-page__content .page-content-listing .page-listing-item .page-item-detail .item-summary .list-chapter .chapter-item .vol a:hover, #hover-infor .item_thumb .post-title a, body.manga-page .version-chap:before, body.manga-page .content-readmore:hover, body.manga-page .chapter-readmore:hover, .icon-load-info, .c-blog-post .entry-header .entry-meta .post-on .c-blog__date .post-category a:hover, .woocommerce ul.products li.product .price, .woocommerce div.entry-summary p.price, .woocommerce div.entry-summary form.cart .variations .label, .woocommerce div.entry-summary form.cart .quantity-text, .widget_product_categories .product-categories li a:hover, .woocommerce ul.products li.product h2:hover, .woocommerce .c-woo-breadcrumb a:hover, .site-header .c-s",
+      "itemSummary": "<div class=\"item-summary\"> <div class=\"post-title font-title\"> <h3 class=\"h5\"> <a href=\"https://voir-anime.to/anime/though-i-am-an-inept-villainess-tale-of-the-butterfly-rat-body-swap-in-the-maiden-court-vf/\">Though I Am an Inept Villainess: Tale of the Butterfly-Rat Body Swap in the Maiden Court (VF)</a> </h3> </div>",
+      "titleAnchor": null,
+      "imgTag": "<img class=\"img-responsive\" src=\"https://voir-anime.to/wp-content/uploads/2019/12/vato.png\" alt=\"Voiranime\"/>",
+      "vfSlugTitles": [],
+      "rows": []
+    },
+    "vostfr": {
+      "status": 200,
+      "bytes": 215284,
+      "index": 24766,
+      "cardBlock": "-tabs-item .c-tabs-item__content .tab-summary .post-content .post-content_item.mg_genres .summary-content, body.page .c-page-content .c-page .c-page__content .page-content-listing .page-listing-item .page-item-detail .item-summary .list-chapter .chapter-item .vol a:hover, #hover-infor .item_thumb .post-title a, body.manga-page .version-chap:before, body.manga-page .content-readmore:hover, body.manga-page .chapter-readmore:hover, .icon-load-info, .c-blog-post .entry-header .entry-meta .post-on .c-blog__date .post-category a:hover, .woocommerce ul.products li.product .price, .woocommerce div.entry-summary p.price, .woocommerce div.entry-summary form.cart .variations .label, .woocommerce div.entry-summary form.cart .quantity-text, .widget_product_categories .product-categories li a:hover, .woocommerce ul.products li.product h2:hover, .woocommerce .c-woo-breadcrumb a:hover, .site-header .c-s",
+      "itemSummary": "<div class=\"item-summary\"> <div class=\"post-title font-title\"> <h3 class=\"h5\"> <a href=\"https://voir-anime.to/anime/one-piece/\">One Piece</a> </h3> </div>",
+      "titleAnchor": null,
+      "imgTag": "<img class=\"img-responsive\" src=\"https://voir-anime.to/wp-content/uploads/2019/12/vato.png\" alt=\"Voiranime\"/>",
+      "vfSlugTitles": [],
+      "rows": []
+    },
+    "search": {
+      "status": 200,
+      "bytes": 196055,
+      "index": 24532,
+      "cardBlock": "-tabs-item .c-tabs-item__content .tab-summary .post-content .post-content_item.mg_genres .summary-content, body.page .c-page-content .c-page .c-page__content .page-content-listing .page-listing-item .page-item-detail .item-summary .list-chapter .chapter-item .vol a:hover, #hover-infor .item_thumb .post-title a, body.manga-page .version-chap:before, body.manga-page .content-readmore:hover, body.manga-page .chapter-readmore:hover, .icon-load-info, .c-blog-post .entry-header .entry-meta .post-on .c-blog__date .post-category a:hover, .woocommerce ul.products li.product .price, .woocommerce div.entry-summary p.price, .woocommerce div.entry-summary form.cart .variations .label, .woocommerce div.entry-summary form.cart .quantity-text, .widget_product_categories .product-categories li a:hover, .woocommerce ul.products li.product h2:hover, .woocommerce .c-woo-breadcrumb a:hover, .site-header .c-s",
+      "itemSummary": "",
+      "titleAnchor": {
+        "href": "https://voir-anime.to/anime/jujutsu-kaisen-3-vf/",
+        "title": "Jujutsu Kaisen 3 (VF)"
+      },
+      "imgTag": "<img class=\"img-responsive\" src=\"https://voir-anime.to/wp-content/uploads/2019/12/vato.png\" alt=\"Voiranime\"/>",
+      "vfSlugTitles": [
+        {
+          "href": "https://voir-anime.to/anime/jujutsu-kaisen-3-vf/",
+          "title": "Jujutsu Kaisen 3 (VF)",
+          "isVf": true
+        },
+        {
+          "href": "https://voir-anime.to/anime/jujutsu-kaisen-3/",
+          "title": "Jujutsu Kaisen 3",
+          "isVf": false
+        },
+        {
+          "href": "https://voir-anime.to/anime/jujutsu-kaisen-2-vf/",
+          "title": "Jujutsu Kaisen 2 (VF)",
+          "isVf": true
+        },
+        {
+          "href": "https://voir-anime.to/anime/jujutsu-kaisen-2/",
+          "title": "Jujutsu Kaisen 2",
+          "isVf": false
+        },
+        {
+          "href": "https://voir-anime.to/anime/jujutsu-kaisen-0-vf/",
+          "title": "Jujutsu Kaisen 0 (VF)",
+          "isVf": true
+        },
+        {
+          "href": "https://voir-anime.to/anime/jujutsu-kaisen-0/",
+          "title": "Jujutsu Kaisen 0",
+          "isVf": false
+        }
+      ],
+      "rows": []
+    }
+  },
+  "fatal": "TypeError: String.prototype.matchAll called with a non-global RegExp argument"
+}
