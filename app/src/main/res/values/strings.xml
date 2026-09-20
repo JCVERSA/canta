@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Canta</string>
+    <string name="notif_channel_downloads">Téléchargements</string>
+    <string name="notif_channel_new_episodes">Nouveaux épisodes</string>
+    <string name="notif_channel_downloads_desc">Progression des téléchargements hors ligne</string>
+    <string name="notif_channel_new_episodes_desc">Alertes lorsqu\'un nouvel épisode VF est publié</string>
+</resources>

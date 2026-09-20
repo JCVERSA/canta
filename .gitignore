@@ -1,27 +1,22 @@
-*.iml
+# ---- Gradle ----
 .gradle
+build/
+app/build/
 /local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
 /captures
 .externalNativeBuild
 .cxx
-local.properties
+release/
+*.apk
+*.aab
+*.keystore
+*.jks
 
-# Android Studio 3.2
-/.idea/codeStyles
-/.idea/gradle.xml
-/.idea/misc.xml
-
-# Mac
+# ---- IDE ----
+*.iml
+.idea/
 .DS_Store
+out/
 
-app/build
-app/release
-release.keystore
+# ---- Recon scratch (the committed evidence lives in tools/recon/evidence) ----
+recon-out/

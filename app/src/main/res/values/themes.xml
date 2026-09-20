@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        Compose owns the real theming (ui/theme/Theme.kt). This XML theme only
+        exists to give the Activity window an AMOLED-black background before the
+        first frame, so launching the app never flashes a white screen.
+    -->
+    <style name="Theme.Canta" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/canta_window_background</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>

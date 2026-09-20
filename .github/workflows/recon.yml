@@ -15,7 +15,7 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - "tools/recon/recon.mjs"
+      - "tools/recon/**"
       - ".github/workflows/recon.yml"
 
 permissions:

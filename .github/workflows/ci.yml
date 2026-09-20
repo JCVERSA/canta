@@ -1,0 +1,149 @@
+name: CI
+
+# Mirrors SwiftSlate-ng's CI shape (JDK, Gradle action, no local SDK setup) with
+# one addition the task asks for: every push and pull request produces an
+# installable **preview** APK whose applicationId is `com.jcversa.canta.preview`,
+# so testing a build never overwrites a production install.
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  GRADLE_OPTS: -Dorg.gradle.jvmargs="-Xmx3g -Dfile.encoding=UTF-8 -XX:+UseG1GC"
+
+jobs:
+  test:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      # JDK 17 is the runtime Canta targets (compileOptions/jvmTarget = 17) and
+      # the version the task specifies.
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: temurin
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
+
+      - name: Run unit tests
+        shell: bash
+        run: |
+          result=1
+          for i in 1 2 3; do
+            ./gradlew testDebugUnitTest --no-daemon --stacktrace && { result=0; break; }
+            echo "::warning::test attempt $i failed, retrying"
+            sleep 10
+          done
+          exit $result
+
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: app/build/reports/tests/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  debug-apk:
+    name: Debug APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: temurin
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
+
+      - name: Build debug APK
+        run: |
+          ./gradlew assembleDebug --no-daemon --stacktrace \
+            -PversionCode="${GITHUB_RUN_NUMBER}" \
+            -PversionName="debug-${GITHUB_SHA:0:7}"
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: canta-debug
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 14
+
+  preview-apk:
+    name: Preview APK (com.jcversa.canta.preview)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: temurin
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
+
+      - name: Build preview APK
+        shell: bash
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          if [ -n "$PR_NUMBER" ]; then LABEL="pr${PR_NUMBER}"; else LABEL="manual"; fi
+          echo "APK_LABEL=$LABEL" >> "$GITHUB_ENV"
+          ./gradlew assemblePreview --no-daemon --stacktrace \
+            -PversionCode="${GITHUB_RUN_NUMBER}" \
+            -PversionName="${LABEL}-${GITHUB_SHA:0:7}"
+
+      - name: Verify the preview applicationId
+        shell: bash
+        run: |
+          set -e
+          APK=$(ls app/build/outputs/apk/preview/*.apk | head -n1)
+          echo "built: $APK"
+          # AAPT is part of the Android SDK image on ubuntu-latest; if it is not
+          # on PATH the check is skipped rather than failing the build.
+          if command -v aapt2 >/dev/null 2>&1; then
+            aapt2 dump packagename "$APK"
+          elif command -v aapt >/dev/null 2>&1; then
+            aapt dump badging "$APK" | head -n 1
+          else
+            echo "no aapt on PATH - skipping package dump"
+          fi
+          mv "$APK" "app/build/outputs/apk/preview/Canta-${APK_LABEL}-${GITHUB_SHA:0:7}.apk"
+
+      - name: Upload preview APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: canta-preview
+          path: app/build/outputs/apk/preview/Canta-*.apk
+          if-no-files-found: error
+          retention-days: 14

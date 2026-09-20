@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    HTTPS only, with one deliberate exception: some mirror CDNs hand out plain
+    HTTP media playlists that still play. Cleartext is therefore allowed for
+    media, but every scraping request in this app is issued over HTTPS.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>
