@@ -41,10 +41,12 @@ HLS playback through Media3 (no ffmpeg, no remux) and real offline downloads.
 
 ## Screenshots
 
-Captures live in [`screenshots/`](screenshots/) and are taken from a running
-build — see [`screenshots/README.md`](screenshots/README.md) for how they are
-produced. The directory is intentionally not filled with mock-ups: an image this
-project cannot produce from the real app would be a claim it cannot back.
+To be captured. Screenshots have to come from a running build — this
+project does not ship mock-ups — so [`screenshots/`](screenshots/) currently
+holds the capture procedure and the shot list
+([`screenshots/README.md`](screenshots/README.md)) rather than images: the
+moments worth showing (measured quality, a downgrade note, a download finishing,
+playback with the radio off) only exist once the app runs on a device.
 
 ## Honesty rules the app follows
 
@@ -191,12 +193,12 @@ cd canta
 
 # Debug build (debug-signed, installable)
 ./gradlew :app:assembleDebug
-adb install -r app/build/outputs/apk/debug/app-debug.apk
+adb install -r app/build/outputs/apk/debug/*.apk
 
 # Preview build: same code, different applicationId (com.jcversa.canta.preview),
 # debug-signed, minified — installing it never touches a stable install
 ./gradlew :app:assemblePreview
-adb install -r app/build/outputs/apk/preview/app-preview.apk
+adb install -r app/build/outputs/apk/preview/*.apk
 
 # Unit tests
 ./gradlew :app:testDebugUnitTest
