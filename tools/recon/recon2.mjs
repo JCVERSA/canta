@@ -70,13 +70,17 @@ async function catalogue() {
 function parseChapterSources(html) {
   const m = html.match(/var\s+thisChapterSources\s*=\s*(\{[\s\S]*?\});\s*\n/);
   if (!m) return null;
+  // Payload strings contain escaped quotes: read them with an escaper-aware scan.
   const raw = m[1];
-  const entries = [...raw.matchAll(/"([^"]+)"\s*:\s*"([\s\S]*?)"\s*(?:,|\})/g)].map((mm) => {
+  const entries = [];
+  const re = /"([^"]+)"\s*:\s*"((?:[^"\\]|\\.)*)"/g;
+  let mm;
+  while ((mm = re.exec(raw)) !== null) {
     const label = mm[1];
     const payload = mm[2].replace(/\\"/g, '"').replace(/\\\//g, "/");
     const src = (payload.match(/src="([^"]+)"/) || [])[1] || null;
-    return { label, src };
-  });
+    entries.push({ label, src, host: src ? new URL(src).host : null });
+  }
   return entries;
 }
 
@@ -91,7 +95,7 @@ async function mirrors() {
     const r = await req(url, { headers: { ...H, Referer: `${VA}/` } });
     const entries = r.status === 200 ? parseChapterSources(r.text) : null;
     const frame = r.text.match(/<div class="chapter-video-frame"[\s\S]{0,400}?<\/div>/i);
-    const selectOptions = [...r.text.matchAll(/<select[^>]*host-select[^>]*>([\s\S]{0,600}?)<\/select>/i)].map((m) => clip(m[1], 400));
+    const selectOptions = [...r.text.matchAll(/<select[^>]*host-select[^>]*>([\s\S]{0,600}?)<\/select>/gi)].map((m) => clip(m[1], 400));
     out.push({ label, url, status: r.status, entries, frame: clip(frame?.[0], 400), selectOptions });
     log(`--- ${label} status=${r.status} ---`);
     log("mirrors:", JSON.stringify(entries));
@@ -286,17 +290,27 @@ async function nakanime() {
 }
 
 async function main() {
-  await catalogue();
-  const m = await mirrors();
+  try { await catalogue(); } catch (e) { report.catalogueError = String(e); console.error("catalogue failed", e); }
+  let m = [];
+  try { m = await mirrors(); } catch (e) { report.mirrorsError = String(e); console.error("mirrors failed", e); }
   const voe = (m || []).flatMap((x) => (x.entries || []).map((e) => e.src)).filter(Boolean);
   const voeUrl = voe.find((u) => /voe\.sx|mfw09/.test(u));
   if (voeUrl) {
     const label = new URL(voeUrl).host.replace(/[^a-z0-9]/gi, "");
     report.voe = await voeFamily(voeUrl, label);
   } else {
-    log("MISS: no voe-family mirror URL found in thisChapterSources");
+    log("MISS: no voe-family mirror URL found in thisChapterSources — probing the pass-1 captures");
   }
-  await nakanime();
+  // Always probe the voe-family hosts observed in pass 1, even when the mirror
+  // parser finds nothing: the payload decoder is the part under validation.
+  for (const [label, url] of [
+    ["voesx", "https://voe.sx/e/8ncp6aa32n0u"],
+    ["mfw09", "https://mfw09.org/e/dhy4skfrq20x"],
+  ]) {
+    try { report[label] = await voeFamily(url, label); }
+    catch (e) { report[`${label}Error`] = String(e); console.error(label, "failed", e); }
+  }
+  try { await nakanime(); } catch (e) { report.nakanimeError = String(e); console.error("nakanime failed", e); }
   writeFileSync(`${OUT}/recon2-report.json`, JSON.stringify(report, null, 2));
   log("\npass 2 complete");
 }
