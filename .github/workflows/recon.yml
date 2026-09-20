@@ -39,7 +39,10 @@ jobs:
           node-version: "20"
 
       - name: Run reconnaissance harness
-        run: node tools/recon/recon.mjs || true
+        shell: bash
+        run: |
+          node tools/recon/recon.mjs || true
+          if [ -f tools/recon/recon2.mjs ]; then node tools/recon/recon2.mjs || true; fi
 
       - name: Publish evidence onto the branch
         shell: bash
