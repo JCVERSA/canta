@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-20T21:51:00.344Z",
+  "generatedAt": "2026-09-20T21:58:08.488Z",
   "pass": 2,
   "catalogue": {
     "home": {
@@ -81,5 +81,207 @@
       "rows": []
     }
   },
-  "fatal": "TypeError: String.prototype.matchAll called with a non-global RegExp argument"
+  "mirrors": [
+    {
+      "label": "one-piece-1110-vf",
+      "url": "https://voir-anime.to/anime/one-piece-vf/one-piece-1110-vf/",
+      "status": 200,
+      "entries": [
+        {
+          "label": "LECTEUR myTV",
+          "src": "https://voembed.net/embed-zxtqco5wxp3d.html",
+          "host": "voembed.net"
+        },
+        {
+          "label": "LECTEUR MOON",
+          "src": "https://mfw09.org/e/dhy4skfrq20x",
+          "host": "mfw09.org"
+        },
+        {
+          "label": "LECTEUR VOE",
+          "src": "https://voe.sx/e/8ncp6aa32n0u",
+          "host": "voe.sx"
+        },
+        {
+          "label": "LECTEUR Stape",
+          "src": "https://streamtape.com/e/jAwaD3OggKtzZAq",
+          "host": "streamtape.com"
+        }
+      ],
+      "frame": "<div class=\"chapter-video-frame\" id=\"chapter-video-frame\"> <p><iframe src=\"https://voembed.net/embed-zxtqco5wxp3d.html\" scrolling=\"no\" frameborder=\"0\" width=\"700\" height=\"430\" allowfullscreen=\"true\" webkitallowfullscreen=\"true\" mozallowfullscreen=\"true\"></iframe></p> </div>",
+      "selectOptions": []
+    },
+    {
+      "label": "jujutsu-kaisen-47-vf",
+      "url": "https://voir-anime.to/anime/jujutsu-kaisen-vf/jujutsu-kaisen-47-vf/",
+      "status": 200,
+      "entries": null,
+      "frame": "",
+      "selectOptions": []
+    },
+    {
+      "label": "mushoku-tensei-3-10-vf",
+      "url": "https://voir-anime.to/anime/mushoku-tensei-3-vf/mushoku-tensei-3-10-vf/",
+      "status": 200,
+      "entries": [
+        {
+          "label": "LECTEUR myTV",
+          "src": "https://voembed.net/embed-2eg0zm0k1ud8.html",
+          "host": "voembed.net"
+        },
+        {
+          "label": "LECTEUR MOON",
+          "src": "https://mfw09.org/e/z3y97celv7fp",
+          "host": "mfw09.org"
+        },
+        {
+          "label": "LECTEUR VOE",
+          "src": "https://voe.sx/e/dktxsit5c7fr",
+          "host": "voe.sx"
+        },
+        {
+          "label": "LECTEUR Stape",
+          "src": "https://streamtape.com/e/2DJyvLqx4gUZr49",
+          "host": "streamtape.com"
+        }
+      ],
+      "frame": "<div class=\"chapter-video-frame\" id=\"chapter-video-frame\"> <p><iframe src=\"https://voembed.net/embed-2eg0zm0k1ud8.html\" scrolling=\"no\" frameborder=\"0\" width=\"700\" height=\"430\" allowfullscreen=\"true\" webkitallowfullscreen=\"true\" mozallowfullscreen=\"true\"></iframe></p> </div>",
+      "selectOptions": []
+    }
+  ],
+  "voe": {
+    "url": "https://mfw09.org/e/dhy4skfrq20x",
+    "status": 200,
+    "bytes": 1972,
+    "redirect": null,
+    "payloadCount": 0
+  },
+  "voesx": {
+    "url": "https://voe.sx/e/8ncp6aa32n0u",
+    "status": 200,
+    "bytes": 745,
+    "redirect": "https://jamesbornmain.com/e/8ncp6aa32n0u",
+    "payloadCount": 0
+  },
+  "mfw09": {
+    "url": "https://mfw09.org/e/dhy4skfrq20x",
+    "status": 200,
+    "bytes": 1972,
+    "redirect": null,
+    "payloadCount": 0
+  },
+  "nakanime": {
+    "sources": {
+      "status": 200,
+      "decoded": "[{\"id\":99756,\"url\":\"https://video.sibnet.ru/shell.php?videoid=4826196\",\"host\":\"sibnet\",\"language\":\"VOSTFR\",\"episodeId\":35276},{\"id\":99879,\"url\":\"https://video.sibnet.ru/shell.php?videoid=4833453\",\"host\":\"sibnet\",\"language\":\"VF\",\"episodeId\":35276},{\"id\":162845,\"url\":\"https://jamesbornmain.com/e/w4fbd6fu6yix\",\"host\":\"voe\",\"language\":\"VOSTFR\",\"episodeId\":35276},{\"id\":169556,\"url\":\"https://jamesbornmain.com/e/n0ik5gb8a7mg\",\"host\":\"voe\",\"language\":\"VF\",\"episodeId\":35276},{\"id\":618222,\"url\":\"https://vidmoly.org/embed-w9d5mepjkeoa.html\",\"host\":\"vidmoly\",\"language\":\"VOSTFR\",\"episodeId\":35276},{\"id\":618340,\"url\":\"https://vidmoly.org/embed-v3es93abbcjm.html\",\"host\":\"vidmoly\",\"language\":\"VF\",\"episodeId\":35276},{\"id\":618356,\"url\":\"https://vidmoly.org/embed-pxcgm3x36ai4.html\",\"host\":\"vidmoly\",\"language\":\"VOSTFR\",\"episodeId\":35276}]",
+      "shape": "array",
+      "mirrors": [
+        {
+          "host": "sibnet",
+          "language": "VOSTFR",
+          "url": "https://video.sibnet.ru/shell.php?videoid=4826196"
+        },
+        {
+          "host": "sibnet",
+          "language": "VF",
+          "url": "https://video.sibnet.ru/shell.php?videoid=4833453"
+        },
+        {
+          "host": "voe",
+          "language": "VOSTFR",
+          "url": "https://jamesbornmain.com/e/w4fbd6fu6yix"
+        },
+        {
+          "host": "voe",
+          "language": "VF",
+          "url": "https://jamesbornmain.com/e/n0ik5gb8a7mg"
+        },
+        {
+          "host": "vidmoly",
+          "language": "VOSTFR",
+          "url": "https://vidmoly.org/embed-w9d5mepjkeoa.html"
+        },
+        {
+          "host": "vidmoly",
+          "language": "VF",
+          "url": "https://vidmoly.org/embed-v3es93abbcjm.html"
+        },
+        {
+          "host": "vidmoly",
+          "language": "VOSTFR",
+          "url": "https://vidmoly.org/embed-pxcgm3x36ai4.html"
+        }
+      ]
+    },
+    "catalogue": [
+      {
+        "path": "/api/catalog/search?q=&sort=trending&page=1&per_page=6",
+        "status": 200,
+        "decodedHead": "{\"data\":[{\"backdrop_url\":\"https://image.tmdb.org/t/p/original/2rmK7mnchw9Xr3XdiTFSxTTLXqv.jpg\",\"color\":\"#e49335\",\"episode_count\":1182,\"format\":\"TV\",\"genres\":[\"Action & Adventure\",\"Comédie\",\"Animation\"],\"id\":\"16\",\"is_adult\":false,\"languages\":[\"VF\",\"VOSTFR\"],\"logo_url\":\"https://image.tmdb.org/t/p/original/cgz4g7uCmFd5I7LoBQhBiVXT4SE.png\",\"overview\":\"Il fut un temps où Gold Roger était le plus grand ",
+        "count": 6,
+        "first": {
+          "id": "16",
+          "slug": "one-piece",
+          "title": "One Piece",
+          "languages": [
+            "VF",
+            "VOSTFR"
+          ]
+        }
+      },
+      {
+        "path": "/api/catalog/search?q=a&sort=relevance&page=1&per_page=6",
+        "status": 200,
+        "decodedHead": "{\"data\":[{\"backdrop_url\":\"https://image.tmdb.org/t/p/original/lQoR4D4TJRx4Rm87Jr0e8eQD8RB.jpg\",\"color\":\"#e4356b\",\"episode_count\":37,\"format\":\"TV\",\"genres\":[\"Animation\",\"Comédie\",\"Action & Adventure\",\"Science-Fiction & Fantastique\"],\"id\":\"545\",\"is_adult\":false,\"languages\":[\"VF\",\"VOSTFR\"],\"logo_url\":\"https://image.tmdb.org/t/p/original/a4qeagrGF405XyU6dexMxwAsYfO.png\",\"overview\":\"Le Roi Démon vient ",
+        "count": 6,
+        "first": {
+          "id": "545",
+          "slug": "the-devil-is-a-part-timer",
+          "title": "The Devil is a Part-Timer!",
+          "languages": [
+            "VF",
+            "VOSTFR"
+          ]
+        }
+      }
+    ],
+    "detail": [
+      {
+        "path": "/api/anime/16",
+        "status": 404,
+        "bytes": 52466
+      },
+      {
+        "path": "/api/catalog/anime/16",
+        "status": 404,
+        "bytes": 52490
+      },
+      {
+        "path": "/api/anime/16/seasons",
+        "status": 404,
+        "bytes": 52490
+      }
+    ],
+    "seasonsScript": {
+      "animeId": 16,
+      "seasonCount": 12,
+      "firstSeason": {
+        "id": 1954,
+        "number": 1,
+        "name": "East Blue",
+        "episodeCount": 61
+      },
+      "episodeShape": {
+        "number": 1,
+        "title": "Je suis Luffy ! Celui qui deviendra Roi des Pirates !",
+        "isCurrent": true,
+        "isFiller": false
+      },
+      "episodeHasId": false
+    },
+    "episodePage": {
+      "status": 200,
+      "dataEpisodeId": "35276"
+    }
+  }
 }
