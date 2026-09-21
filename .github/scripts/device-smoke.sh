@@ -34,6 +34,7 @@ SHOTS="screenshots"
 REPORT="$SHOTS/smoke-report.txt"
 FAILURES=0
 FIRST_DISPLAY_MS="unknown"
+ONSCREEN_PROBE="none of: focus, accessibility dump, window manager"
 
 log() { echo "smoke: $*"; }
 fail() { echo "::error::smoke: $*"; FAILURES=$((FAILURES + 1)); }
@@ -70,25 +71,64 @@ dialog_is_up() {
   focused_window | grep -qiE "not responding|application error|application not responding|\banr\b"
 }
 
+app_ui_present() {
+  # Does the accessibility dump contain nodes belonging to this app? Re-dumps
+  # first: a dump left over from an earlier screen would answer a question about
+  # the past.
+  local dump=/sdcard/canta-ui.xml
+  adb shell uiautomator dump "$dump" >/dev/null 2>&1 || return 1
+  adb shell cat "$dump" 2>/dev/null | grep -q "package=\"$APP_ID\""
+}
+
 app_window_on_screen() {
-  # Is the app's own window on screen at all? Used by capture_app_screen: a
-  # picture must contain the app. Focus alone is not the right test — while a
-  # system dialog is in front the app is on screen but not focused, and the frame
-  # is still a true capture of the app (with an overlay, which the filename says).
-  adb shell dumpsys window windows 2>/dev/null \
-    | awk -v app="$APP_ID" '
+  # The capture gate: the frame must contain the app. Three independent strategies
+  # because no single one is reliable on every image (run 7: `dumpsys gfxinfo`
+  # was unreadable and `uiautomator dump` returned nothing at the cold start yet
+  # worked later, so a one-strategy gate ended up producing no evidence at all):
+  #
+  #   1. the app owns the focused window  -> it is on screen by definition;
+  #   2. the accessibility dump has nodes of this app;
+  #   3. the window manager reports the app's window as isOnScreen=true.
+  #
+  # The strategy that answered is recorded, so an unverifiable capture is
+  # distinguishable from a verified one in the report.
+  ONSCREEN_PROBE="none of: focus, accessibility dump, window manager"
+  if app_is_focused; then
+    ONSCREEN_PROBE="focused window is the app"
+    return 0
+  fi
+  if app_ui_present; then
+    ONSCREEN_PROBE="accessibility dump contains $APP_ID nodes"
+    return 0
+  fi
+  # The pattern is "$APP_ID/" - the package/class form of the app's own activity
+  # window. Matching the bare package name would also match the ANR dialog's
+  # window title ("Application Not Responding: com.jcversa.canta"), which is on
+  # screen precisely when the app may not be. Found by running this awk program
+  # against a synthetic dumpsys sample before trusting it.
+  if adb shell dumpsys window windows 2>/dev/null \
+    | awk -v app="$APP_ID/" '
         /Window #/ { inside = index($0, app) > 0; next }
         inside { print }
       ' \
-    | grep -q "isOnScreen=true"
+    | grep -q "isOnScreen=true"; then
+    ONSCREEN_PROBE="window manager reports isOnScreen=true"
+    return 0
+  fi
+  return 1
 }
 
 app_is_focused() {
-  # Is the app's own window the focused one? This is the check that keeps "a
-  # capture of the running app" honest, and run 5 is why it exists: that run
+  # Is the app's own activity window the focused one? This is the check that keeps
+  # "a capture of the running app" honest, and run 5 is why it exists: that run
   # passed while its 01 screenshot was the launcher, because the dialog dismissal
   # had tapped the system navigation bar and nothing verified what was in front.
-  focused_window | grep -q "$APP_ID"
+  #
+  # The pattern is "$APP_ID/" for the same reason as in app_window_on_screen: the
+  # focused window while an ANR dialog is up reads
+  # "Application Not Responding: com.jcversa.canta", which a bare package match
+  # would happily accept as the app.
+  focused_window | grep -q "$APP_ID/"
 }
 
 bring_app_to_front() {
@@ -123,6 +163,7 @@ capture_app_screen() {
   fi
   if ! app_window_on_screen; then
     log "the app window is not on screen - no capture (a picture of something else proves nothing)"
+    echo "capture skipped: no proof the app was on screen ($ONSCREEN_PROBE); focused window: $(focused_window | tr -d '\r')" >> "$REPORT"
     return 1
   fi
   local name="$base"
@@ -130,7 +171,7 @@ capture_app_screen() {
   adb exec-out screencap -p > "$SHOTS/$name" || return 1
   [ -s "$SHOTS/$name" ] || return 1
   LAST_CAPTURE="$name"
-  echo "capture verified: $name (app window on screen, system dialog in front: $(dialog_is_up && echo yes || echo no), focused window: $(focused_window | tr -d '\r'))" >> "$REPORT"
+  echo "capture verified: $name (on screen because: $ONSCREEN_PROBE; system dialog in front: $(dialog_is_up && echo yes || echo no); focused window: $(focused_window | tr -d '\r'))" >> "$REPORT"
   log "captured $name (app window on screen: yes, system dialog in front: $(dialog_is_up && echo yes || echo no))"
   return 0
 }
