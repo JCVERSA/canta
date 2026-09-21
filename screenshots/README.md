@@ -9,36 +9,23 @@ of a screen it cannot render.
 
 | File | Shows | Notes |
 | --- | --- | --- |
-| `01-app-amoled.png` | Catalogue screen, AMOLED theme | The CI runner cannot resolve `voir-anime.to`, so this screen legitimately shows its **error message** (`Requête échouée: … Unable to resolve host`). That is the app reporting the real cause instead of an empty catalogue. |
-| `01-app-amoled-with-system-dialog.png` | The same screen with the emulator's ANR dialog over it | Present when the emulator raised its own "Process system isn't responding" dialog (its `com.android.phone` / `media.module` processes do that on software-rendered runners) and dismissing it failed. The app UI is still visible behind it. The filename says so rather than hiding it. |
-| `02-notification-extras-launch.png` | The app after a launch carrying the episode watcher's extras | Same network limitation. |
-| `03-settings.png` | Settings | Present only when the run verified the tab was reached, by a string that exists nowhere else in the app. |
-| `smoke-report.txt` | The run's own record | Emulator API/ABI, package version, `am start -W` timing, resumed activity, per-screen visible text, ANR lines. Read it before trusting an image: the report says which state each capture came from. |
+| `03-settings.png` | Settings, AMOLED theme | Captured by the smoke test after it verified the tab was reached (by text unique to that screen) and that the app's own window was on screen. The version string in the frame names the build it came from. |
+| `smoke-report.txt` | The run's own record | Emulator API/ABI, package version, `am start -W` timing, resumed activity, per-screen visible text, per-capture verification lines, ANR lines. |
 
-A file that is missing from this directory was not produced by the last run —
-the smoke test captures only when the UI is up and no system dialog is covering
-it, and it deletes a screenshot whose screen it could not verify. Missing here
-therefore means "not captured", never "captured elsewhere". The report records
-which case applied.
+No catalogue capture is kept at the moment, and that is deliberate: earlier runs
+produced files named `01-app-amoled.png` whose frames were the **launcher** (the
+system ANR dialog had been dismissed with BACK, which also left the app) and then
+the app behind the emulator's own "not responding" dialog. Both were mislabelled
+claims, so they were deleted rather than renamed or annotated. The current script
+writes a capture only when the app's window is on screen, suffixes
+`-with-system-dialog` when the dialog is in front, and fails the run when it
+cannot produce a single verified capture.
 
-Not captured, and deliberately not implied by the images above: playback, the
-quality selector with measured sizes, a download in progress, and offline
-playback. Each needs network that reaches the sources, which the CI runner does
-not have. Capture them on a real connection (procedure below) and the README's
-*Verification status* section should be updated in the same change.
-
-The smoke test reads the app's frame count from `dumpsys gfxinfo` before capturing
-(a resumed activity can still be showing the splash screen — the first version of
-this test captured exactly that and called it a catalogue). Where a metric is
-unreadable on the image, the report says "unreadable" instead of implying it was
-checked.
-
-The captures are committed by the workflow rather than uploaded as artifacts,
-because artifact downloads and raw job logs are unreachable from the
-environments this project is developed in; a committed file is readable
-everywhere. The smoke test refuses to save a screenshot while a system dialog is
-on screen — an image showing the emulator's own "Process system isn't responding"
-dialog under an app-screen filename would be a claim the file cannot support.
+Not captured, and deliberately not implied: playback, the quality selector with
+measured sizes, a download in progress, and offline playback. Each needs network
+that reaches the sources, which the CI runner does not have. Capture them on a
+real connection (procedure below) and update *Verification status* in the root
+README in the same change.
 
 ## How they are produced
 

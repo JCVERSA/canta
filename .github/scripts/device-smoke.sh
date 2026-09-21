@@ -70,6 +70,19 @@ dialog_is_up() {
   focused_window | grep -qiE "not responding|application error|application not responding|\banr\b"
 }
 
+app_window_on_screen() {
+  # Is the app's own window on screen at all? Used by capture_app_screen: a
+  # picture must contain the app. Focus alone is not the right test — while a
+  # system dialog is in front the app is on screen but not focused, and the frame
+  # is still a true capture of the app (with an overlay, which the filename says).
+  adb shell dumpsys window windows 2>/dev/null \
+    | awk -v app="$APP_ID" '
+        /Window #/ { inside = index($0, app) > 0; next }
+        inside { print }
+      ' \
+    | grep -q "isOnScreen=true"
+}
+
 app_is_focused() {
   # Is the app's own window the focused one? This is the check that keeps "a
   # capture of the running app" honest, and run 5 is why it exists: that run
@@ -89,26 +102,36 @@ bring_app_to_front() {
 }
 
 capture_app_screen() {
-  # $1: canonical basename, e.g. 01-app-amoled.png. Sets LAST_CAPTURE to the
-  # basename actually written, or leaves it empty when nothing was verifiable.
-  # The state is sampled immediately before the capture, not earlier: run 5
-  # reported "system dialog: yes" from a sample taken before its dismissal, then
-  # captured a screen the dialog had already left.
-  local base="${1%.png}"
+  # $1: canonical basename, e.g. "01-app-amoled.png" (the ".png" is optional; the
+  # written file always has one — an earlier version stripped the extension and
+  # committed "screenshots/03-settings" with no suffix at all).
+  #
+  # A capture is written only when the app's own window is on screen, so the file
+  # cannot be a picture of the launcher or of a system dialog over something else
+  # (run 5's 01 was the launcher, because it was taken after a BACK dismissed both
+  # the ANR dialog and the app). Whether the focused window is still the app or a
+  # system dialog is recorded in the *name*, because the frame really does contain
+  # that overlay.
+  local stem="${1%.png}"
+  local base="${stem}.png"
   LAST_CAPTURE=""
-  if ! dialog_is_up; then
-    app_is_focused || { log "the app is not in front - bringing it back"; bring_app_to_front || true; }
+  if ! app_window_on_screen; then
+    if ! dialog_is_up; then
+      log "the app window is not on screen - trying to bring it back"
+      bring_app_to_front || true
+    fi
   fi
-  if ! app_is_focused; then
-    log "the app window is not focused - no capture (a picture of something else proves nothing)"
+  if ! app_window_on_screen; then
+    log "the app window is not on screen - no capture (a picture of something else proves nothing)"
     return 1
   fi
   local name="$base"
-  dialog_is_up && name="${base}-with-system-dialog"
+  dialog_is_up && name="${1%.png}-with-system-dialog.png"
   adb exec-out screencap -p > "$SHOTS/$name" || return 1
   [ -s "$SHOTS/$name" ] || return 1
   LAST_CAPTURE="$name"
-  log "captured $name (app focused: yes, system dialog: $(dialog_is_up && echo yes || echo no))"
+  echo "capture verified: $name (app window on screen, system dialog in front: $(dialog_is_up && echo yes || echo no), focused window: $(focused_window | tr -d '\r'))" >> "$REPORT"
+  log "captured $name (app window on screen: yes, system dialog in front: $(dialog_is_up && echo yes || echo no))"
   return 0
 }
 
@@ -228,6 +251,9 @@ TEXT_STATE="read"
 } > "$REPORT"
 
 log "capturing the app screen"
+# Reported per capture as it happens, so the committed report says what this run
+# produced rather than what happens to be in the directory (run 6's report listed
+# two files from run 5, which is how a green run ends up with launcher artefacts).
 # Every capture is verified: the app window must be the focused one at the moment
 # of the screencap, and the name says whether a system dialog is also up. A run
 # that cannot produce one verified capture fails - a green run whose artefact is
@@ -329,8 +355,22 @@ fi
 
 {
   echo
+  echo "frames rendered (dumpsys gfxinfo): $FRAMES"
+  echo "screen text: $TEXT_STATE"
+  echo "first screen state: $CATALOGUE_STATE"
+  echo "settings tab: $SETTINGS_VERDICT"
+  echo "screen text after the notification-extras launch: ${DEEPLINK_TEXT:-<none>}"
+  echo "system dialog in front after that launch: ${DEEPLINK_DIALOG:-no}"
+  echo "captures verified by this run: ${PRODUCED:-<none>}"
+} >> "$REPORT"
+
+{
+  echo
   echo "ANR in $APP_ID: ${APP_ANR:-<none>}"
-  echo "screenshots:"
+  echo
+  echo "files in screenshots/ at the end of this run (a directory listing, NOT proof"
+  echo "that this run wrote them - see the capture lines above, and read the"
+  echo "committed image itself before trusting what it shows):"
   ls -la "$SHOTS"/*.png 2>/dev/null | awk '{print "  " $9 " (" $5 " bytes)"}'
 } >> "$REPORT"
 cat "$REPORT"

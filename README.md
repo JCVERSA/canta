@@ -41,38 +41,29 @@ HLS playback through Media3 (no ffmpeg, no remux) and real offline downloads.
 
 ## Screenshots
 
-The images in [`screenshots/`](screenshots/) come from the `Device smoke test`
-workflow: an API 34 emulator installs the debug APK, launches it, checks it
-rendered, and captures the screen. Nothing there is a mock-up, and each capture
-is named for what it actually shows.
+The images in [`screenshots/`](screenshots/) are captures of the running app,
+taken by the `Device smoke test` workflow (API 34 x86_64 emulator, debug APK from
+the same commit). Nothing there is a mock-up, and each file is named for what its
+frames actually contain.
 
 | File | What it shows |
 | --- | --- |
-| `01-app-amoled.png` | The app on a real device: AMOLED black theme, catalogue screen |
-| `01-app-amoled-with-system-dialog.png` | The same screen when the emulator's own "not responding" dialog was covering it — same capture, different filename, because renaming it would hide what is in the frame |
-| `02-notification-extras-launch.png` | The same app after a launch carrying the episode watcher's extras |
-| `03-settings.png` | Settings — written only when the tab tap was verified by that screen's own text |
-
-A file that is absent was not produced by the last run: the smoke test writes
-nothing when the app drew no frames, and it writes no Settings shot it could not
-verify. The job's report lists exactly what that run captured, so a missing image
-is a stated gap rather than a silent one. The report also records whether the
-frame counter and the accessibility dump were readable at all — on the current
-CI image `uiautomator dump` produces nothing, so the screen-state line reads
-"unknown" rather than pretending
+| `03-settings.png` | Settings on a real device — theme, the VF/VOSTFR default, the watchlist note and the Media3/offline explanation, with `Version Canta smoke-…` from the build under test |
 
 `screenshots/smoke-report.txt` is the run's own record: emulator API/ABI, package
 version, `am start -W` timing, the resumed activity, the visible text of each
-screen, and the ANR lines the platform logged.
+screen, the per-capture verification lines and the ANR lines the platform logged.
+Read it before trusting an image — and read the image before trusting the
+report's file listing, which is only a directory listing.
 
-Two honest limits, both visible in that report: the CI runner cannot resolve
-`voir-anime.to` (no DNS for it), so the catalogue renders its **error state** —
-that is the state the captures show, and it is the app reporting a failure rather
-than inventing an empty catalogue; and playback, downloads and the download
-queue have not been captured at all, because they need a network that reaches the
-sources. Those stay in *Verification status* below rather than being implied by a
-screenshot. [`screenshots/README.md`](screenshots/README.md) explains how to
-capture the rest on a machine that can reach the sites.
+Two honest limits, both visible in that report. The CI runner cannot resolve
+`voir-anime.to` (no DNS for it), so the catalogue renders its **error state**:
+that is the app reporting the real cause instead of inventing an empty
+catalogue. And playback, downloads and offline playback have not been captured at
+all, because they need a network that reaches the sources — they stay in
+*Verification status* below rather than being implied by a screenshot.
+[`screenshots/README.md`](screenshots/README.md) explains how to capture the rest
+on a machine that can reach the sites.
 
 ## Honesty rules the app follows
 
