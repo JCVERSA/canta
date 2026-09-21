@@ -64,9 +64,47 @@ wait_for_ui() {
 }
 
 anr_lines() {
-  # Both the platform's own ANR record and the dialog's wording, because the
-  # dialog text is what a user sees and it is what the screenshot showed.
-  adb logcat -d 2>/dev/null | grep -E "ANR in |Input dispatching timed out|isn't responding|not responding" | head -n 12
+  # Every ANR and "not responding" line the platform logged during the run.
+  adb logcat -d 2>/dev/null | grep -E "ANR in |Input dispatching timed out|isn't responding|not responding" | head -n 20
+}
+
+app_anr_lines() {
+  # Only an ANR *in this app* is a defect. The emulator's own system processes
+  # (com.android.phone, com.android.providers.media.module) throw ANRs on
+  # software-rendered CI runners regardless of what is installed — they were
+  # logged on run 3 while Canta itself was idle and never ANR'd — so blaming the
+  # app for them would be a false finding. They are reported instead.
+  anr_lines | grep -F "ANR in $APP_ID"
+}
+
+dismiss_system_dialogs() {
+  # A "Process system isn't responding" dialog belongs to the emulator. BACK is
+  # the least fragile way to clear it; if it survives, the caller simply does not
+  # capture a screenshot with it on screen (an image that shows a system dialog
+  # and is named after an app screen would be a claim the file cannot support).
+  local attempt
+  for attempt in 1 2 3; do
+    local text
+    text=$(ui_text) || return 0
+    case "$text" in
+      *"isn't responding"*|*"not responding"*|*"Close app"*)
+        log "dismissing a system dialog (attempt $attempt)"
+        adb shell input keyevent KEYCODE_BACK >/dev/null 2>&1 || true
+        sleep 3
+        ;;
+      *) return 0 ;;
+    esac
+  done
+  return 0
+}
+
+system_dialog_present() {
+  local text
+  text=$(ui_text) || return 1
+  case "$text" in
+    *"isn't responding"*|*"not responding"*) return 0 ;;
+    *) return 1 ;;
+  esac
 }
 
 mkdir -p "$SHOTS"
@@ -88,8 +126,8 @@ adb logcat -c || true
 log "cold start"
 START_OUTPUT=$(adb shell am start -W -n "$APP_ID/.MainActivity" 2>&1)
 echo "$START_OUTPUT"
-TOTAL_TIME=$(echo "$START_OUTPUT" | grep -iE "^TotalTime:" | tr -d '\r' | awk '{print $2}')
-[ -n "${TOTAL_TIME:-}" ] && FIRST_DISPLAY_MS="$TOTAL_TIME"
+TOTAL_TIME=$(echo "$START_OUTPUT" | grep -iE "TotalTime|WaitTime" | tr -d '\r' | awk -F: '{gsub(/ /,"",$2); print $2}' | paste -sd/ -)
+[ -n "${TOTAL_TIME:-}" ] && FIRST_DISPLAY_MS="$TOTAL_TIME" || FIRST_DISPLAY_MS="not reported by am start -W"
 
 RESUMED=$(adb shell dumpsys activity activities | grep -m1 -E "ResumedActivity|mResumedActivity")
 case "$RESUMED" in
@@ -97,6 +135,7 @@ case "$RESUMED" in
   *) fail "MainActivity is not the resumed activity after launch" ;;
 esac
 
+dismiss_system_dialogs
 log "waiting for the first non-splash frame"
 SCREEN_TEXT=$(wait_for_ui) || SCREEN_TEXT=""
 if [ -z "$SCREEN_TEXT" ]; then
@@ -121,8 +160,22 @@ fi
 } > "$REPORT"
 
 log "capturing catalogue screenshot"
-adb exec-out screencap -p > "$SHOTS/01-catalogue-amoled.png" || fail "screencap 01 failed"
-[ -s "$SHOTS/01-catalogue-amoled.png" ] || fail "screenshot 01 is empty"
+# The file is named for what it shows, not for what it was meant to show: on a
+# runner whose DNS cannot resolve the source, the catalogue legitimately renders
+# its error state, and a screenshot called "catalogue" would overstate it.
+CATALOGUE_STATE="error state"
+case "$SCREEN_TEXT" in
+  *"Chargement"*) CATALOGUE_STATE="still loading" ;;
+  *"Source : "*) CATALOGUE_STATE="items or empty state" ;;
+esac
+if system_dialog_present; then
+  log "a system dialog is on screen - no 01 capture (it would not be an app screenshot)"
+  fail "the emulator left a system dialog on screen, so the app screen could not be captured"
+else
+  adb exec-out screencap -p > "$SHOTS/01-app-amoled.png" || fail "screencap 01 failed"
+  [ -s "$SHOTS/01-app-amoled.png" ] || fail "screenshot 01 is empty"
+fi
+{ echo; echo "first screen state: $CATALOGUE_STATE"; } >> "$REPORT"
 
 log "launch with the episode watcher's notification extras"
 adb shell am start -n "$APP_ID/.MainActivity" \
@@ -135,8 +188,12 @@ DEEPLINK_TEXT=$(ui_text) || DEEPLINK_TEXT=""
   echo "screen text after the notification-extras launch:"
   echo "  ${DEEPLINK_TEXT:-<none>}"
 } >> "$REPORT"
-adb exec-out screencap -p > "$SHOTS/02-notification-deep-link.png" || fail "screencap 02 failed"
-[ -s "$SHOTS/02-notification-deep-link.png" ] || fail "screenshot 02 is empty"
+if system_dialog_present; then
+  log "a system dialog is on screen - no 02 capture"
+else
+  adb exec-out screencap -p > "$SHOTS/02-notification-extras-launch.png" || fail "screencap 02 failed"
+  [ -s "$SHOTS/02-notification-extras-launch.png" ] || fail "screenshot 02 is empty"
+fi
 
 # The Settings tab is the rightmost of four. Its own body carries strings that
 # exist nowhere else in the app ("Effacer l'historique"), so the tab tap is
@@ -177,7 +234,11 @@ adb logcat -d -b crash > crashes.txt 2>/dev/null || true
   echo "FATAL EXCEPTION entries in the crash buffer: ${CRASHES:-0}"
 } >> "$REPORT"
 
-[ -n "${ANR:-}" ] && fail "the system reported an ANR / not-responding dialog during the run"
+APP_ANR=$(app_anr_lines)
+[ -n "${APP_ANR:-}" ] && fail "the app itself ANR'd during the run"
+if [ -n "${ANR:-}" ] && [ -z "${APP_ANR:-}" ]; then
+  log "system-process ANRs were logged by the emulator; none of them is Canta (reported, not counted as an app failure)"
+fi
 [ "${CRASHES:-0}" -gt 0 ] && { echo "--- crash log ---"; cat crashes.txt; fail "the app crashed during the smoke test"; }
 
 if adb shell pidof "$APP_ID" >/dev/null 2>&1; then
@@ -188,6 +249,7 @@ fi
 
 {
   echo
+  echo "ANR in $APP_ID: ${APP_ANR:-<none>}"
   echo "screenshots:"
   ls -la "$SHOTS"/*.png 2>/dev/null | awk '{print "  " $9 " (" $5 " bytes)"}'
 } >> "$REPORT"

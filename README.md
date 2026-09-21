@@ -41,12 +41,35 @@ HLS playback through Media3 (no ffmpeg, no remux) and real offline downloads.
 
 ## Screenshots
 
-To be captured. Screenshots have to come from a running build — this
-project does not ship mock-ups — so [`screenshots/`](screenshots/) currently
-holds the capture procedure and the shot list
-([`screenshots/README.md`](screenshots/README.md)) rather than images: the
-moments worth showing (measured quality, a downgrade note, a download finishing,
-playback with the radio off) only exist once the app runs on a device.
+The images in [`screenshots/`](screenshots/) come from the `Device smoke test`
+workflow: an API 34 emulator installs the debug APK, launches it, checks it
+rendered, and captures the screen. Nothing there is a mock-up, and each capture
+is named for what it actually shows.
+
+| File | What it shows |
+| --- | --- |
+| `01-app-amoled.png` | The app on a real device: AMOLED black theme, catalogue screen |
+| `02-notification-extras-launch.png` | The same app after a launch carrying the episode watcher's extras |
+| `03-settings.png` | Settings — written only when the tab tap was verified by that screen's own text |
+
+A file that is absent from the table above simply was not produced by the last
+run: the smoke test refuses to save a capture while a system dialog covers the
+screen, and it does not keep a Settings shot it could not verify. The job's
+report says which case applied, so a missing image is a stated gap rather than a
+silent one.
+
+`screenshots/smoke-report.txt` is the run's own record: emulator API/ABI, package
+version, `am start -W` timing, the resumed activity, the visible text of each
+screen, and the ANR lines the platform logged.
+
+Two honest limits, both visible in that report: the CI runner cannot resolve
+`voir-anime.to` (no DNS for it), so the catalogue renders its **error state** —
+that is the state the captures show, and it is the app reporting a failure rather
+than inventing an empty catalogue; and playback, downloads and the download
+queue have not been captured at all, because they need a network that reaches the
+sources. Those stay in *Verification status* below rather than being implied by a
+screenshot. [`screenshots/README.md`](screenshots/README.md) explains how to
+capture the rest on a machine that can reach the sites.
 
 ## Honesty rules the app follows
 

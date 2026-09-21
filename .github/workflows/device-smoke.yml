@@ -10,11 +10,26 @@ name: Device smoke test
 #   2. nothing crashed in the process, including after a second launch that
 #      carries the episode watcher's notification extras.
 #
-# It also captures real screenshots into screenshots/ and commits them back to
-# the branch, because the README ships no mock-ups: an image in that directory
-# has to come from a running build. Committing (rather than uploading artifacts)
-# keeps them readable from restricted environments where artifact downloads and
-# raw job logs are unreachable.
+# It also captures real screenshots into screenshots/ and commits them, together
+# with a report of what the run actually saw, because the README ships no
+# mock-ups: an image in that directory has to come from a running build.
+# Committing (rather than uploading artifacts) keeps both readable from
+# restricted environments where artifact downloads and raw job logs are
+# unreachable.
+#
+# Two distinctions the run has to make, learned from run 3 of this job:
+#
+#   * an ANR *in com.jcversa.canta* fails the run. The emulator's own system
+#     processes (com.android.phone, com.android.providers.media.module) ANR on
+#     software-rendered CI runners whatever is installed — run 3 logged nine of
+#     them while Canta itself never ANR'd — so they are reported, not blamed on
+#     the app. Blaming it would be a false finding.
+#   * a screenshot is taken only when no system dialog covers the screen, and is
+#     named for what it shows. A capture of a "Process system isn't responding"
+#     dialog named after an app screen would be a claim the file cannot support.
+#     For the same reason the catalogue capture is 01-app-amoled.png: on a runner
+#     whose DNS cannot resolve the source site, the honest state of that screen is
+#     its error message, not a grid of covers.
 
 on:
   push:
