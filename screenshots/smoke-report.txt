@@ -1,24 +1,15 @@
 Canta device smoke report
-date: Mon Sep 21 21:13:22 UTC 2026
-sha: c356e710d5cc2588b212fb860bf90acc4510b876
-run: 5
+date: Mon Sep 21 21:29:52 UTC 2026
+sha: 7940dad81df0239151ee633e5e9b7162d6c954a9
+run: 6
 emulator api: 34
 emulator abi: x86_64
-package: versionName=smoke-c356e71
-am start -W TotalTime (ms): 21060
-resumed:     topResumedActivity=ActivityRecord{3e17acc u0 com.jcversa.canta/.MainActivity t8}
+package: versionName=smoke-7940dad
+am start -W TotalTime (ms): 20684
+resumed:     topResumedActivity=ActivityRecord{3e685b9 u0 com.jcversa.canta/.MainActivity t8}
 
 screen text after cold start:
-  Rechercher une série VF|VOSTFR Source : voir-anime.to · page 1 Catalogue|Favoris Hors ligne Réglages
-
-frames rendered (dumpsys gfxinfo): 4
-system dialog covering the screen at capture time: yes
-screen text: read
-first screen state: catalogue items or empty state
-screen text after the notification-extras launch: System UI isn't responding Close app|Wait
-second launch: dialog=no
-settings tab: not reached (screen shows: System UI isn't responding Close app|Wait), no capture
-captured this run: 01-app-amoled.png, 02-notification-extras-launch.png
+  <none>
 
 ANR / not-responding lines in logcat:
   <none>
