@@ -46,9 +46,14 @@ taken by the `Device smoke test` workflow (API 34 x86_64 emulator, debug APK fro
 the same commit). Nothing there is a mock-up, and each file is named for what its
 frames actually contain.
 
-| File | What it shows |
+| Capture | What its frames contain |
 | --- | --- |
-| `03-settings.png` | Settings on a real device — theme, the VF/VOSTFR default, the watchlist note and the Media3/offline explanation, with `Version Canta smoke-…` from the build under test |
+| ![Settings on a real device](screenshots/03-settings.png) | `03-settings.png` — the Settings screen on a real device: theme, the VF/VOSTFR default, the watchlist note and the Media3/offline explanation, with the `Version Canta smoke-…` line naming the build that was running |
+
+That capture comes from the run whose `Version` line is printed inside it
+(`smoke-7940dad`), which is why the label in the image and the report's own
+`sha:` line are the way to tell which commit a picture belongs to — not the file
+name.
 
 `screenshots/smoke-report.txt` is the run's own record: emulator API/ABI, package
 version, `am start -W` timing, the resumed activity, the visible text of each

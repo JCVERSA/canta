@@ -9,7 +9,7 @@ of a screen it cannot render.
 
 | File | Shows | Notes |
 | --- | --- | --- |
-| `03-settings.png` | Settings, AMOLED theme | Captured by the smoke test after it verified the tab was reached (by text unique to that screen) and that the app's own window was on screen. The version string in the frame names the build it came from. |
+| ![](03-settings.png) `03-settings.png` | Settings, AMOLED theme | Captured by the smoke test after it verified the tab was reached (by text unique to that screen) and that the app's own window was on screen. The version string in the frame names the build it came from. |
 | `smoke-report.txt` | The run's own record | Emulator API/ABI, package version, `am start -W` timing, resumed activity, per-screen visible text, per-capture verification lines, ANR lines. |
 
 No catalogue capture is kept at the moment, and that is deliberate: earlier runs
