@@ -101,7 +101,14 @@ jobs:
           # from this sandbox. An unproven change that makes a run fail earlier than
           # before is not an improvement; the starvation is reported, not papered
           # over.
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          # -no-snapshot is part of this action's own default options list and was
+          # dropped here, because `emulator-options` replaces the defaults rather
+          # than adding to them: a run that saves or loads a stale snapshot on a
+          # shared runner is a boot failure waiting to happen, and runs 10 and 11
+          # both failed to boot. emulator-boot-timeout is raised from the default
+          # 600s to 900s for the same reason: a cold runner here takes minutes.
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -no-snapshot
+          emulator-boot-timeout: 900
           # The action runs this instead of the script directly, so that a device
           # that never booted still leaves a file behind to publish. Run 10 failed
           # exactly that way: no report, no smoke.log, and the action's own error
@@ -136,67 +143,21 @@ jobs:
           path: |
             screenshots/*.png
             screenshots/smoke-report.txt
+            smoke.log
+            .ci-logs/device-smoke*.txt
           if-no-files-found: ignore
           retention-days: 14
 
-      - name: Publish the captures and the smoke report onto the branch
-        # Only from a push: a pull request from a fork has a read-only token, and
-        # the directory belongs to the branch that produced the build. The report
-        # matters as much as the images: job logs and artifacts are unreachable
-        # from the development sandbox, so a committed file is the only way the
-        # run's timings, screen text and ANR findings can be read there.
+      # One step publishes everything a run produced: the captures, the report and
+      # the run's log. It used to be two steps, and both reported success while
+      # taking 0.0 s and committing nothing on runs 10 and 11 - a red run with no
+      # readable output. The script behind it also reports through annotations,
+      # which are the one failure channel that is reachable from a sandbox that
+      # cannot read job logs.
+      - name: Publish the run's evidence onto the branch
         if: always() && github.event_name == 'push'
         continue-on-error: true
         shell: bash
-        run: |
-          set -euo pipefail
-          if [ -z "$(git status --porcelain screenshots 2>/dev/null)" ]; then
-            echo "screenshots unchanged - nothing to publish. Contents of the directory:"
-            ls -la screenshots/ || true
-            echo "(a run that reached the smoke script always rewrites smoke-report.txt, so"
-            echo "an unchanged directory means the script never ran - look for smoke.log"
-            echo "in the 'Publish logs on failure' step or the .ci-logs commit)"
-            exit 0
-          fi
-          git config user.name "canta-smoke"
-          git config user.email "smoke@jcversa.invalid"
-          git add -f screenshots
-          git commit -m "chore(screenshots): captures + smoke report from emulator run ${GITHUB_RUN_NUMBER} [skip ci]"
-          for attempt in 1 2 3; do
-            if git push origin "HEAD:${GITHUB_REF_NAME}"; then
-              echo "screenshots published"
-              exit 0
-            fi
-            echo "push attempt ${attempt} rejected - rebasing"
-            git pull --rebase --autostash origin "${GITHUB_REF_NAME}" || true
-            sleep $((attempt * 3))
-          done
-          echo "screenshot push failed after 3 attempts"
-
-      - name: Publish logs on failure
-        if: failure() && github.event_name == 'push'
-        continue-on-error: true
-        shell: bash
-        run: |
-          mkdir -p .ci-logs
-          {
-            echo "job: device-smoke"
-            echo "sha: ${GITHUB_SHA}"
-            echo "date: $(date -u)"
-            echo
-            echo "--- build.log tail ---"
-            tail -c 20000 build.log 2>/dev/null || echo "(no build.log)"
-            echo
-            echo "--- emulator smoke log ---"
-            if [ -s smoke.log ]; then
-              tail -c 30000 smoke.log
-            else
-              echo "(no smoke.log: the emulator step did not get as far as the smoke script)"
-            fi
-          } > .ci-logs/device-smoke.txt
-          {
-            echo "job: device-smoke"
-            grep -E "^(e: |FAILURE|\\* What went wrong)|FATAL EXCEPTION|::error::|smoke: FAIL" \
-              build.log smoke.log 2>/dev/null | head -n 120
-          } > .ci-logs/device-smoke-errors.txt
-          bash .github/scripts/publish-ci-log.sh
+        env:
+          JOB_STATUS: ${{ job.status }}
+        run: bash .github/scripts/publish-run-evidence.sh

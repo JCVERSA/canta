@@ -10,14 +10,18 @@ set -euo pipefail
 
 cd "$(git rev-parse --show-toplevel)"
 
-if [ -z "$(git status --porcelain .ci-logs 2>/dev/null)" ]; then
-  echo "no log files to publish"
-  exit 0
-fi
-
+# Decide by staging first and comparing the *index*. The previous check asked
+# `git status --porcelain .ci-logs`, which cannot see a file that ignore rules hide
+# and says nothing about a path that has never been tracked - a check that cannot
+# see the thing it is checking. `publish-run-evidence.sh` does the same thing for
+# the same reason.
 git config user.name "Canta CI"
 git config user.email "ci@jcversa.invalid"
 git add -f .ci-logs
+if git diff --cached --quiet; then
+  echo "no log files to publish"
+  exit 0
+fi
 git commit -m "ci: build log for ${GITHUB_SHA:-local} [skip ci]" >/dev/null
 
 # The branch may have moved while the job ran (a developer pushing a fix is the
@@ -35,3 +39,6 @@ for attempt in 1 2 3; do
   sleep $((attempt * 3))
 done
 echo "push failed after 3 attempts; log stays in the workspace"
+# Annotations are readable through the API even where job logs are not, which is
+# the whole reason this script exists.
+printf '::error title=ci%%20log%%20not%%20published::git push failed after 3 attempts from %s\n' "${GITHUB_JOB:-unknown}"
