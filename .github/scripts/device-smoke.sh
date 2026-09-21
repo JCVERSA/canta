@@ -36,6 +36,16 @@ FAILURES=0
 FIRST_DISPLAY_MS="unknown"
 ONSCREEN_PROBE="none of: focus, accessibility dump, window manager"
 
+# The report is written as the run proceeds, so a script that dies mid-way leaves a
+# half-written file - and run 9 proved how unhelpful that is: its report stopped in
+# the middle of a block, the exit status was 1, and the runner's own log is not
+# retrievable from this environment, so the cause had to be reproduced locally (an
+# unbound variable under `set -u`, introduced a few lines above the crash). Phase
+# markers say where the run got to, and the trap says that it stopped early.
+SMOKE_COMPLETED=0
+phase() { printf 'phase: %s\n' "$1" >> "$REPORT"; log "phase: $1"; }
+trap 'rc=$?; if [ "${SMOKE_COMPLETED:-0}" != "1" ]; then { echo; echo "script exited early: status $rc - the last phase marker above says where"; } >> "$REPORT"; fi' EXIT
+
 # --- ANR evidence ---------------------------------------------------------------
 # `anr_lines` and `app_anr_lines` were *called* by this script in every run while
 # being defined nowhere: no `set -e` in this file, so the "command not found"
@@ -49,11 +59,22 @@ ONSCREEN_PROBE="none of: focus, accessibility dump, window manager"
 #   - the events buffer's `am_anr` records one line per ANR, with pid, package and
 #     the reason text, and is written even when the main buffer says nothing;
 #   - the main buffer's "ANR in <pkg>" line, when the image logs it at all.
+ANR_ALL_CACHE=""
+ANR_ALL_READ=0
 anr_lines() {
-  {
-    adb logcat -d -b events 2>/dev/null | grep -i "am_anr" || true
-    adb logcat -d 2>/dev/null | grep -iE "ANR in |is not responding" || true
-  } | sort -u
+  # Read once and keep it: the verdict logic asks for these lines five times, and
+  # each read is two full `logcat -d` dumps - real work for an emulator that is
+  # already starved, which is exactly when this runs.
+  if [ "$ANR_ALL_READ" = "0" ]; then
+    ANR_ALL_CACHE=$(
+      {
+        adb logcat -d -b events 2>/dev/null | grep -i "am_anr" || true
+        adb logcat -d 2>/dev/null | grep -iE "ANR in |is not responding" || true
+      } | sort -u
+    )
+    ANR_ALL_READ=1
+  fi
+  echo "$ANR_ALL_CACHE"
 }
 
 # The package is matched as a whole token (",pkg,", " pkg ", "pkg:") so the preview
@@ -62,9 +83,15 @@ app_anr_lines() {
   anr_lines | grep -E "(^|[ ,])($APP_ID)([ ,:]|$)" || true
 }
 
-# The reason for each app ANR, e.g. "Input dispatching timed out".
+# The reason for each app ANR. Extracted generically rather than from a list of
+# phrases I expected to see: the first version matched only the input-dispatch and
+# service-timeout wordings, so run 9's actual reason ("Timed out while trying to
+# bind") came out as "none recorded" - a report that says less than the evidence it
+# already holds. `am_anr` records are [user,pid,package,flags,reason]; the main
+# buffer states it as "Reason:<text>".
 app_anr_reasons() {
-  app_anr_lines | grep -ioE "Input dispatching timed out|Broadcast of Intent|executing service [^,]*|Service .* timeout[^,]*" | sort -u || true
+  app_anr_lines | sed -nE 's/.*am_anr *: *\[[0-9]+,[0-9]+,[^,]+,[^,]+,(.*)\]$/\1/p' | sort -u || true
+  app_anr_lines | sed -nE 's/.*Reason:(.*)$/\1/p' | sed 's/^ *//' | sort -u || true
 }
 
 # An input-dispatch timeout while a *system* process ANR'd in the same run is the
@@ -347,6 +374,7 @@ TEXT_STATE="read"
   echo "  ${SCREEN_TEXT:-<none>}"
 } > "$REPORT"
 
+phase "report header written; capturing screens"
 log "capturing the app screen"
 # Reported per capture as it happens, so the committed report says what this run
 # produced rather than what happens to be in the directory (run 6's report listed
@@ -427,16 +455,10 @@ if [ "$CAPTURES_OK" -eq 0 ]; then
 fi
 
 log "checking for ANRs and crashes"
+phase "collecting ANR evidence"
 ANR=$(anr_lines)
 CRASHES=$(adb logcat -d -b crash 2>/dev/null | grep -c "FATAL EXCEPTION")
 adb logcat -d -b crash > crashes.txt 2>/dev/null || true
-{
-  echo
-  echo "ANR / not-responding lines (events buffer am_anr + main buffer):"
-  if [ -n "${ANR:-}" ]; then echo "$ANR" | sed 's/^/  /'; else echo "  <none found in either buffer>"; fi
-  echo "app ANR verdict: ${ANR_VERDICT}"
-  echo "FATAL EXCEPTION entries in the crash buffer: ${CRASHES:-0}"
-} >> "$REPORT"
 
 APP_ANR=$(app_anr_lines)
 ANR_VERDICT="no ANR named the app"
@@ -470,6 +492,24 @@ fi
 if [ -n "${ANR:-}" ] && [ -z "${APP_ANR:-}" ]; then
   log "system-process ANRs were logged by the emulator; none of them is Canta (reported, not counted as an app failure)"
 fi
+
+{
+  echo
+  echo "ANR / not-responding lines (events buffer am_anr + main buffer):"
+  if [ -n "${ANR:-}" ]; then
+    echo "$ANR" | sed 's/^/  /' | head -100
+    ANR_TOTAL=$(echo "$ANR" | grep -c . || true)
+    if [ "$ANR_TOTAL" -gt 100 ]; then
+      echo "  ... $ANR_TOTAL lines in total, the first 100 are shown"
+    fi
+  else
+    echo "  <none found in either buffer>"
+  fi
+  # ${ANR_VERDICT:-unknown}, not ${ANR_VERDICT}: this line and the assignment above
+  # it were in the opposite order once, and `set -u` killed the run mid-report.
+  echo "app ANR verdict: ${ANR_VERDICT:-unknown}"
+  echo "FATAL EXCEPTION entries in the crash buffer: ${CRASHES:-0}"
+} >> "$REPORT"
 [ "${CRASHES:-0}" -gt 0 ] && { echo "--- crash log ---"; cat crashes.txt; fail "the app crashed during the smoke test"; }
 
 if adb shell pidof "$APP_ID" >/dev/null 2>&1; then
@@ -478,6 +518,7 @@ else
   fail "the app process is not running at the end of the test"
 fi
 
+phase "writing the summary"
 {
   echo
   echo "frames rendered (dumpsys gfxinfo): $FRAMES"
@@ -501,6 +542,8 @@ fi
 } >> "$REPORT"
 cat "$REPORT"
 
+SMOKE_COMPLETED=1
+phase "done ($FAILURES problem(s) recorded)"
 if [ "$FAILURES" -gt 0 ]; then
   log "FAIL ($FAILURES problem(s))"
   exit 1
