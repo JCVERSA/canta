@@ -38,6 +38,11 @@ on:
       - "gradle/**"
       - "build.gradle.kts"
       - "settings.gradle.kts"
+      # The test script and the workflow are part of what this job verifies: a
+      # change to either must re-run it. Leaving .github/scripts/** out meant a
+      # rewritten script was never executed by CI (the same class of gap as a
+      # test that is never run).
+      - ".github/scripts/**"
       - ".github/workflows/device-smoke.yml"
   pull_request:
   workflow_dispatch:
