@@ -3,7 +3,6 @@ package com.jcversa.canta.extractor
 import com.jcversa.canta.model.Language
 import com.jcversa.canta.model.MirrorRef
 import com.jcversa.canta.model.MirrorResult
-import com.jcversa.canta.model.QualityTrack
 import com.jcversa.canta.model.Source
 import com.jcversa.canta.scraper.Http
 import kotlinx.coroutines.Dispatchers
@@ -74,6 +73,18 @@ object MirrorResolver {
     /** Per-mirror budget. A dead CDN must not hold the player screen hostage. */
     private const val PER_MIRROR_TIMEOUT_MS = 14_000L
 
+    /**
+     * Budget for the *whole* resolution, inspection and size measurement
+     * included.
+     *
+     * The per-mirror timeout only bounds one extractor: `QualityGuard.resolve`
+     * then inspects the playlist and measures the candidate variants (up to
+     * `MEASURE_BUDGET_MS` each), so a series of half-dead mirrors could still
+     * leave the user on the spinner well past 14 s. This is the outer bound, and
+     * hitting it is reported with the mirrors that were tried.
+     */
+    private const val TOTAL_RESOLVE_BUDGET_MS = 25_000L
+
     private val extractors: List<VideoExtractor> = listOf(VidmolyExtractor, VoeExtractor, GenericExtractor)
 
     /**
@@ -90,6 +101,31 @@ object MirrorResolver {
     ): MirrorResult? = withContext(Dispatchers.IO) {
         val ordered = mirrors.sortedBy { hostPriority(it.url) }
         val failures = mutableListOf<String>()
+        val result = withTimeoutOrNull(TOTAL_RESOLVE_BUDGET_MS) {
+            attemptAll(ordered, language, source, requestedQuality, failures)
+        }
+        if (result == null) {
+            // Honest failure: the UI prints which mirrors were tried and whether
+            // the budget ran out, not a generic "erreur".
+            lastFailure = when {
+                ordered.isEmpty() -> "Aucun lecteur exploitable pour cet épisode."
+                failures.isEmpty() -> "Résolution interrompue après " +
+                    "${TOTAL_RESOLVE_BUDGET_MS / 1000} s sans qu'aucun lecteur ait abouti."
+                else -> "Tous les lecteurs ont échoué ou dépassé les " +
+                    "${TOTAL_RESOLVE_BUDGET_MS / 1000} s: ${failures.joinToString(", ")}"
+            }
+        }
+        result
+    }
+
+    /** The ordered attempt loop, kept separate so the caller can bound it. */
+    private suspend fun attemptAll(
+        ordered: List<MirrorRef>,
+        language: Language,
+        source: Source,
+        requestedQuality: String?,
+        failures: MutableList<String>
+    ): MirrorResult? {
         for (mirror in ordered) {
             val extractor = extractors.firstOrNull { it.supports(mirror) } ?: continue
             val stream = withTimeoutOrNull(PER_MIRROR_TIMEOUT_MS) {
@@ -105,7 +141,7 @@ object MirrorResolver {
                 continue
             }
             val (tracks, decision) = resolved
-            return@withContext MirrorResult(
+            return MirrorResult(
                 streamUrl = decision.track.url,
                 language = mirror.language,
                 quality = decision.track,
@@ -121,13 +157,7 @@ object MirrorResolver {
                 isHls = stream.kind == StreamKind.HLS
             )
         }
-        // Honest failure: the UI prints which mirrors were tried, not "erreur".
-        lastFailure = if (failures.isEmpty()) {
-            "Aucun lecteur exploitable pour cet épisode."
-        } else {
-            "Tous les lecteurs ont échoué: ${failures.joinToString(", ")}"
-        }
-        null
+        return null
     }
 
     /** Why the last [resolve] returned null. Read by the UI for an honest message. */

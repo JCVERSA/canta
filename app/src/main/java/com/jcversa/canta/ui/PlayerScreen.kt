@@ -13,8 +13,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -118,16 +116,27 @@ fun PlayerScreen(
         current.addListener(listener)
         onDispose {
             current.removeListener(listener)
+            // Flush the final position before the player is gone: the periodic
+            // write above can be up to [PROGRESS_INTERVAL_MS] behind, and leaving
+            // the screen is precisely when the resume point matters.
+            episode?.let { watched ->
+                val duration = current.duration
+                if (duration > 0) viewModel.recordProgress(watched, current.currentPosition, duration)
+            }
             current.release()
         }
     }
 
-    // Persist "where the user stopped" once a second while playing.
+    // Persist "where the user stopped" every [PROGRESS_INTERVAL_MS], plus once
+    // when this screen goes away (see the dispose block below). Every second
+    // would mean re-encoding the whole history and writing the DataStore file
+    // 3 600 times per hour of playback, for a resume point that is only ever
+    // read in whole sentences.
     LaunchedEffect(exoPlayer) {
         val player = exoPlayer ?: return@LaunchedEffect
         val current = episode ?: return@LaunchedEffect
         while (true) {
-            delay(1_000)
+            delay(PROGRESS_INTERVAL_MS)
             val duration = player.duration
             if (duration > 0) viewModel.recordProgress(current, player.currentPosition, duration)
         }
@@ -276,6 +285,12 @@ fun PlayerScreen(
         }
     }
 }
+
+/**
+ * How often the resume position is written while playing. Coarse on purpose:
+ * a watch history entry is read as "reprendre à 12:34", not to the second.
+ */
+private const val PROGRESS_INTERVAL_MS = 10_000L
 
 /** Only used to keep the episode reference explicit in this file's imports. */
 private typealias PlayerEpisode = Episode

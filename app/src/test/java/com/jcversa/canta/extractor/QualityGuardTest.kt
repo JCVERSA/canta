@@ -124,6 +124,55 @@ class QualityGuardTest {
         assertFalse(decision.downgraded)
     }
 
+    // The guard is only useful if it also covers the automatic choice: with no
+    // requested quality (the default, since no screen sets one before the user
+    // taps a chip) the automatic pick *is* the decision the user lives with.
+
+    @Test
+    fun `the guard also fires on the automatic choice`() {
+        val tracks = listOf(
+            track("1080P", 1080, 800L * 1024 * 1024),
+            track("480P", 480, 403L * 1024 * 1024, "https://cdn/480-heavy.m3u8"),
+            track("360P", 360, 60L * 1024 * 1024, "https://cdn/360.m3u8")
+        )
+        val decision = QualityGuard.pick(tracks, null)
+        assertTrue(decision.downgraded)
+        assertEquals("360P", decision.track.label)
+        assertNotNull(decision.note)
+        assertTrue(decision.note!!.contains("403 Mo"))
+        // The ceiling is printed from the constant, so the note cannot drift.
+        assertTrue(decision.note.contains("200 Mo"))
+    }
+
+    @Test
+    fun `an automatic fast lane under the ceiling is kept`() {
+        val tracks = listOf(
+            track("1080P", 1080, 800L * 1024 * 1024),
+            track("480P", 480, 92L * 1024 * 1024, "https://cdn/480.m3u8"),
+            track("360P", 360, 60L * 1024 * 1024, "https://cdn/360.m3u8")
+        )
+        val decision = QualityGuard.pick(tracks, null)
+        assertFalse(decision.downgraded)
+        assertEquals("480P", decision.track.label)
+        assertNull(decision.note)
+    }
+
+    @Test
+    fun `an automatic unmeasured fast lane is kept and never guessed about`() {
+        val tracks = listOf(track("480P", 480, null), track("360P", 360, 60L * 1024 * 1024))
+        val decision = QualityGuard.pick(tracks, null)
+        assertFalse(decision.downgraded)
+        assertEquals("480P", decision.track.label)
+    }
+
+    @Test
+    fun `the automatic policy never downgrades a 720P`() {
+        val tracks = listOf(track("1080P", 1080, 900L * 1024 * 1024), track("720P", 720, 500L * 1024 * 1024))
+        val decision = QualityGuard.pick(tracks, null)
+        assertFalse(decision.downgraded)
+        assertEquals("720P", decision.track.label)
+    }
+
     @Test
     fun `a missing quality downgrades and says so instead of jumping up`() {
         val tracks = listOf(track("1080P", 1080, 800_000_000), track("720P", 720, 200_000_000))

@@ -8,6 +8,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.jcversa.canta.extractor.MirrorResolver
 import com.jcversa.canta.manager.DownloadUi
 import com.jcversa.canta.manager.HistoryEntry
+import com.jcversa.canta.manager.asAnime
 import com.jcversa.canta.model.Anime
 import com.jcversa.canta.model.AnimeDetail
 import com.jcversa.canta.model.Episode
@@ -24,6 +25,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -136,14 +138,29 @@ class AppViewModel(private val app: App) : ViewModel() {
             _catalogueLoading.value = true
             _catalogueError.value = null
             try {
-                val results = runCatching { VoirAnimeScraper.search(query) }.getOrElse { emptyList() }
+                val primary = runCatching { VoirAnimeScraper.search(query) }
+                val results = primary.getOrNull().orEmpty()
                 if (results.isNotEmpty()) {
                     _catalogue.value = results
                 } else {
                     // Honest fallback: the VOSTFR catalogue is the second source.
-                    val nakanime = NakanimeScraper.search(query)
+                    val nakanime = runCatching { NakanimeScraper.search(query) }.getOrElse { emptyList() }
                     _catalogue.value = nakanime
-                    if (nakanime.isEmpty()) _catalogueError.value = "Aucun résultat pour « $query »."
+                    // A failed search is *not* the same thing as "this series does
+                    // not exist": if the primary source was unreachable (403,
+                    // structure change, offline) the user is told so, instead of
+                    // being sent away with a "no results" that is not true.
+                    val primaryFailure = primary.exceptionOrNull()
+                    _catalogueError.value = when {
+                        primaryFailure != null && nakanime.isEmpty() ->
+                            "Recherche impossible sur ${Source.VOIRANIME.host} (${describe(primaryFailure)}) ; " +
+                                "aucun résultat sur ${Source.NAKANIME.host}."
+                        primaryFailure != null ->
+                            "Recherche indisponible sur ${Source.VOIRANIME.host} (${describe(primaryFailure)}) — " +
+                                "résultats de ${Source.NAKANIME.host} uniquement."
+                        nakanime.isEmpty() -> "Aucun résultat pour « $query »."
+                        else -> null
+                    }
                 }
                 _cataloguePage.value = 1
             } catch (e: Exception) {
@@ -334,6 +351,30 @@ class AppViewModel(private val app: App) : ViewModel() {
     }
 
     // ----------------------------------------------------------------- actions
+
+    /**
+     * Finds a series by the id a notification carries, from local state only.
+     *
+     * Favourites, then the watchlist, then history: the notification exists
+     * because the series is watched, and a network round trip is not needed to
+     * open something this install already remembers. Returns null when nothing
+     * local matches — the caller then searches by title rather than pretending
+     * the tap worked.
+     */
+    suspend fun resolveSeriesById(id: String): Anime? {
+        val favorites = runCatching { container.favorites.favorites.first() }.getOrDefault(emptyList())
+        favorites.firstOrNull { it.id == id }?.let { return it }
+        val watched = runCatching { container.watchlist.series.first() }.getOrDefault(emptyList())
+        watched.firstOrNull { it.id == id }?.let { return it }
+        val history = runCatching { container.history.entries.first() }.getOrDefault(emptyList())
+        val entry = history.firstOrNull { it.seriesId == id } ?: return null
+        // The history entry does not store its source, but the id does: both
+        // scrapers build ids as "<source.id>:<provider id>". When that prefix is
+        // not recognisable the series is *not* labelled with a guess — null sends
+        // the caller to the title search instead.
+        val source = Source.fromId(id.substringBefore(':')) ?: return null
+        return entry.asAnime(source)
+    }
 
     fun toggleFavorite(anime: Anime) {
         viewModelScope.launch { container.favorites.toggle(anime) }

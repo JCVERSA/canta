@@ -31,9 +31,13 @@ import com.jcversa.canta.model.MirrorResult
 import com.jcversa.canta.model.QualityTrack
 import com.jcversa.canta.model.formatBytes
 import com.jcversa.canta.scraper.Http
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.io.File
 import java.util.concurrent.Executor
@@ -72,6 +76,12 @@ object CantaDownloadManager {
 
     private val LOCK = Any()
     private val DOWNLOAD_EXECUTOR: Executor = Executors.newFixedThreadPool(2)
+
+    /**
+     * App-lifetime scope for work that must not run on the caller's thread.
+     * A singleton object's lifetime is the process's, so nothing to cancel.
+     */
+    private val SCOPE = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     @Volatile private var downloadManager: DownloadManager? = null
     @Volatile private var offlineCacheRef: SimpleCache? = null
@@ -132,6 +142,50 @@ object CantaDownloadManager {
             downloadManager = manager
             refresh(appContext)
             manager
+        }
+    }
+
+    /**
+     * Creates the manager, the index and both caches away from the caller's
+     * thread.
+     *
+     * Media3 opens SQLite and the cache directories lazily on first use, and the
+     * first use is otherwise the player screen building its data source during
+     * composition, or the play button reading the index: disk I/O and a database
+     * open on the UI thread. Warming them from [App]'s IO scope means those call
+     * sites only ever read what already exists.
+     */
+    fun warmUp(context: Context) {
+        SCOPE.launch {
+            runCatching {
+                get(context)
+                offlineCache(context)
+                streamCache(context)
+            }
+        }
+    }
+
+    /**
+     * Resumes downloads left queued by an earlier process, and *only then* starts
+     * the service.
+     *
+     * A foreground service started with nothing to do costs the user battery and
+     * notification space for no benefit — and on Android 12+ a foreground service
+     * that never becomes foreground is killed, so starting one unconditionally at
+     * every app launch is a risk with no upside. The index is consulted first.
+     */
+    fun resumePendingIfAny(context: Context) {
+        SCOPE.launch {
+            val pending = runCatching {
+                get(context).downloadIndex
+                    .getDownloads(Download.STATE_QUEUED, Download.STATE_DOWNLOADING)
+                    .use { cursor -> cursor.moveToNext() }
+            }.getOrDefault(false)
+            if (pending) {
+                runCatching {
+                    DownloadService.sendResumeDownloads(context, CantaDownloadService::class.java, true)
+                }
+            }
         }
     }
 

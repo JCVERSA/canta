@@ -90,6 +90,9 @@ class EpisodeWatcherWorker(
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             putExtra(MainActivity.EXTRA_OPEN_SERIES_ID, anime.id)
+            // The title travels too: if the id is no longer resolvable locally the
+            // app searches for the series instead of dropping the tap.
+            putExtra(MainActivity.EXTRA_OPEN_SERIES_TITLE, anime.title)
         }
         val pending = PendingIntent.getActivity(
             context,

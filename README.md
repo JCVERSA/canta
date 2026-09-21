@@ -150,10 +150,13 @@ requires 24).
 * Requested or automatic quality is resolved to a variant; the size is measured
   through `HEAD`/`Range` requests on the segments (every segment when the
   playlist is small, a scaled sample when it has hundreds).
-* Fast lane: if an exact, measured 480P/360P stream exceeds 200 MiB and a
-  lighter variant ≤ 480p exists, the app downgrades and prints the decision with
-  both numbers (`QualityGuard`, from the reference audit §8.13). 720P and 1080P
-  are never downgraded on this rule.
+* Fast lane: if a **measured** 480P/360P stream exceeds 200 MiB and a lighter
+  variant ≤ 480p exists, the app downgrades and prints the decision with both
+  numbers (`QualityGuard`, from the reference audit §8.13). The rule applies to
+  the automatic choice as well as to an explicit request — the automatic choice
+  is what a user with no preference actually gets — and only a measured size can
+  trigger it: an unknown size is treated neither as small nor as large. 720P and
+  1080P are never downgraded on this rule.
 
 ### Downloads and playback
 

@@ -3,6 +3,8 @@ package com.jcversa.canta.extractor
 import com.jcversa.canta.model.QualityTrack
 import com.jcversa.canta.scraper.Http
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
@@ -162,18 +164,33 @@ object QualityGuard {
         val tracks = inspect(stream)
         if (tracks.isEmpty()) return@withContext null
 
-        val fastLane = requestedQuality?.uppercase() in FAST_LANES
-        val toMeasure = if (fastLane) tracks.filter { it.height in 1..480 }.ifEmpty { tracks } else listOf()
-        val measured = toMeasure.associate { it.url to measure(it, headers) }
+        val wanted = requestedQuality?.uppercase()?.takeIf { it.isNotBlank() }
+
+        // Decide on labels first: that choice needs no sizes, so it says exactly
+        // which tracks have to be measured before it can be trusted. Every ≤480p
+        // candidate is measured because the guard compares them against each
+        // other, and the track that would play is measured because the size shown
+        // to the user has to be a real one — that is the whole point of the
+        // default policy as well, not only of an explicit quality request.
+        val provisional = pick(tracks, wanted)
+        val toMeasure = (tracks.filter { it.height in 1..480 } + provisional.track)
+            .filter { it.url.isNotBlank() }
+            .distinctBy { it.url }
+
+        val measured: Map<String, QualityTrack> = if (toMeasure.isEmpty()) {
+            emptyMap()
+        } else {
+            // Independent HEAD/Range probes: running them one after the other is
+            // what used to multiply the wait by the number of variants.
+            coroutineScope {
+                toMeasure.map { track -> async { measure(track, headers) } }.awaitAll()
+            }.associateBy { it.url }
+        }
         val merged = tracks.map { measured[it.url] ?: it }
 
-        // With sizes known for the fast lanes, the guard can fire; otherwise the
-        // picked track is measured afterwards so the reported size is still real.
-        var decision = pick(merged, requestedQuality)
-        if (decision.track.measuredBytes == null) {
-            val measuredPicked = measure(decision.track, headers)
-            decision = pick(merged.map { if (it.url == measuredPicked.url) measuredPicked else it }, requestedQuality)
-        }
+        // Now the guard can fire. When a CDN refused to state sizes, the label
+        // decision stands and the UI reports an unknown size — never a guess.
+        val decision = pick(merged, wanted)
         merged.map { track -> if (track.url == decision.track.url) decision.track else track } to decision
     }
 
@@ -196,18 +213,7 @@ object QualityGuard {
 
         if (wanted != null) {
             val exact = tracks.firstOrNull { it.label.uppercase() == wanted }
-            if (exact != null) {
-                if (wanted in FAST_LANES && exact.measuredBytes != null && exact.measuredBytes > FAST_LANE_MAX_BYTES) {
-                    val alternative = fastLaneDowngrade(tracks, exact)
-                    if (alternative != null) {
-                        val note = "Garde qualité: le flux « $wanted » annoncé pèse " +
-                            "${exact.measuredBytes / (1024 * 1024)} Mo (> 200 Mo) — " +
-                            "bascule sur ${alternative.label} (${(alternative.measuredBytes ?: 0) / (1024 * 1024)} Mo)."
-                        return Decision(alternative, true, note)
-                    }
-                }
-                return Decision(exact, false, null)
-            }
+            if (exact != null) return fastLaneDecision(exact, tracks) ?: Decision(exact, false, null)
             // Requested quality is not on this mirror: never go *up* silently.
             val wantedHeight = wanted.filter { it.isDigit() }.toIntOrNull() ?: 0
             val under = tracks.filter { it.height in 1..wantedHeight }.maxByOrNull { it.height }
@@ -220,8 +226,33 @@ object QualityGuard {
             ?: tracks.firstOrNull { it.label.uppercase() == "360P" }
             ?: tracks.firstOrNull { it.label.uppercase() == "720P" }
             ?: tracks.first()
-        return Decision(preferred, false, null)
+        // The ceiling applies to the automatic choice too: a stream labelled
+        // "480P" whose measured size is 403 MB is exactly what it is for, and the
+        // user is told about the switch instead of only the log knowing.
+        return fastLaneDecision(preferred, tracks) ?: Decision(preferred, false, null)
     }
+
+    /**
+     * The fast-lane ceiling, applied to whichever track is about to play.
+     *
+     * Returns null when the rule does not apply: only the 480P/360P lanes are
+     * gated, only a *measured* size can trigger it (an unknown size is treated
+     * neither as small nor as large), and the switch needs a lighter ≤480p
+     * variant whose own size is known.
+     */
+    private fun fastLaneDecision(match: QualityTrack, tracks: List<QualityTrack>): Decision? {
+        if (match.label.uppercase() !in FAST_LANES) return null
+        val measured = match.measuredBytes ?: return null
+        if (measured <= FAST_LANE_MAX_BYTES) return null
+        val alternative = fastLaneDowngrade(tracks, match) ?: return null
+        val note = "Garde qualité: le flux « ${match.label.uppercase()} » annoncé pèse " +
+            "${megabytes(measured)} (> ${megabytes(FAST_LANE_MAX_BYTES)}) — " +
+            "bascule sur ${alternative.label} (${megabytes(alternative.measuredBytes ?: 0L)})."
+        return Decision(alternative, true, note)
+    }
+
+    /** The threshold is formatted, never typed twice: the note cannot lie about it. */
+    private fun megabytes(bytes: Long): String = "${bytes / (1024 * 1024)} Mo"
 
     /**
      * The lightest ≤ 480P variant with a *known* size, when the exact fast-lane

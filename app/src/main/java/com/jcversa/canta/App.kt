@@ -37,6 +37,10 @@ class App : Application(), Configuration.Provider {
         container = AppContainer(applicationContext)
         createNotificationChannels()
         scheduleEpisodeWatcher()
+        // Media3's caches and download index are opened here, on an IO thread,
+        // rather than on the UI thread the first time the player or the download
+        // button touches them.
+        CantaDownloadManager.warmUp(this)
     }
 
     override val workManagerConfiguration: Configuration
