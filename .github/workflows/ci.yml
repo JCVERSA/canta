@@ -54,29 +54,13 @@ jobs:
         # "Tests: PASS" is only useful with the count and the per-class split, and
         # the job log is the one place both this repository's CI and a human can
         # read it. Appended to build.log so the published failure log carries it
-        # too.
+        # too. The summary itself lives in .github/scripts/ (a heredoc inside a
+        # YAML block scalar is indented by YAML and arrives malformed).
         if: always()
         shell: bash
         run: |
-          {
-            echo "=== unit test summary ==="
-            python3 - <<'PY'
-            import glob
-            import xml.etree.ElementTree as ET
-
-            total = failures = errors = 0
-            for path in sorted(glob.glob("app/build/test-results/testDebugUnitTest/*.xml")):
-                root = ET.parse(path).getroot()
-                cases = int(root.get("tests", 0))
-                failed = int(root.get("failures", 0))
-                broken = int(root.get("errors", 0))
-                print(f"{root.get('name', '?'):58} tests={cases} failures={failed} errors={broken}")
-                total += cases
-                failures += failed
-                errors += broken
-            print(f"TOTAL tests={total} failures={failures} errors={errors}")
-            PY
-          } | tee -a build.log
+          echo "=== unit test summary ===" | tee -a build.log
+          python3 .github/scripts/summarise-tests.py | tee -a build.log
 
       - name: Upload test report
         if: always()
@@ -96,7 +80,7 @@ jobs:
           { echo "job: unit-tests"; echo "sha: ${GITHUB_SHA}"; echo "date: $(date -u)"; echo; tail -c 60000 build.log 2>/dev/null || echo "(no build.log)"; } > .ci-logs/unit-tests.txt
           # A short, greppable extract so the failure is readable without paging
           # through 60 KB of Gradle output.
-          { echo "job: unit-tests"; grep -E "^(e: |w: |FAILURE|\* What went wrong|> Task .*FAILED)|^[0-9.]+s? .*(FAILED|error:)" build.log 2>/dev/null | head -n 120; } > .ci-logs/unit-tests-errors.txt
+          { echo "job: unit-tests"; grep -E "^(e: |w: |FAILURE|\* What went wrong|> Task .*FAILED)|^[0-9.]+s? .*(FAILED|error:)|::error::|here-document|command not found|No such file" build.log 2>/dev/null | head -n 120; } > .ci-logs/unit-tests-errors.txt
           bash .github/scripts/publish-ci-log.sh
 
   debug-apk:
@@ -140,7 +124,7 @@ jobs:
         run: |
           mkdir -p .ci-logs
           { echo "job: debug-apk"; echo "sha: ${GITHUB_SHA}"; echo "date: $(date -u)"; echo; tail -c 60000 build.log 2>/dev/null || echo "(no build.log)"; } > .ci-logs/debug-apk.txt
-          { echo "job: debug-apk"; grep -E "^(e: |w: |FAILURE|\* What went wrong|> Task .*FAILED)|^[0-9.]+s? .*(FAILED|error:)" build.log 2>/dev/null | head -n 120; } > .ci-logs/debug-apk-errors.txt
+          { echo "job: debug-apk"; grep -E "^(e: |w: |FAILURE|\* What went wrong|> Task .*FAILED)|^[0-9.]+s? .*(FAILED|error:)|::error::|here-document|command not found|No such file" build.log 2>/dev/null | head -n 120; } > .ci-logs/debug-apk-errors.txt
           bash .github/scripts/publish-ci-log.sh
 
   preview-apk:
@@ -209,5 +193,5 @@ jobs:
         run: |
           mkdir -p .ci-logs
           { echo "job: preview-apk"; echo "sha: ${GITHUB_SHA}"; echo "date: $(date -u)"; echo; tail -c 60000 build.log 2>/dev/null || echo "(no build.log)"; } > .ci-logs/preview-apk.txt
-          { echo "job: preview-apk"; grep -E "^(e: |w: |FAILURE|\* What went wrong|> Task .*FAILED)|^[0-9.]+s? .*(FAILED|error:)" build.log 2>/dev/null | head -n 120; } > .ci-logs/preview-apk-errors.txt
+          { echo "job: preview-apk"; grep -E "^(e: |w: |FAILURE|\* What went wrong|> Task .*FAILED)|^[0-9.]+s? .*(FAILED|error:)|::error::|here-document|command not found|No such file" build.log 2>/dev/null | head -n 120; } > .ci-logs/preview-apk-errors.txt
           bash .github/scripts/publish-ci-log.sh
