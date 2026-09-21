@@ -32,17 +32,17 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # JDK 17 is what Canta compiles against (compileOptions/jvmTarget = 17).
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: "17"
           distribution: temurin
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
         with:
           cache-read-only: ${{ github.event_name == 'pull_request' }}
 
@@ -64,7 +64,11 @@ jobs:
 
       - name: Upload test report
         if: always()
-        uses: actions/upload-artifact@v4
+        # The artifact is a convenience: an intermediary 403 from the artifact
+        # storage service (seen on run 35647992403) must not turn a green
+        # build into a red branch. The failure is still visible in the log.
+        continue-on-error: true
+        uses: actions/upload-artifact@v5
         with:
           name: test-results
           path: app/build/reports/tests/
@@ -88,16 +92,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: "17"
           distribution: temurin
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
         with:
           cache-read-only: ${{ github.event_name == 'pull_request' }}
 
@@ -110,7 +114,11 @@ jobs:
 
       - name: Upload debug APK
         if: success()
-        uses: actions/upload-artifact@v4
+        # The artifact is a convenience: an intermediary 403 from the artifact
+        # storage service (seen on run 35647992403) must not turn a green
+        # build into a red branch. The failure is still visible in the log.
+        continue-on-error: true
+        uses: actions/upload-artifact@v5
         with:
           name: canta-debug
           path: app/build/outputs/apk/debug/*.apk
@@ -132,16 +140,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: "17"
           distribution: temurin
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
         with:
           cache-read-only: ${{ github.event_name == 'pull_request' }}
 
@@ -179,7 +187,11 @@ jobs:
 
       - name: Upload preview APK
         if: success()
-        uses: actions/upload-artifact@v4
+        # The artifact is a convenience: an intermediary 403 from the artifact
+        # storage service (seen on run 35647992403) must not turn a green
+        # build into a red branch. The failure is still visible in the log.
+        continue-on-error: true
+        uses: actions/upload-artifact@v5
         with:
           name: canta-preview
           path: app/build/outputs/apk/preview/Canta-*.apk

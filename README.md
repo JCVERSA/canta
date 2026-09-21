@@ -224,7 +224,13 @@ is the publisher's business, not the repository's. Installable builds come from
 
 Every workflow run attaches the built APKs as downloadable artifacts, and the
 bots also commit each job's plain-text log into `.ci-logs/` on the branch, so a
-failing build can be read without leaving GitHub.
+failing build can be read without leaving GitHub. Artifact uploads are
+non-fatal: a storage-service error is infrastructure, not a code problem.
+
+A committed log is written **only when that job failed**, and each file carries
+its own `sha:` and `date:` header. So a log whose `sha` is not the commit you are
+looking at is history, not status — read the header before believing the errors
+inside it, because a stale `unit-tests.txt` still reads like a live failure.
 
 ## Tests
 
