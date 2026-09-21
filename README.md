@@ -48,6 +48,7 @@ frames actually contain.
 
 | Capture | What its frames contain |
 | --- | --- |
+| ![The catalogue loading on a real device](screenshots/01-app-amoled.png) | `01-app-amoled.png` — the catalogue screen on a real device: pure-black AMOLED background, "Rechercher une série", the VF/VOSTFR switch, `Source : voir-anime.to · page 1`, the loading spinner, and the four-tab bar (Catalogue / Favoris / Hors ligne / Réglages). The CI emulator cannot resolve `voir-anime.to`, so this is the state that runner can honestly reach — the app reporting progress while its source is unreachable, not a fabricated catalogue |
 | ![Settings on a real device](screenshots/03-settings.png) | `03-settings.png` — the Settings screen on a real device: theme, the VF/VOSTFR default, the watchlist note and the Media3/offline explanation, with the `Version Canta smoke-…` line naming the build that was running |
 
 That capture comes from the run whose `Version` line is printed inside it

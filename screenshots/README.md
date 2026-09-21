@@ -9,17 +9,25 @@ of a screen it cannot render.
 
 | File | Shows | Notes |
 | --- | --- | --- |
+| ![](01-app-amoled.png) `01-app-amoled.png` | The catalogue screen, AMOLED theme | Captured by run 8 after the capture gate confirmed the app's own window was in front. Shows the search field, the VF/VOSTFR switch, `Source : voir-anime.to · page 1` and the loading spinner: on a runner that cannot resolve the source site, the catalogue cannot load, and the app shows that rather than an invented list. |
 | ![](03-settings.png) `03-settings.png` | Settings, AMOLED theme | Captured by the smoke test after it verified the tab was reached (by text unique to that screen) and that the app's own window was on screen. The version string in the frame names the build it came from. |
 | `smoke-report.txt` | The run's own record | Emulator API/ABI, package version, `am start -W` timing, resumed activity, per-screen visible text, per-capture verification lines, ANR lines. |
 
-No catalogue capture is kept at the moment, and that is deliberate: earlier runs
-produced files named `01-app-amoled.png` whose frames were the **launcher** (the
-system ANR dialog had been dismissed with BACK, which also left the app) and then
-the app behind the emulator's own "not responding" dialog. Both were mislabelled
-claims, so they were deleted rather than renamed or annotated. The current script
-writes a capture only when the app's window is on screen, suffixes
-`-with-system-dialog` when the dialog is in front, and fails the run when it
-cannot produce a single verified capture.
+The two captures above are the only ones this project currently vouches for, and
+the directory is thin on purpose: earlier runs produced files under these names
+whose frames were the **launcher** (the system ANR dialog had been dismissed with
+BACK, which also left the app) and then the app behind the emulator's own "not
+responding" dialog. Those were mislabelled claims, so they were deleted rather
+than renamed or annotated - a picture whose label cannot be checked is worse than
+no picture.
+
+The script enforces that rule mechanically. A capture is written only when the
+app's own window is on screen, checked by three independent probes (focused
+window, accessibility dump, window manager) with the one that answered recorded
+in the report; the file name carries `-with-system-dialog` when a dialog is in
+front at the moment of the screencap; the window state is sampled immediately
+*before* the screencap rather than after it, so the report describes the frame it
+ships; and a run that cannot produce one verified capture fails.
 
 Not captured, and deliberately not implied: playback, the quality selector with
 measured sizes, a download in progress, and offline playback. Each needs network
