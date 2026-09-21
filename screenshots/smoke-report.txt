@@ -1,0 +1,31 @@
+Canta device smoke report
+date: Mon Sep 21 21:49:07 UTC 2026
+sha: 3273a9dc224713a412eb9f078f00c3b916f55d17
+run: 7
+emulator api: 34
+emulator abi: x86_64
+package: versionName=smoke-3273a9d
+am start -W TotalTime (ms): 17147
+resumed:     topResumedActivity=ActivityRecord{d138453 u0 com.jcversa.canta/.MainActivity t8}
+
+screen text after cold start:
+  <none>
+
+ANR / not-responding lines in logcat:
+  <none>
+FATAL EXCEPTION entries in the crash buffer: 0
+
+frames rendered (dumpsys gfxinfo): unreadable
+screen text: unavailable (uiautomator dump produced nothing)
+first screen state: unknown (screen text unavailable - uiautomator dump produced nothing)
+settings tab: reached, but no capture was verifiable
+screen text after the notification-extras launch: System UI isn't responding Close app|Wait
+system dialog in front after that launch: yes
+captures verified by this run: <none>
+
+ANR in com.jcversa.canta: <none>
+
+files in screenshots/ at the end of this run (a directory listing, NOT proof
+that this run wrote them - see the capture lines above, and read the
+committed image itself before trusting what it shows):
+  screenshots/03-settings.png (298427 bytes)
