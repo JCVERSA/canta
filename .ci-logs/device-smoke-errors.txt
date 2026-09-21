@@ -1,0 +1,6 @@
+job: device-smoke
+sha: 3a5ff57ab1ba3230ff56cf62574e06d72de4f5a4
+
+--- errors ---
+
+--- smoke.log, first 12 lines (device state at the start) ---

@@ -1,0 +1,69 @@
+job: device-smoke
+sha: 3a5ff57ab1ba3230ff56cf62574e06d72de4f5a4
+run: 13
+job status: failure
+date: Mon Sep 21 23:41:20 UTC 2026
+
+--- build.log tail ---
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.7.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :app:generateDebugBuildConfig
+> Task :app:generateDebugResources FROM-CACHE
+> Task :app:packageDebugResources FROM-CACHE
+> Task :app:processDebugNavigationResources FROM-CACHE
+> Task :app:parseDebugLocalResources FROM-CACHE
+> Task :app:generateDebugRFile FROM-CACHE
+> Task :app:javaPreCompileDebug FROM-CACHE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :app:mergeDebugAssets
+> Task :app:compressDebugAssets FROM-CACHE
+> Task :app:generateDebugGlobalSynthetics FROM-CACHE
+> Task :app:checkDebugDuplicateClasses
+> Task :app:desugarDebugFileDependencies FROM-CACHE
+> Task :app:mergeExtDexDebug FROM-CACHE
+> Task :app:mergeLibDexDebug FROM-CACHE
+> Task :app:mapDebugSourceSetPaths
+> Task :app:compileDebugNavigationResources FROM-CACHE
+> Task :app:checkDebugAarMetadata
+> Task :app:mergeDebugResources FROM-CACHE
+> Task :app:createDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksDebug FROM-CACHE
+> Task :app:processDebugMainManifest
+> Task :app:processDebugManifest
+> Task :app:mergeDebugJniLibFolders
+> Task :app:mergeDebugNativeLibs
+> Task :app:validateSigningDebug
+> Task :app:writeDebugAppMetadata
+> Task :app:writeDebugSigningConfigVersions
+> Task :app:processDebugManifestForPackage
+> Task :app:stripDebugDebugSymbols
+> Task :app:processDebugResources
+
+> Task :app:compileDebugKotlin
+w: file:///home/runner/work/canta/canta/app/src/main/java/com/jcversa/canta/manager/DownloadManager.kt:1:13 Annotation 'androidx.media3.common.util.UnstableApi' is not annotated with '@RequiresOptIn'. '@OptIn' has no effect.
+w: file:///home/runner/work/canta/canta/app/src/main/java/com/jcversa/canta/manager/DownloadManager.kt:125:25 'constructor(p0: MediaItem, p1: CacheDataSource.Factory, p2: Executor): HlsDownloader' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/canta/canta/app/src/main/java/com/jcversa/canta/manager/DownloadManager.kt:292:32 Unnecessary safe call on a non-null receiver of type 'ByteArray'.
+w: file:///home/runner/work/canta/canta/app/src/main/java/com/jcversa/canta/manager/DownloadManager.kt:317:32 Unnecessary safe call on a non-null receiver of type 'ByteArray'.
+w: file:///home/runner/work/canta/canta/app/src/main/java/com/jcversa/canta/ui/DownloadsScreen.kt:127:79 Unnecessary non-null assertion (!!) on a non-null receiver of type 'Episode'.
+
+> Task :app:compileDebugJavaWithJavac
+> Task :app:processDebugJavaRes
+> Task :app:mergeDebugJavaResource
+> Task :app:dexBuilderDebug
+> Task :app:mergeProjectDexDebug
+> Task :app:packageDebug
+> Task :app:createDebugApkListingFileRedirect
+> Task :app:assembleDebug
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1790033669316.json
+
+[Incubating] Problems report is available at: file:///home/runner/work/canta/canta/build/reports/problems/problems-report.html
+
+BUILD SUCCESSFUL in 41s
+38 actionable tasks: 24 executed, 14 from cache
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.7.1/userguide/configuration_cache_enabling.html
+
+--- smoke.log tail ---
+(no smoke.log)
