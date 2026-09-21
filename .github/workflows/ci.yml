@@ -50,6 +50,34 @@ jobs:
         shell: bash
         run: ./gradlew testDebugUnitTest --no-daemon --console=plain --stacktrace 2>&1 | tee build.log
 
+      - name: Summarise the test results
+        # "Tests: PASS" is only useful with the count and the per-class split, and
+        # the job log is the one place both this repository's CI and a human can
+        # read it. Appended to build.log so the published failure log carries it
+        # too.
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "=== unit test summary ==="
+            python3 - <<'PY'
+            import glob
+            import xml.etree.ElementTree as ET
+
+            total = failures = errors = 0
+            for path in sorted(glob.glob("app/build/test-results/testDebugUnitTest/*.xml")):
+                root = ET.parse(path).getroot()
+                cases = int(root.get("tests", 0))
+                failed = int(root.get("failures", 0))
+                broken = int(root.get("errors", 0))
+                print(f"{root.get('name', '?'):58} tests={cases} failures={failed} errors={broken}")
+                total += cases
+                failures += failed
+                errors += broken
+            print(f"TOTAL tests={total} failures={failures} errors={errors}")
+            PY
+          } | tee -a build.log
+
       - name: Upload test report
         if: always()
         uses: actions/upload-artifact@v4
