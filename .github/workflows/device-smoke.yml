@@ -92,7 +92,11 @@ jobs:
           target: default
           profile: pixel_5
           disable-animations: true
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          # -cores 4: runs 7-9 showed the emulator starving on the runner's
+          # default core count - system_server itself stopped responding, and
+          # systemui/phone/media/bluetooth ANR'd in a loop for the whole run. That
+          # is the context in which run 9's own app ANR has to be read.
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -cores 4
           script: bash .github/scripts/device-smoke.sh
 
       - name: Upload screenshots
