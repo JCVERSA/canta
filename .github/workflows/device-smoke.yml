@@ -84,14 +84,19 @@ jobs:
         uses: actions/upload-artifact@v5
         with:
           name: canta-screenshots
-          path: screenshots/*.png
+          path: |
+            screenshots/*.png
+            screenshots/smoke-report.txt
           if-no-files-found: ignore
           retention-days: 14
 
-      - name: Publish captured screenshots onto the branch
+      - name: Publish the captures and the smoke report onto the branch
         # Only from a push: a pull request from a fork has a read-only token, and
-        # the screenshot directory belongs to the branch that produced the build.
-        if: success() && github.event_name == 'push'
+        # the directory belongs to the branch that produced the build. The report
+        # matters as much as the images: job logs and artifacts are unreachable
+        # from the development sandbox, so a committed file is the only way the
+        # run's timings, screen text and ANR findings can be read there.
+        if: always() && github.event_name == 'push'
         continue-on-error: true
         shell: bash
         run: |
@@ -103,7 +108,7 @@ jobs:
           git config user.name "canta-smoke"
           git config user.email "smoke@jcversa.invalid"
           git add -f screenshots
-          git commit -m "chore(screenshots): captures from emulator run ${GITHUB_RUN_NUMBER} [skip ci]"
+          git commit -m "chore(screenshots): captures + smoke report from emulator run ${GITHUB_RUN_NUMBER} [skip ci]"
           for attempt in 1 2 3; do
             if git push origin "HEAD:${GITHUB_REF_NAME}"; then
               echo "screenshots published"
