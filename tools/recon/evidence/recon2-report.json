@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-09-20T22:13:03.323Z",
+  "generatedAt": "2026-09-21T20:02:26.214Z",
   "pass": 2,
   "catalogue": {
     "home": {
       "status": 200,
-      "bytes": 215256,
+      "bytes": 215641,
       "index": 24766,
       "cardBlock": "-tabs-item .c-tabs-item__content .tab-summary .post-content .post-content_item.mg_genres .summary-content, body.page .c-page-content .c-page .c-page__content .page-content-listing .page-listing-item .page-item-detail .item-summary .list-chapter .chapter-item .vol a:hover, #hover-infor .item_thumb .post-title a, body.manga-page .version-chap:before, body.manga-page .content-readmore:hover, body.manga-page .chapter-readmore:hover, .icon-load-info, .c-blog-post .entry-header .entry-meta .post-on .c-blog__date .post-category a:hover, .woocommerce ul.products li.product .price, .woocommerce div.entry-summary p.price, .woocommerce div.entry-summary form.cart .variations .label, .woocommerce div.entry-summary form.cart .quantity-text, .widget_product_categories .product-categories li a:hover, .woocommerce ul.products li.product h2:hover, .woocommerce .c-woo-breadcrumb a:hover, .site-header .c-s",
-      "itemSummary": "<div class=\"item-summary\"> <div class=\"post-title font-title\"> <h3 class=\"h5\"> <a href=\"https://voir-anime.to/anime/one-piece/\">One Piece</a> </h3> </div>",
+      "itemSummary": "<div class=\"item-summary\"> <div class=\"post-title font-title\"> <h3 class=\"h5\"> <a href=\"https://voir-anime.to/anime/liar-game/\">LIAR GAME</a> </h3> </div>",
       "titleAnchor": null,
       "imgTag": "<img class=\"img-responsive\" src=\"https://voir-anime.to/wp-content/uploads/2019/12/vato.png\" alt=\"Voiranime\"/>",
       "vfSlugTitles": [],
@@ -15,10 +15,10 @@
     },
     "vf": {
       "status": 200,
-      "bytes": 214874,
+      "bytes": 214882,
       "index": 24766,
       "cardBlock": "-tabs-item .c-tabs-item__content .tab-summary .post-content .post-content_item.mg_genres .summary-content, body.page .c-page-content .c-page .c-page__content .page-content-listing .page-listing-item .page-item-detail .item-summary .list-chapter .chapter-item .vol a:hover, #hover-infor .item_thumb .post-title a, body.manga-page .version-chap:before, body.manga-page .content-readmore:hover, body.manga-page .chapter-readmore:hover, .icon-load-info, .c-blog-post .entry-header .entry-meta .post-on .c-blog__date .post-category a:hover, .woocommerce ul.products li.product .price, .woocommerce div.entry-summary p.price, .woocommerce div.entry-summary form.cart .variations .label, .woocommerce div.entry-summary form.cart .quantity-text, .widget_product_categories .product-categories li a:hover, .woocommerce ul.products li.product h2:hover, .woocommerce .c-woo-breadcrumb a:hover, .site-header .c-s",
-      "itemSummary": "<div class=\"item-summary\"> <div class=\"post-title font-title\"> <h3 class=\"h5\"> <a href=\"https://voir-anime.to/anime/though-i-am-an-inept-villainess-tale-of-the-butterfly-rat-body-swap-in-the-maiden-court-vf/\">Though I Am an Inept Villainess: Tale of the Butterfly-Rat Body Swap in the Maiden Court (VF)</a> </h3> </div>",
+      "itemSummary": "<div class=\"item-summary\"> <div class=\"post-title font-title\"> <h3 class=\"h5\"> <a href=\"https://voir-anime.to/anime/magilumiere-magical-girls-inc-2-vf/\">Magilumiere Magical Girls Inc 2 (VF)</a> </h3> </div>",
       "titleAnchor": null,
       "imgTag": "<img class=\"img-responsive\" src=\"https://voir-anime.to/wp-content/uploads/2019/12/vato.png\" alt=\"Voiranime\"/>",
       "vfSlugTitles": [],
@@ -26,10 +26,10 @@
     },
     "vostfr": {
       "status": 200,
-      "bytes": 215284,
+      "bytes": 215799,
       "index": 24766,
       "cardBlock": "-tabs-item .c-tabs-item__content .tab-summary .post-content .post-content_item.mg_genres .summary-content, body.page .c-page-content .c-page .c-page__content .page-content-listing .page-listing-item .page-item-detail .item-summary .list-chapter .chapter-item .vol a:hover, #hover-infor .item_thumb .post-title a, body.manga-page .version-chap:before, body.manga-page .content-readmore:hover, body.manga-page .chapter-readmore:hover, .icon-load-info, .c-blog-post .entry-header .entry-meta .post-on .c-blog__date .post-category a:hover, .woocommerce ul.products li.product .price, .woocommerce div.entry-summary p.price, .woocommerce div.entry-summary form.cart .variations .label, .woocommerce div.entry-summary form.cart .quantity-text, .widget_product_categories .product-categories li a:hover, .woocommerce ul.products li.product h2:hover, .woocommerce .c-woo-breadcrumb a:hover, .site-header .c-s",
-      "itemSummary": "<div class=\"item-summary\"> <div class=\"post-title font-title\"> <h3 class=\"h5\"> <a href=\"https://voir-anime.to/anime/one-piece/\">One Piece</a> </h3> </div>",
+      "itemSummary": "<div class=\"item-summary\"> <div class=\"post-title font-title\"> <h3 class=\"h5\"> <a href=\"https://voir-anime.to/anime/liar-game/\">LIAR GAME</a> </h3> </div>",
       "titleAnchor": null,
       "imgTag": "<img class=\"img-responsive\" src=\"https://voir-anime.to/wp-content/uploads/2019/12/vato.png\" alt=\"Voiranime\"/>",
       "vfSlugTitles": [],
@@ -172,116 +172,34 @@
   },
   "nakanime": {
     "sources": {
-      "status": 200,
-      "decoded": "[{\"id\":99756,\"url\":\"https://video.sibnet.ru/shell.php?videoid=4826196\",\"host\":\"sibnet\",\"language\":\"VOSTFR\",\"episodeId\":35276},{\"id\":99879,\"url\":\"https://video.sibnet.ru/shell.php?videoid=4833453\",\"host\":\"sibnet\",\"language\":\"VF\",\"episodeId\":35276},{\"id\":162845,\"url\":\"https://jamesbornmain.com/e/w4fbd6fu6yix\",\"host\":\"voe\",\"language\":\"VOSTFR\",\"episodeId\":35276},{\"id\":169556,\"url\":\"https://jamesbornmain.com/e/n0ik5gb8a7mg\",\"host\":\"voe\",\"language\":\"VF\",\"episodeId\":35276},{\"id\":618222,\"url\":\"https://vidmoly.org/embed-w9d5mepjkeoa.html\",\"host\":\"vidmoly\",\"language\":\"VOSTFR\",\"episodeId\":35276},{\"id\":618340,\"url\":\"https://vidmoly.org/embed-v3es93abbcjm.html\",\"host\":\"vidmoly\",\"language\":\"VF\",\"episodeId\":35276},{\"id\":618356,\"url\":\"https://vidmoly.org/embed-pxcgm3x36ai4.html\",\"host\":\"vidmoly\",\"language\":\"VOSTFR\",\"episodeId\":35276}]",
-      "shape": "array",
-      "mirrors": [
-        {
-          "host": "sibnet",
-          "language": "VOSTFR",
-          "url": "https://video.sibnet.ru/shell.php?videoid=4826196"
-        },
-        {
-          "host": "sibnet",
-          "language": "VF",
-          "url": "https://video.sibnet.ru/shell.php?videoid=4833453"
-        },
-        {
-          "host": "voe",
-          "language": "VOSTFR",
-          "url": "https://jamesbornmain.com/e/w4fbd6fu6yix"
-        },
-        {
-          "host": "voe",
-          "language": "VF",
-          "url": "https://jamesbornmain.com/e/n0ik5gb8a7mg"
-        },
-        {
-          "host": "vidmoly",
-          "language": "VOSTFR",
-          "url": "https://vidmoly.org/embed-w9d5mepjkeoa.html"
-        },
-        {
-          "host": "vidmoly",
-          "language": "VF",
-          "url": "https://vidmoly.org/embed-v3es93abbcjm.html"
-        },
-        {
-          "host": "vidmoly",
-          "language": "VOSTFR",
-          "url": "https://vidmoly.org/embed-pxcgm3x36ai4.html"
-        }
-      ]
+      "status": 404
     },
     "catalogue": [
       {
         "path": "/api/catalog/search?q=&sort=trending&page=1&per_page=6",
-        "status": 200,
-        "decodedHead": "{\"data\":[{\"backdrop_url\":\"https://image.tmdb.org/t/p/original/2rmK7mnchw9Xr3XdiTFSxTTLXqv.jpg\",\"color\":\"#e49335\",\"episode_count\":1182,\"format\":\"TV\",\"genres\":[\"Action & Adventure\",\"Comédie\",\"Animation\"],\"id\":\"16\",\"is_adult\":false,\"languages\":[\"VF\",\"VOSTFR\"],\"logo_url\":\"https://image.tmdb.org/t/p/original/cgz4g7uCmFd5I7LoBQhBiVXT4SE.png\",\"overview\":\"Il fut un temps où Gold Roger était le plus grand ",
-        "count": 6,
-        "first": {
-          "id": "16",
-          "slug": "one-piece",
-          "title": "One Piece",
-          "languages": [
-            "VF",
-            "VOSTFR"
-          ]
-        }
+        "status": 404
       },
       {
         "path": "/api/catalog/search?q=a&sort=relevance&page=1&per_page=6",
-        "status": 200,
-        "decodedHead": "{\"data\":[{\"backdrop_url\":\"https://image.tmdb.org/t/p/original/lQoR4D4TJRx4Rm87Jr0e8eQD8RB.jpg\",\"color\":\"#e4356b\",\"episode_count\":37,\"format\":\"TV\",\"genres\":[\"Animation\",\"Comédie\",\"Action & Adventure\",\"Science-Fiction & Fantastique\"],\"id\":\"545\",\"is_adult\":false,\"languages\":[\"VF\",\"VOSTFR\"],\"logo_url\":\"https://image.tmdb.org/t/p/original/a4qeagrGF405XyU6dexMxwAsYfO.png\",\"overview\":\"Le Roi Démon vient ",
-        "count": 6,
-        "first": {
-          "id": "545",
-          "slug": "the-devil-is-a-part-timer",
-          "title": "The Devil is a Part-Timer!",
-          "languages": [
-            "VF",
-            "VOSTFR"
-          ]
-        }
+        "status": 404
       }
     ],
     "detail": [
       {
         "path": "/api/anime/16",
         "status": 404,
-        "bytes": 52466
+        "bytes": 216
       },
       {
         "path": "/api/catalog/anime/16",
         "status": 404,
-        "bytes": 52490
+        "bytes": 216
       },
       {
         "path": "/api/anime/16/seasons",
         "status": 404,
-        "bytes": 52490
+        "bytes": 216
       }
-    ],
-    "seasonsScript": {
-      "animeId": 16,
-      "seasonCount": 12,
-      "firstSeason": {
-        "id": 1954,
-        "number": 1,
-        "name": "East Blue",
-        "episodeCount": 61
-      },
-      "episodeShape": {
-        "number": 1,
-        "title": "Je suis Luffy ! Celui qui deviendra Roi des Pirates !",
-        "isCurrent": true,
-        "isFiller": false
-      },
-      "episodeHasId": false
-    },
-    "episodePage": {
-      "status": 200,
-      "dataEpisodeId": "35276"
-    }
+    ]
   }
 }
