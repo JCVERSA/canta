@@ -92,12 +92,37 @@ jobs:
           target: default
           profile: pixel_5
           disable-animations: true
-          # -cores 4: runs 7-9 showed the emulator starving on the runner's
-          # default core count - system_server itself stopped responding, and
-          # systemui/phone/media/bluetooth ANR'd in a loop for the whole run. That
-          # is the context in which run 9's own app ANR has to be read.
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -cores 4
-          script: bash .github/scripts/device-smoke.sh
+          # Runs 7-9 all show the emulator starving on the runner's default core
+          # count: system_server "is not responding", systemui/phone/media/bluetooth
+          # ANR'ing in a loop, and uiautomator/gfxinfo frequently unusable - that is
+          # the context every ANR finding here has to be read in. `-cores 4` was
+          # tried against it and withdrawn: the run immediately after it (run 10)
+          # never booted the emulator at all, and the flag could not be verified
+          # from this sandbox. An unproven change that makes a run fail earlier than
+          # before is not an improvement; the starvation is reported, not papered
+          # over.
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          # The action runs this instead of the script directly, so that a device
+          # that never booted still leaves a file behind to publish. Run 10 failed
+          # exactly that way: no report, no smoke.log, and the action's own error
+          # text unreachable from the sandbox - a red run nobody could diagnose.
+          script: |
+            {
+              echo "device state as the smoke script was about to start:"
+              adb devices
+              echo "sys.boot_completed=$(adb shell getprop sys.boot_completed 2>&1 | tr -d '\r')"
+              echo "ro.build.version.sdk=$(adb shell getprop ro.build.version.sdk 2>&1 | tr -d '\r')"
+              echo
+            } > smoke.log 2>&1
+            # No pipelines and no PIPESTATUS here: it is not documented which shell
+            # runs this block, and a `sh` without pipefail (or a wrapper with
+            # `set -e`) would either lose the script's exit status or skip the copy
+            # below entirely - in both cases a failing run could look green.
+            set +e
+            bash .github/scripts/device-smoke.sh > smoke-run.out 2>&1
+            rc=$?
+            tee -a smoke.log < smoke-run.out
+            exit $rc
 
       - name: Upload screenshots
         if: always()
@@ -126,7 +151,11 @@ jobs:
         run: |
           set -euo pipefail
           if [ -z "$(git status --porcelain screenshots 2>/dev/null)" ]; then
-            echo "screenshots unchanged - nothing to publish"
+            echo "screenshots unchanged - nothing to publish. Contents of the directory:"
+            ls -la screenshots/ || true
+            echo "(a run that reached the smoke script always rewrites smoke-report.txt, so"
+            echo "an unchanged directory means the script never ran - look for smoke.log"
+            echo "in the 'Publish logs on failure' step or the .ci-logs commit)"
             exit 0
           fi
           git config user.name "canta-smoke"
@@ -159,7 +188,11 @@ jobs:
             tail -c 20000 build.log 2>/dev/null || echo "(no build.log)"
             echo
             echo "--- emulator smoke log ---"
-            tail -c 30000 smoke.log 2>/dev/null || echo "(no smoke.log)"
+            if [ -s smoke.log ]; then
+              tail -c 30000 smoke.log
+            else
+              echo "(no smoke.log: the emulator step did not get as far as the smoke script)"
+            fi
           } > .ci-logs/device-smoke.txt
           {
             echo "job: device-smoke"
