@@ -1,0 +1,34 @@
+Canta device smoke report
+date: Mon Sep 21 20:34:59 UTC 2026
+sha: 2a3c5d64a97255cf107d46b105d7b62b01123d6d
+run: 3
+emulator api: 34
+emulator abi: x86_64
+package: versionName=smoke-2a3c5d6
+am start -W TotalTime (ms): unknown
+resumed:     topResumedActivity=ActivityRecord{38bdc04 u0 com.jcversa.canta/.MainActivity t8}
+
+screen text after cold start:
+  <none>
+
+screen text after the notification-extras launch:
+  <none>
+
+settings tab reached (verified by its own text): yes/no -> Process system isn't responding Close app|Wait
+
+ANR / not-responding lines in logcat:
+  09-21 20:32:52.886   544  1348 E ActivityManager: ANR in com.android.providers.media.module
+  09-21 20:33:02.391   544  1348 E ActivityManager: ANR in com.android.phone
+  09-21 20:33:34.422   544  2278 E ActivityManager: ANR in com.android.providers.media.module
+  09-21 20:33:41.234   544  2278 E ActivityManager: ANR in com.android.phone
+  09-21 20:34:24.007   544  2483 E ActivityManager: ANR in com.android.providers.media.module
+  09-21 20:34:30.933   544  2483 E ActivityManager: ANR in com.android.phone
+  09-21 20:34:58.626   544  2786 E ActivityManager: ANR in com.android.phone
+  09-21 20:35:31.950   544  2904 E ActivityManager: ANR in com.android.phone
+  09-21 20:36:06.519   544  3006 E ActivityManager: ANR in com.android.phone
+  09-21 20:36:42.021   544  3185 E ActivityManager: ANR in com.android.phone
+FATAL EXCEPTION entries in the crash buffer: 0
+
+screenshots:
+  screenshots/01-catalogue-amoled.png (121123 bytes)
+  screenshots/02-notification-deep-link.png (138528 bytes)
