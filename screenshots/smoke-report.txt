@@ -1,15 +1,17 @@
 Canta device smoke report
-date: Mon Sep 21 21:49:07 UTC 2026
-sha: 3273a9dc224713a412eb9f078f00c3b916f55d17
-run: 7
+date: Mon Sep 21 22:20:29 UTC 2026
+sha: 2706787f4e40e5f167086d6f793bb0cff94c00b2
+run: 8
 emulator api: 34
 emulator abi: x86_64
-package: versionName=smoke-3273a9d
-am start -W TotalTime (ms): 17147
-resumed:     topResumedActivity=ActivityRecord{d138453 u0 com.jcversa.canta/.MainActivity t8}
+package: versionName=smoke-2706787
+am start -W TotalTime (ms): 15931
+resumed:     topResumedActivity=ActivityRecord{233f3a7 u0 com.jcversa.canta/.MainActivity t8}
 
 screen text after cold start:
   <none>
+capture verified: 01-app-amoled.png (on screen because: focused window is the app; system dialog in front: yes; focused window:   mCurrentFocus=Window{806b98e u0 Application Not Responding: com.jcversa.canta})
+capture skipped: no proof the app was on screen (none of: focus, accessibility dump, window manager); focused window:   mCurrentFocus=Window{806b98e u0 Application Not Responding: com.jcversa.canta}
 
 ANR / not-responding lines in logcat:
   <none>
@@ -18,14 +20,15 @@ FATAL EXCEPTION entries in the crash buffer: 0
 frames rendered (dumpsys gfxinfo): unreadable
 screen text: unavailable (uiautomator dump produced nothing)
 first screen state: unknown (screen text unavailable - uiautomator dump produced nothing)
-settings tab: reached, but no capture was verifiable
-screen text after the notification-extras launch: System UI isn't responding Close app|Wait
+settings tab: not reached (screen shows: System UI isn't responding Close app|Wait), no capture
+screen text after the notification-extras launch: Canta isn't responding Close app|Wait
 system dialog in front after that launch: yes
-captures verified by this run: <none>
+captures verified by this run: 01-app-amoled.png
 
 ANR in com.jcversa.canta: <none>
 
 files in screenshots/ at the end of this run (a directory listing, NOT proof
 that this run wrote them - see the capture lines above, and read the
 committed image itself before trusting what it shows):
+  screenshots/01-app-amoled.png (75595 bytes)
   screenshots/03-settings.png (298427 bytes)
