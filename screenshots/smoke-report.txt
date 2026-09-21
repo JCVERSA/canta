@@ -1,33 +1,30 @@
 Canta device smoke report
-date: Mon Sep 21 20:52:17 UTC 2026
-sha: 22644cfba4b544b65ec1e3d4cef6317cb42b1d2b
-run: 4
+date: Mon Sep 21 21:13:22 UTC 2026
+sha: c356e710d5cc2588b212fb860bf90acc4510b876
+run: 5
 emulator api: 34
 emulator abi: x86_64
-package: versionName=smoke-22644cf
-am start -W TotalTime (ms): 22679
-resumed:     topResumedActivity=ActivityRecord{eda47d1 u0 com.jcversa.canta/.MainActivity t8}
+package: versionName=smoke-c356e71
+am start -W TotalTime (ms): 21060
+resumed:     topResumedActivity=ActivityRecord{3e17acc u0 com.jcversa.canta/.MainActivity t8}
 
 screen text after cold start:
-  <none>
+  Rechercher une série VF|VOSTFR Source : voir-anime.to · page 1 Catalogue|Favoris Hors ligne Réglages
 
-first screen state: error state
-
-screen text after the notification-extras launch:
-  Process system isn't responding Close app|Wait
-
-settings tab reached (verified by its own text): yes/no -> Process system isn't responding Close app|Wait
+frames rendered (dumpsys gfxinfo): 4
+system dialog covering the screen at capture time: yes
+screen text: read
+first screen state: catalogue items or empty state
+screen text after the notification-extras launch: System UI isn't responding Close app|Wait
+second launch: dialog=no
+settings tab: not reached (screen shows: System UI isn't responding Close app|Wait), no capture
+captured this run: 01-app-amoled.png, 02-notification-extras-launch.png
 
 ANR / not-responding lines in logcat:
-  09-21 20:49:55.814   542  1404 E ActivityManager: ANR in com.android.phone
-  09-21 20:50:10.143   542  1404 E ActivityManager: ANR in com.android.providers.media.module
-  09-21 20:51:07.871   542  2446 E ActivityManager: ANR in com.android.phone
-  09-21 20:51:42.294   542  2752 E ActivityManager: ANR in com.android.providers.media.module
-  09-21 20:51:51.330   542  2752 E ActivityManager: ANR in com.android.phone
-  09-21 20:52:23.982   542  3002 E ActivityManager: ANR in com.android.providers.media.module
-  09-21 20:52:26.253   542  3002 E ActivityManager: ANR in com.android.phone
+  <none>
 FATAL EXCEPTION entries in the crash buffer: 0
 
 ANR in com.jcversa.canta: <none>
 screenshots:
-  screenshots/01-app-amoled.png (123648 bytes)
+  screenshots/01-app-amoled.png (1231502 bytes)
+  screenshots/02-notification-extras-launch.png (136241 bytes)
