@@ -24,10 +24,24 @@ no picture.
 The script enforces that rule mechanically. A capture is written only when the
 app's own window is on screen, checked by three independent probes (focused
 window, accessibility dump, window manager) with the one that answered recorded
-in the report; the file name carries `-with-system-dialog` when a dialog is in
-front at the moment of the screencap; the window state is sampled immediately
-*before* the screencap rather than after it, so the report describes the frame it
-ships; and a run that cannot produce one verified capture fails.
+in the report; and a run that cannot produce one verified capture fails.
+
+Deciding the file name took three attempts, which is worth recording because each
+failure was a claim the image could not support:
+
+1. the state was sampled *after* the screencap, so run 8's report said "system
+   dialog in front: yes" next to a clean frame (the dialog arrived in between);
+2. the state was then sampled *before* it, so run 9 shipped a clean Settings frame
+   named `03-settings-with-system-dialog.png` (the dialog vanished in between);
+3. now the state is sampled on both sides of the screencap and the capture is
+   retaken when the two answers disagree. A state that will not settle is named
+   `-dialog-state-changed-mid-capture.png`, because which of the two moments the
+   frame shows is not knowable from the outside - guessing would be the same
+   mistake in a new costume.
+
+The name therefore always means one of three checkable things: the plain name (no
+dialog, stable), `-with-system-dialog` (dialog up, stable), or
+`-dialog-state-changed-mid-capture` (unsettled, and it says so).
 
 Not captured, and deliberately not implied: playback, the quality selector with
 measured sizes, a download in progress, and offline playback. Each needs network

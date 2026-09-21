@@ -226,9 +226,16 @@ capture_app_screen() {
   # A capture is written only when the app's own window is on screen, so the file
   # cannot be a picture of the launcher or of a system dialog over something else
   # (run 5's 01 was the launcher, because it was taken after a BACK dismissed both
-  # the ANR dialog and the app). Whether the focused window is still the app or a
-  # system dialog is recorded in the *name*, because the frame really does contain
-  # that overlay.
+  # the ANR dialog and the app).
+  #
+  # The name has to describe the frame, and on a starved emulator the window state
+  # changes *while* the screencap runs - a picture takes about a second. Both ends
+  # of that window were wrong at least once: run 8 sampled after the capture and
+  # labelled a clean frame "with-system-dialog", and run 9 sampled before it and
+  # labelled a clean Settings frame the same way because the dialog had vanished in
+  # between. So the state is sampled on both sides, the capture is retaken when the
+  # two disagree, and a state that will not settle is named as such instead of
+  # being guessed at.
   local stem="${1%.png}"
   local base="${stem}.png"
   LAST_CAPTURE=""
@@ -243,22 +250,38 @@ capture_app_screen() {
     echo "capture skipped: no proof the app was on screen ($ONSCREEN_PROBE); focused window: $(focused_window | tr -d '\r')" >> "$REPORT"
     return 1
   fi
-  # Sample the window state *before* the screencap and report those samples: run 8
-  # showed the failure mode of sampling after it, printing "system dialog in front:
-  # yes" next to a file name with no dialog in it, because the dialog arrived
-  # between the two. A report that describes a different moment than the image is
-  # the same defect as an unlabelled capture, so the samples travel with the frame.
-  local name="$base" dialog_at_capture focus_at_capture
-  if dialog_is_up; then dialog_at_capture="yes"; name="${1%.png}-with-system-dialog.png"; else dialog_at_capture="no"; fi
-  focus_at_capture=$(focused_window | tr -d '\r')
-  adb exec-out screencap -p > "$SHOTS/$name" || return 1
-  [ -s "$SHOTS/$name" ] || return 1
+
+  local attempt=1 before after focus_before focus_after name tmp="$SHOTS/.capture-$$.png"
+  while :; do
+    if dialog_is_up; then before="yes"; else before="no"; fi
+    focus_before=$(focused_window | tr -d '\r')
+    adb exec-out screencap -p > "$tmp" || { rm -f "$tmp"; return 1; }
+    [ -s "$tmp" ] || { rm -f "$tmp"; return 1; }
+    if dialog_is_up; then after="yes"; else after="no"; fi
+    focus_after=$(focused_window | tr -d '\r')
+    if [ "$before" = "$after" ] || [ "$attempt" -ge 2 ]; then
+      break
+    fi
+    log "the window state changed while the picture was being taken (system dialog before: $before, after: $after) - taking it again"
+    attempt=$((attempt + 1))
+  done
+
+  if [ "$before" = "$after" ]; then
+    if [ "$before" = "yes" ]; then name="${stem}-with-system-dialog.png"; else name="$base"; fi
+    echo "capture verified: $name (on screen because: $ONSCREEN_PROBE; system dialog in front: $after - same answer sampled before and after the screencap; focused window:$focus_after)" >> "$REPORT"
+    log "captured $name (system dialog in front: $after, stable across the capture)"
+  else
+    # Unsettled after a retry: the frame is real and the app was on screen, but
+    # which of the two moments it shows is not knowable from here, so the name says
+    # exactly that rather than picking one.
+    name="${stem}-dialog-state-changed-mid-capture.png"
+    echo "capture verified (state unsettled): $name (on screen because: $ONSCREEN_PROBE; system dialog before: $before, after: $after - the frame shows one of those two moments; focused window before:$focus_before after:$focus_after)" >> "$REPORT"
+    log "captured $name with an unsettled dialog state (before: $before, after: $after)"
+  fi
+  mv -f "$tmp" "$SHOTS/$name" || return 1
   LAST_CAPTURE="$name"
-  echo "capture verified: $name (on screen because: $ONSCREEN_PROBE; sampled immediately before the screencap - system dialog in front: $dialog_at_capture; focused window:$focus_at_capture)" >> "$REPORT"
-  log "captured $name (app window on screen: yes, system dialog in front at capture time: $dialog_at_capture)"
   return 0
 }
-
 frames_rendered() {
   # How many frames this app has actually drawn. This is the check that replaces
   # "an activity was resumed": a resumed activity can still be showing the splash
