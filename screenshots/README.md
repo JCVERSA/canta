@@ -10,6 +10,7 @@ of a screen it cannot render.
 | File | Shows | Notes |
 | --- | --- | --- |
 | `01-app-amoled.png` | Catalogue screen, AMOLED theme | The CI runner cannot resolve `voir-anime.to`, so this screen legitimately shows its **error message** (`Requête échouée: … Unable to resolve host`). That is the app reporting the real cause instead of an empty catalogue. |
+| `01-app-amoled-with-system-dialog.png` | The same screen with the emulator's ANR dialog over it | Present when the emulator raised its own "Process system isn't responding" dialog (its `com.android.phone` / `media.module` processes do that on software-rendered runners) and dismissing it failed. The app UI is still visible behind it. The filename says so rather than hiding it. |
 | `02-notification-extras-launch.png` | The app after a launch carrying the episode watcher's extras | Same network limitation. |
 | `03-settings.png` | Settings | Present only when the run verified the tab was reached, by a string that exists nowhere else in the app. |
 | `smoke-report.txt` | The run's own record | Emulator API/ABI, package version, `am start -W` timing, resumed activity, per-screen visible text, ANR lines. Read it before trusting an image: the report says which state each capture came from. |
@@ -25,6 +26,12 @@ quality selector with measured sizes, a download in progress, and offline
 playback. Each needs network that reaches the sources, which the CI runner does
 not have. Capture them on a real connection (procedure below) and the README's
 *Verification status* section should be updated in the same change.
+
+The smoke test reads the app's frame count from `dumpsys gfxinfo` before capturing
+(a resumed activity can still be showing the splash screen — the first version of
+this test captured exactly that and called it a catalogue). Where a metric is
+unreadable on the image, the report says "unreadable" instead of implying it was
+checked.
 
 The captures are committed by the workflow rather than uploaded as artifacts,
 because artifact downloads and raw job logs are unreachable from the

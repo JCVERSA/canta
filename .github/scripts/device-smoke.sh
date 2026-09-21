@@ -16,11 +16,11 @@
 #     (run 3 logged nine, none of them in this app), so those are reported in the
 #     committed report instead of being blamed on the app: a false finding is
 #     worse than no finding;
-#   * screenshots come from the running app (never mock-ups). One is taken only
-#     when the screen's text could be read and no system dialog is covering it,
-#     and it is named for what it shows — a capture of the emulator's
-#     "not responding" dialog under an app-screen filename would be a claim the
-#     file cannot support.
+#   * screenshots come from the running app (never mock-ups) and are named for
+#     what they show: a capture taken while the emulator's own "not responding"
+#     dialog covers the app is "...-with-system-dialog.png", never the canonical
+#     name. Where nothing can be verified (no frames drawn, or no way to read the
+#     screen) nothing is written at all, and the report says so.
 #
 # It does NOT claim to prove stream playback or a completed download: both
 # depend on third-party sites, and they stay marked unverified in the README
@@ -38,78 +38,68 @@ log() { echo "smoke: $*"; }
 fail() { echo "::error::smoke: $*"; FAILURES=$((FAILURES + 1)); }
 
 ui_text() {
-  # The visible text of the current screen. `uiautomator dump` is the supported
-  # way to ask; the XML is stripped down to its text attributes so the report
-  # reads like a transcript of the screen.
+  # Best-effort transcription of the visible text. On some emulator images
+  # `uiautomator dump` simply never produces a file (run 4: it returned nothing
+  # for the whole session while the screen was demonstrably drawn), so nothing
+  # here is allowed to *depend* on it: callers treat an empty result as "text
+  # unavailable", never as "the screen is empty".
   local dump=/sdcard/canta-ui.xml
   adb shell uiautomator dump "$dump" >/dev/null 2>&1 || return 1
-  adb shell cat "$dump" 2>/dev/null \
+  local text
+  text=$(adb shell cat "$dump" 2>/dev/null \
     | tr '>' '\n' \
     | grep -o 'text="[^"]*"' \
     | sed 's/^text="//; s/"$//' \
     | grep -v '^$' \
-    | paste -sd' | ' -
+    | paste -sd' | ' -)
+  [ -n "${text:-}" ] || return 1
+  echo "$text"
 }
 
-wait_for_ui() {
-  # Poll until the app has drawn something other than the splash: a bounded wait,
-  # because the previous run showed a fixed 20 s sleep was not enough on a
-  # software-rendered emulator.
-  local deadline=$((SECONDS + 90))
-  while [ "$SECONDS" -lt "$deadline" ]; do
-    local text
-    text=$(ui_text) || true
-    if [ -n "${text:-}" ]; then
-      echo "$text"
-      return 0
-    fi
-    sleep 5
-  done
-  return 1
+focused_window() {
+  # The focused window, from the window manager rather than the accessibility
+  # layer: this is what tells the script whether the app is on top or whether a
+  # system dialog is (an ANR dialog takes focus and announces itself here).
+  adb shell dumpsys window 2>/dev/null | grep -m1 -E "mCurrentFocus|mFocusedWindow"
 }
 
-anr_lines() {
-  # Every ANR and "not responding" line the platform logged during the run.
-  adb logcat -d 2>/dev/null | grep -E "ANR in |Input dispatching timed out|isn't responding|not responding" | head -n 20
+dialog_is_up() {
+  # Matches the emulator's own ANR / "isn't responding" / crash dialogs. It does
+  # not match the app: the app is a normal activity window.
+  focused_window | grep -qiE "not responding|application error|application not responding|\banr\b"
 }
 
-app_anr_lines() {
-  # Only an ANR *in this app* is a defect. The emulator's own system processes
-  # (com.android.phone, com.android.providers.media.module) throw ANRs on
-  # software-rendered CI runners regardless of what is installed — they were
-  # logged on run 3 while Canta itself was idle and never ANR'd — so blaming the
-  # app for them would be a false finding. They are reported instead.
-  anr_lines | grep -F "ANR in $APP_ID"
+frames_rendered() {
+  # How many frames this app has actually drawn. This is the check that replaces
+  # "an activity was resumed": a resumed activity can still be showing the splash
+  # screen, which is exactly what the first version of this script captured and
+  # called a catalogue screenshot.
+  adb shell dumpsys gfxinfo "$APP_ID" 2>/dev/null \
+    | grep -m1 -E "Total frames rendered" \
+    | awk -F: '{gsub(/ /, "", $2); print $2}'
 }
 
-dismiss_system_dialogs() {
-  # A "Process system isn't responding" dialog belongs to the emulator. BACK is
-  # the least fragile way to clear it; if it survives, the caller simply does not
-  # capture a screenshot with it on screen (an image that shows a system dialog
-  # and is named after an app screen would be a claim the file cannot support).
+try_dismiss_dialog() {
+  # An ANR dialog is dismissed by choosing "Wait" or by BACK. Without a usable
+  # accessibility dump its position is not readable, so the tap uses the layout
+  # the dialog uses on every AOSP build: a centred card whose "Wait" row sits
+  # just below the middle (verified against the captures in this directory).
   local attempt
   for attempt in 1 2 3; do
-    local text
-    text=$(ui_text) || return 0
-    case "$text" in
-      *"isn't responding"*|*"not responding"*|*"Close app"*)
-        log "dismissing a system dialog (attempt $attempt)"
-        adb shell input keyevent KEYCODE_BACK >/dev/null 2>&1 || true
-        sleep 3
-        ;;
-      *) return 0 ;;
-    esac
+    dialog_is_up || return 0
+    log "a system dialog is focused - dismissing it (attempt $attempt)"
+    adb shell input keyevent KEYCODE_BACK >/dev/null 2>&1 || true
+    sleep 2
+    dialog_is_up || return 0
+    local w h
+    w=$(adb shell wm size | grep -oE "[0-9]+x[0-9]+" | head -n1 | cut -dx -f1)
+    h=$(adb shell wm size | grep -oE "[0-9]+x[0-9]+" | head -n1 | cut -dx -f2)
+    if [ -n "${w:-}" ] && [ -n "${h:-}" ]; then
+      adb shell input tap $((w / 2)) $((h * 57 / 100)) >/dev/null 2>&1 || true
+    fi
+    sleep 2
   done
   return 0
-}
-
-system_dialog_present() {
-  local text
-  text=$(ui_text) || return 1
-  case "$text" in
-    *"isn't responding"*|*"not responding"*) return 0 ;;
-    *) return 1 ;;
-  esac
 }
 
 mkdir -p "$SHOTS"
@@ -142,14 +132,39 @@ case "$RESUMED" in
   *) fail "MainActivity is not the resumed activity after launch" ;;
 esac
 
-dismiss_system_dialogs
-log "waiting for the first non-splash frame"
-SCREEN_TEXT=$(wait_for_ui) || SCREEN_TEXT=""
-if [ -z "$SCREEN_TEXT" ]; then
-  fail "no UI text appeared within 90 s (the app may still be on the splash screen)"
+try_dismiss_dialog
+log "waiting for the app to draw frames"
+FRAMES=""
+if adb shell dumpsys gfxinfo "$APP_ID" 2>/dev/null | grep -q "Total frames rendered"; then
+  # Readable: poll until the app has drawn at least one frame. A resumed activity
+  # can still be on the splash screen, which is what the first version of this
+  # script captured and mislabelled.
+  deadline=$((SECONDS + 90))
+  while [ "$SECONDS" -lt "$deadline" ]; do
+    FRAMES=$(frames_rendered)
+    case "${FRAMES:-}" in
+      ""|0) sleep 5 ;;
+      *) break ;;
+    esac
+  done
+  if [ -z "${FRAMES:-}" ]; then FRAMES="0"; fi
+  if [ "$FRAMES" = "0" ]; then
+    fail "the app rendered no frames within 90 s (it may still be on the splash screen)"
+  fi
 else
-  log "screen text: $SCREEN_TEXT"
+  # Unreadable on this image. Not a failure - an unreadable metric is not evidence
+  # of a defect - but the run then has no proof that the app drew anything, and
+  # the report says exactly that instead of implying it was verified.
+  FRAMES="unreadable"
+  log "dumpsys gfxinfo cannot report frames on this image - skipping the frame wait"
 fi
+log "frames rendered: $FRAMES"
+
+DIALOG_STATE="no"
+dialog_is_up && DIALOG_STATE="yes"
+SCREEN_TEXT=$(ui_text) || SCREEN_TEXT=""
+TEXT_STATE="read"
+[ -n "$SCREEN_TEXT" ] || TEXT_STATE="unavailable (uiautomator dump produced nothing)"
 
 {
   echo "Canta device smoke report"
@@ -166,73 +181,90 @@ fi
   echo "  ${SCREEN_TEXT:-<none>}"
 } > "$REPORT"
 
-log "capturing catalogue screenshot"
-# The file is named for what it shows, not for what it was meant to show: on a
-# runner whose DNS cannot resolve the source, the catalogue legitimately renders
-# its error state, and a screenshot called "catalogue" would overstate it.
-CATALOGUE_STATE="error state"
+log "capturing the app screen"
+# The file is named for what it *shows*: the catalogue's honest state on a runner
+# that cannot resolve the source site is its error message, and a capture with a
+# system dialog over it is not the same artefact as one without. Existence of a
+# canonical name therefore means "captured in that state", never "should have
+# been".
+CAPTURE_SUFFIX=""
+[ "$DIALOG_STATE" = "yes" ] && CAPTURE_SUFFIX="-with-system-dialog"
+if [ "$FRAMES" = "0" ]; then
+  log "the app has drawn no frames - no 01 capture (it would be the splash screen)"
+else
+  try_dismiss_dialog
+  dialog_is_up && CAPTURE_SUFFIX="-with-system-dialog" || CAPTURE_SUFFIX=""
+  SHOT_01="01-app-amoled${CAPTURE_SUFFIX}.png"
+  adb exec-out screencap -p > "$SHOTS/$SHOT_01" || fail "screencap 01 failed"
+  [ -s "$SHOTS/$SHOT_01" ] || fail "screenshot 01 is empty"
+  PRODUCED="$SHOT_01"
+  log "captured $SHOT_01 (frames drawn: ${FRAMES:-unreadable}, system dialog: $([ -n "$CAPTURE_SUFFIX" ] && echo yes || echo no), text: $TEXT_STATE)"
+fi
+
+CATALOGUE_STATE="unknown (screen text unavailable - uiautomator dump produced nothing)"
 case "$SCREEN_TEXT" in
   *"Chargement"*) CATALOGUE_STATE="still loading" ;;
-  *"Source : "*) CATALOGUE_STATE="items or empty state" ;;
+  *"Source : "*) CATALOGUE_STATE="catalogue items or empty state" ;;
+  *"Requête échouée"*) CATALOGUE_STATE="source unreachable (the app reports the cause)" ;;
 esac
-if system_dialog_present; then
-  log "a system dialog is on screen - no 01 capture (it would not be an app screenshot)"
-  fail "the emulator left a system dialog on screen, so the app screen could not be captured"
-elif [ -z "$SCREEN_TEXT" ]; then
-  log "the screen text could not be read - no 01 capture (capturing blind could show a splash or a dialog)"
-else
-  adb exec-out screencap -p > "$SHOTS/01-app-amoled.png" || fail "screencap 01 failed"
-  [ -s "$SHOTS/01-app-amoled.png" ] || fail "screenshot 01 is empty"
-fi
-{ echo; echo "first screen state: $CATALOGUE_STATE"; } >> "$REPORT"
 
 log "launch with the episode watcher's notification extras"
 adb shell am start -n "$APP_ID/.MainActivity" \
   --es open_series_id "voir-anime:one-piece-vf" \
   --es open_series_title "One Piece" >/dev/null 2>&1
-sleep 20
+sleep 25
 DEEPLINK_TEXT=$(ui_text) || DEEPLINK_TEXT=""
-{
-  echo
-  echo "screen text after the notification-extras launch:"
-  echo "  ${DEEPLINK_TEXT:-<none>}"
-} >> "$REPORT"
-if system_dialog_present || [ -z "$DEEPLINK_TEXT" ]; then
-  log "no 02 capture (system dialog on screen, or the screen text could not be read)"
-else
-  adb exec-out screencap -p > "$SHOTS/02-notification-extras-launch.png" || fail "screencap 02 failed"
-  [ -s "$SHOTS/02-notification-extras-launch.png" ] || fail "screenshot 02 is empty"
+DEEPLINK_DIALOG="no"
+dialog_is_up && DEEPLINK_DIALOG="yes"
+if [ "$FRAMES" != "0" ]; then
+  SECOND_SUFFIX=""
+  [ "$DEEPLINK_DIALOG" = "yes" ] && SECOND_SUFFIX="-with-system-dialog"
+  SHOT_02="02-notification-extras-launch${SECOND_SUFFIX}.png"
+  adb exec-out screencap -p > "$SHOTS/$SHOT_02" || fail "screencap 02 failed"
+  [ -s "$SHOTS/$SHOT_02" ] || fail "screenshot 02 is empty"
+  PRODUCED="$PRODUCED, $SHOT_02"
 fi
 
-# The Settings tab is the rightmost of four. Its own body carries strings that
-# exist nowhere else in the app ("Effacer l'historique"), so the tab tap is
-# verified by text rather than assumed — the first run tapped and silently
-# captured the catalogue again.
+# The Settings tab is the rightmost of four. Its own body carries a string that
+# exists nowhere else in the app ("Effacer l'historique"), so the tap is verified
+# by text rather than assumed - the first run tapped and silently captured the
+# catalogue again. Where the accessibility dump is unavailable there is no way to
+# verify the tab, so no 03 capture is produced and the report says why: a file
+# named 03-settings.png showing the catalogue would be a false claim.
 WIDTH=$(adb shell wm size | grep -oE "[0-9]+x[0-9]+" | head -n1 | cut -dx -f1)
 HEIGHT=$(adb shell wm size | grep -oE "[0-9]+x[0-9]+" | head -n1 | cut -dx -f2)
-SETTINGS_TEXT=""
+SETTINGS_VERDICT="not attempted"
 if [ -n "${WIDTH:-}" ] && [ -n "${HEIGHT:-}" ]; then
-  # A dialog left over from the launch above would swallow this tap silently,
-  # which is exactly what run 2 did.
-  dismiss_system_dialogs
+  try_dismiss_dialog
   adb shell input tap $((WIDTH * 7 / 8)) $((HEIGHT - 110)) >/dev/null 2>&1 || true
   sleep 8
   SETTINGS_TEXT=$(ui_text) || SETTINGS_TEXT=""
-  log "screen text after tapping the last tab: $SETTINGS_TEXT"
   case "$SETTINGS_TEXT" in
-    *"Effacer l'historique"*|*Réglages*)
+    *"Effacer l'historique"*)
       adb exec-out screencap -p > "$SHOTS/03-settings.png" || true
+      SETTINGS_VERDICT="reached and captured (verified by its own text)"
+      PRODUCED="$PRODUCED, 03-settings.png"
+      ;;
+    "")
+      SETTINGS_VERDICT="not verified (screen text unavailable), no capture"
       ;;
     *)
-      # Not the settings screen: nothing is written, and any earlier verified
-      # capture is left alone. The report records that this run did not reach it.
-      log "the settings tab was not reached - no 03 capture this run"
+      SETTINGS_VERDICT="not reached (screen shows: ${SETTINGS_TEXT}), no capture"
       ;;
   esac
+  log "settings: $SETTINGS_VERDICT"
 fi
+
 {
   echo
-  echo "settings tab reached (verified by its own text): $([ -n "$SETTINGS_TEXT" ] && echo "yes/no -> ${SETTINGS_TEXT}" || echo "not attempted")"
+  echo "frames rendered (dumpsys gfxinfo): ${FRAMES:-unreadable}"
+  echo "system dialog covering the screen at capture time: $DIALOG_STATE"
+  echo "screen text: $TEXT_STATE"
+  echo "first screen state: $CATALOGUE_STATE"
+  echo "screen text after the notification-extras launch: ${DEEPLINK_TEXT:-<none>}"
+  echo "second launch: dialog=$DEEPLINK_DIALOG"
+  echo "settings tab: $SETTINGS_VERDICT"
+  echo "captured this run: ${PRODUCED:-<none>}"
 } >> "$REPORT"
 
 log "checking for ANRs and crashes"

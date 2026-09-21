@@ -49,14 +49,17 @@ is named for what it actually shows.
 | File | What it shows |
 | --- | --- |
 | `01-app-amoled.png` | The app on a real device: AMOLED black theme, catalogue screen |
+| `01-app-amoled-with-system-dialog.png` | The same screen when the emulator's own "not responding" dialog was covering it — same capture, different filename, because renaming it would hide what is in the frame |
 | `02-notification-extras-launch.png` | The same app after a launch carrying the episode watcher's extras |
 | `03-settings.png` | Settings — written only when the tab tap was verified by that screen's own text |
 
-A file that is absent from the table above simply was not produced by the last
-run: the smoke test refuses to save a capture while a system dialog covers the
-screen, and it does not keep a Settings shot it could not verify. The job's
-report says which case applied, so a missing image is a stated gap rather than a
-silent one.
+A file that is absent was not produced by the last run: the smoke test writes
+nothing when the app drew no frames, and it writes no Settings shot it could not
+verify. The job's report lists exactly what that run captured, so a missing image
+is a stated gap rather than a silent one. The report also records whether the
+frame counter and the accessibility dump were readable at all — on the current
+CI image `uiautomator dump` produces nothing, so the screen-state line reads
+"unknown" rather than pretending
 
 `screenshots/smoke-report.txt` is the run's own record: emulator API/ABI, package
 version, `am start -W` timing, the resumed activity, the visible text of each
