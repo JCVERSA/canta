@@ -84,6 +84,44 @@ jobs:
       # x86_64 emulator usable here. API 34 is the interesting target: it is the
       # strictest foreground-service and notification-permission behaviour the
       # app claims to support (targetSdk 36).
+      # Runs 10-13 all died inside the emulator action's boot phase - before the
+      # smoke script, so before anything of mine could run and before smoke.log
+      # existed. Nothing in the job log is readable from the development sandbox,
+      # so the facts that decide whether an emulator can boot at all are recorded
+      # here, into files the publish step commits: cores, memory, free disk, whether
+      # /dev/kvm is usable, and which system images are already installed. The one
+      # line that matters most (disk and KVM) is also emitted as an annotation,
+      # which is readable through the API from anywhere.
+      - name: Record the runner's state before the emulator
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: |
+          mkdir -p .ci-logs
+          {
+            echo "runner state before the emulator step"
+            echo "date: $(date -u)"
+            echo
+            echo "nproc: $(nproc)"
+            echo "free -m:"; free -m | sed 's/^/  /'
+            echo
+            echo "df -h (root and workspace):"; df -h / "$PWD" | sed 's/^/  /'
+            echo
+            echo "/dev/kvm: $(ls -l /dev/kvm 2>&1)"
+            echo "groups: $(id)"
+            echo
+            echo "adb: $(adb version 2>&1 | head -2)"
+            echo
+            echo "installed system images:"
+            sdkmanager --list_installed 2>/dev/null | grep -i "system-images" | sed 's/^/  /' || echo "  (sdkmanager unavailable)"
+            echo
+            echo "avd directory:"
+            ls -la "$HOME/.android/avd" 2>&1 | sed 's/^/  /'
+          } > .ci-logs/runner-preflight.txt 2>&1
+          DISK=$(df -h --output=pcent / | tail -1 | tr -d ' ')
+          echo "::notice title=runner preflight::disk used on /: ${DISK} | vcpu: $(nproc) | mem: $(free -m | awk '/Mem:/ {print $2 "MB total, " $7 "MB available"}') | /dev/kvm: $(test -e /dev/kvm && echo present || echo missing)"
+          tail -n 20 .ci-logs/runner-preflight.txt
+
       - name: Run on emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
