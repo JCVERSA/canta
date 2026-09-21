@@ -236,7 +236,15 @@ capture_app_screen() {
   # between. So the state is sampled on both sides, the capture is retaken when the
   # two disagree, and a state that will not settle is named as such instead of
   # being guessed at.
-  local stem="${1%.png}"
+  local arg="${1:-}"
+  if [ -z "$arg" ]; then
+    # `${1%.png}` with no argument and `set -u` kills the whole run mid-report -
+    # the same shape of failure as the unbound ${ANR_VERDICT} that ended run 9.
+    # An internal misuse should fail this call, not the report.
+    log "capture_app_screen was called without a name - no capture"
+    return 1
+  fi
+  local stem="${arg%.png}"
   local base="${stem}.png"
   LAST_CAPTURE=""
   if ! app_window_on_screen; then
