@@ -16,11 +16,12 @@
 #     (run 3 logged nine, none of them in this app), so those are reported in the
 #     committed report instead of being blamed on the app: a false finding is
 #     worse than no finding;
-#   * screenshots come from the running app (never mock-ups) and are named for
-#     what they show: a capture taken while the emulator's own "not responding"
-#     dialog covers the app is "...-with-system-dialog.png", never the canonical
-#     name. Where nothing can be verified (no frames drawn, or no way to read the
-#     screen) nothing is written at all, and the report says so.
+#   * screenshots come from the running app (never mock-ups): the app window must
+#     be the focused one at the moment of the screencap, and a capture taken while
+#     the emulator's own "not responding" dialog is up is named
+#     "...-with-system-dialog.png", never the canonical name. A run that cannot
+#     produce one verified capture fails, because a green run whose artefact is
+#     the launcher (run 5) is worse than a red one.
 #
 # It does NOT claim to prove stream playback or a completed download: both
 # depend on third-party sites, and they stay marked unverified in the README
@@ -69,6 +70,48 @@ dialog_is_up() {
   focused_window | grep -qiE "not responding|application error|application not responding|\banr\b"
 }
 
+app_is_focused() {
+  # Is the app's own window the focused one? This is the check that keeps "a
+  # capture of the running app" honest, and run 5 is why it exists: that run
+  # passed while its 01 screenshot was the launcher, because the dialog dismissal
+  # had tapped the system navigation bar and nothing verified what was in front.
+  focused_window | grep -q "$APP_ID"
+}
+
+bring_app_to_front() {
+  local deadline=$((SECONDS + 45))
+  adb shell am start -n "$APP_ID/.MainActivity" >/dev/null 2>&1 || true
+  while [ "$SECONDS" -lt "$deadline" ]; do
+    app_is_focused && return 0
+    sleep 3
+  done
+  return 1
+}
+
+capture_app_screen() {
+  # $1: canonical basename, e.g. 01-app-amoled.png. Sets LAST_CAPTURE to the
+  # basename actually written, or leaves it empty when nothing was verifiable.
+  # The state is sampled immediately before the capture, not earlier: run 5
+  # reported "system dialog: yes" from a sample taken before its dismissal, then
+  # captured a screen the dialog had already left.
+  local base="${1%.png}"
+  LAST_CAPTURE=""
+  if ! dialog_is_up; then
+    app_is_focused || { log "the app is not in front - bringing it back"; bring_app_to_front || true; }
+  fi
+  if ! app_is_focused; then
+    log "the app window is not focused - no capture (a picture of something else proves nothing)"
+    return 1
+  fi
+  local name="$base"
+  dialog_is_up && name="${base}-with-system-dialog"
+  adb exec-out screencap -p > "$SHOTS/$name" || return 1
+  [ -s "$SHOTS/$name" ] || return 1
+  LAST_CAPTURE="$name"
+  log "captured $name (app focused: yes, system dialog: $(dialog_is_up && echo yes || echo no))"
+  return 0
+}
+
 frames_rendered() {
   # How many frames this app has actually drawn. This is the check that replaces
   # "an activity was resumed": a resumed activity can still be showing the splash
@@ -80,25 +123,30 @@ frames_rendered() {
 }
 
 try_dismiss_dialog() {
-  # An ANR dialog is dismissed by choosing "Wait" or by BACK. Without a usable
-  # accessibility dump its position is not readable, so the tap uses the layout
-  # the dialog uses on every AOSP build: a centred card whose "Wait" row sits
-  # just below the middle (verified against the captures in this directory).
-  local attempt
+  # An ANR dialog is dismissed by choosing "Wait" - NOT by BACK, which dismisses
+  # the dialog *and* leaves the app (run 5 ended up on the launcher that way,
+  # with the app still "resumed" in the activity manager). Without a usable
+  # accessibility dump the row position is not readable, so the tap uses the
+  # layout every AOSP build gives this dialog: a centred card whose "Wait" row
+  # sits just below the middle.
+  local attempt w h
+  w=$(adb shell wm size | grep -oE "[0-9]+x[0-9]+" | head -n1 | cut -dx -f1)
+  h=$(adb shell wm size | grep -oE "[0-9]+x[0-9]+" | head -n1 | cut -dx -f2)
   for attempt in 1 2 3; do
     dialog_is_up || return 0
-    log "a system dialog is focused - dismissing it (attempt $attempt)"
-    adb shell input keyevent KEYCODE_BACK >/dev/null 2>&1 || true
-    sleep 2
-    dialog_is_up || return 0
-    local w h
-    w=$(adb shell wm size | grep -oE "[0-9]+x[0-9]+" | head -n1 | cut -dx -f1)
-    h=$(adb shell wm size | grep -oE "[0-9]+x[0-9]+" | head -n1 | cut -dx -f2)
+    log "a system dialog is focused - tapping its Wait row (attempt $attempt)"
     if [ -n "${w:-}" ] && [ -n "${h:-}" ]; then
       adb shell input tap $((w / 2)) $((h * 57 / 100)) >/dev/null 2>&1 || true
     fi
-    sleep 2
+    sleep 3
   done
+  dialog_is_up || return 0
+  # Taps did not clear it. BACK as a last resort, then put the app back in front
+  # ourselves rather than leaving whatever the system shows behind it.
+  log "the dialog survived the taps - using BACK and restoring the app"
+  adb shell input keyevent KEYCODE_BACK >/dev/null 2>&1 || true
+  sleep 3
+  bring_app_to_front || true
   return 0
 }
 
@@ -160,8 +208,6 @@ else
 fi
 log "frames rendered: $FRAMES"
 
-DIALOG_STATE="no"
-dialog_is_up && DIALOG_STATE="yes"
 SCREEN_TEXT=$(ui_text) || SCREEN_TEXT=""
 TEXT_STATE="read"
 [ -n "$SCREEN_TEXT" ] || TEXT_STATE="unavailable (uiautomator dump produced nothing)"
@@ -182,25 +228,23 @@ TEXT_STATE="read"
 } > "$REPORT"
 
 log "capturing the app screen"
-# The file is named for what it *shows*: the catalogue's honest state on a runner
-# that cannot resolve the source site is its error message, and a capture with a
-# system dialog over it is not the same artefact as one without. Existence of a
-# canonical name therefore means "captured in that state", never "should have
-# been".
-CAPTURE_SUFFIX=""
-[ "$DIALOG_STATE" = "yes" ] && CAPTURE_SUFFIX="-with-system-dialog"
+# Every capture is verified: the app window must be the focused one at the moment
+# of the screencap, and the name says whether a system dialog is also up. A run
+# that cannot produce one verified capture fails - a green run whose artefact is
+# the launcher (run 5) is worse than a red one.
+PRODUCED=""
+CAPTURES_OK=0
+
 if [ "$FRAMES" = "0" ]; then
   log "the app has drawn no frames - no 01 capture (it would be the splash screen)"
-else
-  try_dismiss_dialog
-  dialog_is_up && CAPTURE_SUFFIX="-with-system-dialog" || CAPTURE_SUFFIX=""
-  SHOT_01="01-app-amoled${CAPTURE_SUFFIX}.png"
-  adb exec-out screencap -p > "$SHOTS/$SHOT_01" || fail "screencap 01 failed"
-  [ -s "$SHOTS/$SHOT_01" ] || fail "screenshot 01 is empty"
-  PRODUCED="$SHOT_01"
-  log "captured $SHOT_01 (frames drawn: ${FRAMES:-unreadable}, system dialog: $([ -n "$CAPTURE_SUFFIX" ] && echo yes || echo no), text: $TEXT_STATE)"
+elif capture_app_screen "01-app-amoled.png"; then
+  PRODUCED="$LAST_CAPTURE"
+  CAPTURES_OK=$((CAPTURES_OK + 1))
 fi
 
+# The file is named for what it shows. The catalogue's honest state on a runner
+# that cannot resolve the source site is its error message, so the report states
+# which state was on screen rather than letting the filename imply one.
 CATALOGUE_STATE="unknown (screen text unavailable - uiautomator dump produced nothing)"
 case "$SCREEN_TEXT" in
   *"Chargement"*) CATALOGUE_STATE="still loading" ;;
@@ -213,37 +257,37 @@ adb shell am start -n "$APP_ID/.MainActivity" \
   --es open_series_id "voir-anime:one-piece-vf" \
   --es open_series_title "One Piece" >/dev/null 2>&1
 sleep 25
-DEEPLINK_TEXT=$(ui_text) || DEEPLINK_TEXT=""
 DEEPLINK_DIALOG="no"
 dialog_is_up && DEEPLINK_DIALOG="yes"
-if [ "$FRAMES" != "0" ]; then
-  SECOND_SUFFIX=""
-  [ "$DEEPLINK_DIALOG" = "yes" ] && SECOND_SUFFIX="-with-system-dialog"
-  SHOT_02="02-notification-extras-launch${SECOND_SUFFIX}.png"
-  adb exec-out screencap -p > "$SHOTS/$SHOT_02" || fail "screencap 02 failed"
-  [ -s "$SHOTS/$SHOT_02" ] || fail "screenshot 02 is empty"
-  PRODUCED="$PRODUCED, $SHOT_02"
+DEEPLINK_TEXT=$(ui_text) || DEEPLINK_TEXT=""
+if [ "$FRAMES" != "0" ] && capture_app_screen "02-notification-extras-launch.png"; then
+  PRODUCED="$PRODUCED, $LAST_CAPTURE"
+  CAPTURES_OK=$((CAPTURES_OK + 1))
 fi
 
 # The Settings tab is the rightmost of four. Its own body carries a string that
 # exists nowhere else in the app ("Effacer l'historique"), so the tap is verified
-# by text rather than assumed - the first run tapped and silently captured the
-# catalogue again. Where the accessibility dump is unavailable there is no way to
-# verify the tab, so no 03 capture is produced and the report says why: a file
-# named 03-settings.png showing the catalogue would be a false claim.
+# by text as well as by focus: in a single-activity app, nothing else proves the
+# tab was reached. The tap is placed inside the app's own navigation bar
+# (~92% of the height); the first two runs used height-80/height-110, which is
+# the system navigation bar, and both silently ended up somewhere else.
 WIDTH=$(adb shell wm size | grep -oE "[0-9]+x[0-9]+" | head -n1 | cut -dx -f1)
 HEIGHT=$(adb shell wm size | grep -oE "[0-9]+x[0-9]+" | head -n1 | cut -dx -f2)
 SETTINGS_VERDICT="not attempted"
 if [ -n "${WIDTH:-}" ] && [ -n "${HEIGHT:-}" ]; then
   try_dismiss_dialog
-  adb shell input tap $((WIDTH * 7 / 8)) $((HEIGHT - 110)) >/dev/null 2>&1 || true
+  adb shell input tap $((WIDTH * 7 / 8)) $((HEIGHT * 92 / 100)) >/dev/null 2>&1 || true
   sleep 8
   SETTINGS_TEXT=$(ui_text) || SETTINGS_TEXT=""
   case "$SETTINGS_TEXT" in
     *"Effacer l'historique"*)
-      adb exec-out screencap -p > "$SHOTS/03-settings.png" || true
-      SETTINGS_VERDICT="reached and captured (verified by its own text)"
-      PRODUCED="$PRODUCED, 03-settings.png"
+      if capture_app_screen "03-settings.png"; then
+        SETTINGS_VERDICT="reached and captured (verified by its own text and by focus)"
+        PRODUCED="$PRODUCED, $LAST_CAPTURE"
+        CAPTURES_OK=$((CAPTURES_OK + 1))
+      else
+        SETTINGS_VERDICT="reached, but no capture was verifiable"
+      fi
       ;;
     "")
       SETTINGS_VERDICT="not verified (screen text unavailable), no capture"
@@ -255,17 +299,9 @@ if [ -n "${WIDTH:-}" ] && [ -n "${HEIGHT:-}" ]; then
   log "settings: $SETTINGS_VERDICT"
 fi
 
-{
-  echo
-  echo "frames rendered (dumpsys gfxinfo): ${FRAMES:-unreadable}"
-  echo "system dialog covering the screen at capture time: $DIALOG_STATE"
-  echo "screen text: $TEXT_STATE"
-  echo "first screen state: $CATALOGUE_STATE"
-  echo "screen text after the notification-extras launch: ${DEEPLINK_TEXT:-<none>}"
-  echo "second launch: dialog=$DEEPLINK_DIALOG"
-  echo "settings tab: $SETTINGS_VERDICT"
-  echo "captured this run: ${PRODUCED:-<none>}"
-} >> "$REPORT"
+if [ "$CAPTURES_OK" -eq 0 ]; then
+  fail "no verified capture of the app could be produced (see the report for why)"
+fi
 
 log "checking for ANRs and crashes"
 ANR=$(anr_lines)
