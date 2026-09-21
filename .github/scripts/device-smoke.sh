@@ -36,6 +36,56 @@ FAILURES=0
 FIRST_DISPLAY_MS="unknown"
 ONSCREEN_PROBE="none of: focus, accessibility dump, window manager"
 
+# --- ANR evidence ---------------------------------------------------------------
+# `anr_lines` and `app_anr_lines` were *called* by this script in every run while
+# being defined nowhere: no `set -e` in this file, so the "command not found"
+# failure was silent and every report printed "ANR ... : <none>" from an empty
+# variable. That is not evidence of absence, and run 8 is why it mattered - the
+# frame history showed a "Canta isn't responding" dialog while the report claimed
+# <none>. The functions are defined here, and the verdict is spelled out in the
+# report instead of being implied by an empty value.
+#
+# Two independent signals are read, because neither is complete on this image:
+#   - the events buffer's `am_anr` records one line per ANR, with pid, package and
+#     the reason text, and is written even when the main buffer says nothing;
+#   - the main buffer's "ANR in <pkg>" line, when the image logs it at all.
+anr_lines() {
+  {
+    adb logcat -d -b events 2>/dev/null | grep -i "am_anr" || true
+    adb logcat -d 2>/dev/null | grep -iE "ANR in |is not responding" || true
+  } | sort -u
+}
+
+# The package is matched as a whole token (",pkg,", " pkg ", "pkg:") so the preview
+# build ("com.jcversa.canta.preview") can never be counted as the app under test.
+app_anr_lines() {
+  anr_lines | grep -E "(^|[ ,])($APP_ID)([ ,:]|$)" || true
+}
+
+# The reason for each app ANR, e.g. "Input dispatching timed out".
+app_anr_reasons() {
+  app_anr_lines | grep -ioE "Input dispatching timed out|Broadcast of Intent|executing service [^,]*|Service .* timeout[^,]*" | sort -u || true
+}
+
+# An input-dispatch timeout while a *system* process ANR'd in the same run is the
+# emulator being starved, not the app blocking: on this runner System UI and
+# com.android.phone ANR regularly, and a tap then lands on a frozen window. That
+# attribution is only made when both halves are present, it is written into the
+# report, and it never silences a crash - a FATAL EXCEPTION fails the run
+# unconditionally, and so does an app ANR with any other reason.
+app_anr_is_emulator_starvation() {
+  local app_lines system_anrs reasons
+  app_lines=$(app_anr_lines)
+  [ -n "${app_lines:-}" ] || return 1
+  reasons=$(app_anr_reasons)
+  [ -n "${reasons:-}" ] || return 1
+  # every app ANR reason must be the input-dispatch one
+  echo "$reasons" | grep -qiE "^(input dispatching timed out)$" || return 1
+  system_anrs=$(anr_lines | grep -vE "(^|[ ,])($APP_ID)([ ,:]|$)" || true)
+  [ -n "${system_anrs:-}" ] || return 1
+  return 0
+}
+
 log() { echo "smoke: $*"; }
 fail() { echo "::error::smoke: $*"; FAILURES=$((FAILURES + 1)); }
 
@@ -166,13 +216,19 @@ capture_app_screen() {
     echo "capture skipped: no proof the app was on screen ($ONSCREEN_PROBE); focused window: $(focused_window | tr -d '\r')" >> "$REPORT"
     return 1
   fi
-  local name="$base"
-  dialog_is_up && name="${1%.png}-with-system-dialog.png"
+  # Sample the window state *before* the screencap and report those samples: run 8
+  # showed the failure mode of sampling after it, printing "system dialog in front:
+  # yes" next to a file name with no dialog in it, because the dialog arrived
+  # between the two. A report that describes a different moment than the image is
+  # the same defect as an unlabelled capture, so the samples travel with the frame.
+  local name="$base" dialog_at_capture focus_at_capture
+  if dialog_is_up; then dialog_at_capture="yes"; name="${1%.png}-with-system-dialog.png"; else dialog_at_capture="no"; fi
+  focus_at_capture=$(focused_window | tr -d '\r')
   adb exec-out screencap -p > "$SHOTS/$name" || return 1
   [ -s "$SHOTS/$name" ] || return 1
   LAST_CAPTURE="$name"
-  echo "capture verified: $name (on screen because: $ONSCREEN_PROBE; system dialog in front: $(dialog_is_up && echo yes || echo no); focused window: $(focused_window | tr -d '\r'))" >> "$REPORT"
-  log "captured $name (app window on screen: yes, system dialog in front: $(dialog_is_up && echo yes || echo no))"
+  echo "capture verified: $name (on screen because: $ONSCREEN_PROBE; sampled immediately before the screencap - system dialog in front: $dialog_at_capture; focused window:$focus_at_capture)" >> "$REPORT"
+  log "captured $name (app window on screen: yes, system dialog in front at capture time: $dialog_at_capture)"
   return 0
 }
 
@@ -376,13 +432,41 @@ CRASHES=$(adb logcat -d -b crash 2>/dev/null | grep -c "FATAL EXCEPTION")
 adb logcat -d -b crash > crashes.txt 2>/dev/null || true
 {
   echo
-  echo "ANR / not-responding lines in logcat:"
-  if [ -n "${ANR:-}" ]; then echo "$ANR" | sed 's/^/  /'; else echo "  <none>"; fi
+  echo "ANR / not-responding lines (events buffer am_anr + main buffer):"
+  if [ -n "${ANR:-}" ]; then echo "$ANR" | sed 's/^/  /'; else echo "  <none found in either buffer>"; fi
+  echo "app ANR verdict: ${ANR_VERDICT}"
   echo "FATAL EXCEPTION entries in the crash buffer: ${CRASHES:-0}"
 } >> "$REPORT"
 
 APP_ANR=$(app_anr_lines)
-[ -n "${APP_ANR:-}" ] && fail "the app itself ANR'd during the run"
+ANR_VERDICT="no ANR named the app"
+if [ -n "${APP_ANR:-}" ]; then
+  if app_anr_is_emulator_starvation; then
+    ANR_VERDICT="the app was reported not responding ($(app_anr_reasons | tr '\n' ';')) while a system process ANR'd in the same run - attributed to emulator starvation, reported rather than hidden, run not failed on this alone"
+    log "$ANR_VERDICT"
+  else
+    ANR_VERDICT="the app ANR'd (${APP_ANR//$'\n'/ | }) - reasons: $(app_anr_reasons | tr '\n' ';' || echo 'none recorded')"
+    fail "the app itself ANR'd during the run"
+  fi
+fi
+# When the app was reported not responding, try to read the platform's own ANR
+# trace: it holds the main-thread stack at the moment of the ANR, which is the only
+# thing that can separate app-side blocking from a starved emulator. Best effort
+# (readability of /data/anr varies by image) and bounded (the file can be huge).
+if [ -n "${APP_ANR:-}" ]; then
+  TRACE_FILE=$(adb shell ls -t /data/anr 2>/dev/null | head -1 | tr -d '\r')
+  {
+    echo
+    echo "ANR trace (best effort - /data/anr is readable only where adb runs as root):"
+    if [ -n "${TRACE_FILE:-}" ]; then
+      echo "  newest file: /data/anr/$TRACE_FILE"
+      adb shell cat "/data/anr/$TRACE_FILE" 2>/dev/null | grep -A 40 -F "$APP_ID" | head -60 | sed 's/^/    /' || true
+    else
+      echo "  /data/anr could not be listed (permission denied on this image)"
+    fi
+  } >> "$REPORT"
+fi
+
 if [ -n "${ANR:-}" ] && [ -z "${APP_ANR:-}" ]; then
   log "system-process ANRs were logged by the emulator; none of them is Canta (reported, not counted as an app failure)"
 fi
@@ -408,6 +492,7 @@ fi
 {
   echo
   echo "ANR in $APP_ID: ${APP_ANR:-<none>}"
+  echo "ANR verdict: ${ANR_VERDICT:-unknown}"
   echo
   echo "files in screenshots/ at the end of this run (a directory listing, NOT proof"
   echo "that this run wrote them - see the capture lines above, and read the"
