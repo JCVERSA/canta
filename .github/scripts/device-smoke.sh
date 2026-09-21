@@ -11,10 +11,16 @@
 #     assumed;
 #   * the foreground-service/notification-permission path survives a launch
 #     carrying the episode watcher's extras, and no fatal exception occurs;
-#   * an ANR or a system "not responding" dialog is reported as a failure with
-#     its logcat trace, instead of being ignored while the checks pass;
-#   * screenshots come from the running app (never mock-ups), captured only
-#     after the UI is actually up, with the screen text that accompanied them.
+#   * an ANR *in Canta* fails the run with its logcat trace. The emulator's own
+#     system processes ANR on software-rendered CI runners whatever is installed
+#     (run 3 logged nine, none of them in this app), so those are reported in the
+#     committed report instead of being blamed on the app: a false finding is
+#     worse than no finding;
+#   * screenshots come from the running app (never mock-ups). One is taken only
+#     when the screen's text could be read and no system dialog is covering it,
+#     and it is named for what it shows — a capture of the emulator's
+#     "not responding" dialog under an app-screen filename would be a claim the
+#     file cannot support.
 #
 # It does NOT claim to prove stream playback or a completed download: both
 # depend on third-party sites, and they stay marked unverified in the README
@@ -30,7 +36,6 @@ FIRST_DISPLAY_MS="unknown"
 
 log() { echo "smoke: $*"; }
 fail() { echo "::error::smoke: $*"; FAILURES=$((FAILURES + 1)); }
-note() { echo "$*" >> "$REPORT"; }
 
 ui_text() {
   # The visible text of the current screen. `uiautomator dump` is the supported
@@ -108,7 +113,9 @@ system_dialog_present() {
 }
 
 mkdir -p "$SHOTS"
-rm -f "$SHOTS"/*.png
+# Deliberately no blanket `rm` here. A capture is skipped, not deleted, when it
+# cannot be verified this run: removing a previously verified image because a
+# flaky emulator hiccuped would lose a true artefact and gain nothing.
 
 log "installing $APK"
 if ! adb install -r "$APK" >/dev/null 2>&1; then
@@ -171,6 +178,8 @@ esac
 if system_dialog_present; then
   log "a system dialog is on screen - no 01 capture (it would not be an app screenshot)"
   fail "the emulator left a system dialog on screen, so the app screen could not be captured"
+elif [ -z "$SCREEN_TEXT" ]; then
+  log "the screen text could not be read - no 01 capture (capturing blind could show a splash or a dialog)"
 else
   adb exec-out screencap -p > "$SHOTS/01-app-amoled.png" || fail "screencap 01 failed"
   [ -s "$SHOTS/01-app-amoled.png" ] || fail "screenshot 01 is empty"
@@ -188,8 +197,8 @@ DEEPLINK_TEXT=$(ui_text) || DEEPLINK_TEXT=""
   echo "screen text after the notification-extras launch:"
   echo "  ${DEEPLINK_TEXT:-<none>}"
 } >> "$REPORT"
-if system_dialog_present; then
-  log "a system dialog is on screen - no 02 capture"
+if system_dialog_present || [ -z "$DEEPLINK_TEXT" ]; then
+  log "no 02 capture (system dialog on screen, or the screen text could not be read)"
 else
   adb exec-out screencap -p > "$SHOTS/02-notification-extras-launch.png" || fail "screencap 02 failed"
   [ -s "$SHOTS/02-notification-extras-launch.png" ] || fail "screenshot 02 is empty"
@@ -203,7 +212,10 @@ WIDTH=$(adb shell wm size | grep -oE "[0-9]+x[0-9]+" | head -n1 | cut -dx -f1)
 HEIGHT=$(adb shell wm size | grep -oE "[0-9]+x[0-9]+" | head -n1 | cut -dx -f2)
 SETTINGS_TEXT=""
 if [ -n "${WIDTH:-}" ] && [ -n "${HEIGHT:-}" ]; then
-  adb shell input tap $((WIDTH * 7 / 8)) $((HEIGHT - 80)) >/dev/null 2>&1 || true
+  # A dialog left over from the launch above would swallow this tap silently,
+  # which is exactly what run 2 did.
+  dismiss_system_dialogs
+  adb shell input tap $((WIDTH * 7 / 8)) $((HEIGHT - 110)) >/dev/null 2>&1 || true
   sleep 8
   SETTINGS_TEXT=$(ui_text) || SETTINGS_TEXT=""
   log "screen text after tapping the last tab: $SETTINGS_TEXT"
@@ -212,9 +224,9 @@ if [ -n "${WIDTH:-}" ] && [ -n "${HEIGHT:-}" ]; then
       adb exec-out screencap -p > "$SHOTS/03-settings.png" || true
       ;;
     *)
-      # Not the settings screen: no misleading file is kept.
-      log "the settings tab was not reached - not saving 03-settings.png"
-      rm -f "$SHOTS/03-settings.png"
+      # Not the settings screen: nothing is written, and any earlier verified
+      # capture is left alone. The report records that this run did not reach it.
+      log "the settings tab was not reached - no 03 capture this run"
       ;;
   esac
 fi
