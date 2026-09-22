@@ -1,21 +1,21 @@
 Canta device smoke report
-date: Tue Sep 22 00:33:47 UTC 2026
-sha: 1c32f2534e251a54f90cb98d0a64f8cd4046944a
-run: 18
+date: Tue Sep 22 01:18:35 UTC 2026
+sha: 886cc4e3f1209d7116768cbc42f3f59f3e47d14b
+run: 19
 emulator api: 34
 emulator abi: x86_64
-package: versionName=smoke-1c32f25
-am start -W TotalTime (ms): 3991/3996
-resumed:     topResumedActivity=ActivityRecord{f210bfa u0 com.jcversa.canta/.MainActivity t8}
+package: versionName=smoke-886cc4e
+am start -W TotalTime (ms): 3973/4017
+resumed:     topResumedActivity=ActivityRecord{de8db5e u0 com.jcversa.canta/.MainActivity t8}
 
 screen text after cold start:
   Rechercher une série VF|VOSTFR Source : voir-anime.to · page 1 Magilumiere Magical Girls Inc 2|VF Page suivante… Catalogue|Favoris Hors ligne Réglages
 phase: report header written; capturing screens
-capture verified: 01-app-amoled.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{8a5c683 u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
-capture verified: 02-notification-extras-launch.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{2fcbe39 u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
-capture verified: 03-settings.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{2fcbe39 u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
+capture verified: 01-app-amoled.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{f7a1042 u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
+capture verified: 02-notification-extras-launch.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{24c0d3b u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
+capture verified: 03-settings.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{24c0d3b u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
 phase: walking into a series and an episode
-capture verified: 04-detail-episodes.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{9ff3386 u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
+capture verified: 04-detail-episodes.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{24c0d3b u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
 phase: collecting ANR evidence
 
 ANR / not-responding lines (events buffer am_anr + main buffer):
@@ -29,8 +29,8 @@ screen text: read
 first screen state: catalogue items or empty state
 settings tab: reached and captured (verified by its own text and by focus)
 playback walk: series detail reached (yes), but no episode row was found in the accessibility dump
-playback walk, step by step: search screen: One VF|VOSTFR Recherche I’m Dating a Dark Summoner|VOSTFR Assassination Classroom the Movie: Our Time VOSTFR|Catalogue Favoris Hors ligne|Réglages | tapped the result card "smoke: first result card is "I’m Dating a Dark Summoner" - tapping 284 1299
-I’m Dating a Dark Summoner" | after the first result tap: I’m Dating a Dark Summoner VOSTFR|Source : voir-anime.to VF — indisponible VOSTFR|Action Adventure Chinese|Comedy Drama Ecchi|Fantasy Horror Mahou Shoujo|Mecha Music Mystery|Psychological Romance Sci-Fi|Slice of Life Sports Supernatural|Thriller La nouvelle venue dans le groupe du prêtre coincé Ronnie est Amona, une invocatrice sombre et une semi-démone utilisant la magie et les pouvoirs infernaux. On pensait que les deux allaient s’entendre comme chiens et chats et rester en mauvais termes… À la grande surprise du reste du groupe, lors de la première soirée, ils se sont retrouvés à coucher ensemble ! | after scrolling to the episode list: I’m Dating a Dark Summoner VF — indisponible|VOSTFR Action Adventure|Chinese Comedy Drama|Ecchi Fantasy Horror|Mahou Shoujo Mecha Music|Mystery Psychological Romance|Sci-Fi Slice of Life Sports|Supernatural Thriller La nouvelle venue dans le groupe du prêtre coincé Ronnie est Amona, une invocatrice sombre et une semi-démone utilisant la magie et les pouvoirs infernaux. On pensait que les deux allaient s’entendre comme chiens et chats et rester en mauvais termes… À la grande surprise du reste du groupe, lors de la première soirée, ils se sont retrouvés à coucher ensemble !|Épisodes Aucun épisode listé pour VF — la langue n'est peut-être pas disponible.
+playback walk, step by step: catalogue: One VF|VOSTFR Recherche I’m Dating a Dark Summoner|VOSTFR Assassination Classroom the Movie: Our Time VOSTFR|Catalogue Favoris Hors ligne|Réglages | tapped the catalogue card "smoke: first result card is "I’m Dating a Dark Summoner" - tapping 284 1299
+I’m Dating a Dark Summoner" | after the first result tap: I’m Dating a Dark Summoner VOSTFR|Source : voir-anime.to VF — indisponible VOSTFR|Action Adventure Chinese|Comedy Drama Ecchi|Fantasy Horror Mahou Shoujo|Mecha Music Mystery|Psychological Romance Sci-Fi|Slice of Life Sports Supernatural|Thriller La nouvelle venue dans le groupe du prêtre coincé Ronnie est Amona, une invocatrice sombre et une semi-démone utilisant la magie et les pouvoirs infernaux. On pensait que les deux allaient s’entendre comme chiens et chats et rester en mauvais termes… À la grande surprise du reste du groupe, lors de la première soirée, ils se sont retrouvés à coucher ensemble ! | after scrolling to the episode list: I’m Dating a Dark Summoner VF — indisponible|VOSTFR Action Adventure|Chinese Comedy Drama|Ecchi Fantasy Horror|Mahou Shoujo Mecha Music|Mystery Psychological Romance|Sci-Fi Slice of Life Sports|Supernatural Thriller La nouvelle venue dans le groupe du prêtre coincé Ronnie est Amona, une invocatrice sombre et une semi-démone utilisant la magie et les pouvoirs infernaux. On pensait que les deux allaient s’entendre comme chiens et chats et rester en mauvais termes… À la grande surprise du reste du groupe, lors de la première soirée, ils se sont retrouvés à coucher ensemble !|Épisodes Aucun épisode listé pour VF — la langue n'est peut-être pas disponible. | no episodes in VF - switching the episode list to VOSTFR | after switching to VOSTFR: I’m Dating a Dark Summoner VOSTFR|Source : voir-anime.to VF — indisponible VOSTFR|Action Adventure Chinese|Comedy Drama Ecchi|Fantasy Horror Mahou Shoujo|Mecha Music Mystery|Psychological Romance Sci-Fi|Slice of Life Sports Supernatural|Thriller La nouvelle venue dans le groupe du prêtre coincé Ronnie est Amona, une invocatrice sombre et une semi-démone utilisant la magie et les pouvoirs infernaux. On pensait que les deux allaient s’entendre comme chiens et chats et rester en mauvais termes… À la grande surprise du reste du groupe, lors de la première soirée, ils se sont retrouvés à coucher ensemble !
 screen text after the notification-extras launch: One VF|VOSTFR Recherche I’m Dating a Dark Summoner|VOSTFR Assassination Classroom the Movie: Our Time VOSTFR|Catalogue Favoris Hors ligne|Réglages
 system dialog in front after that launch: no
 captures verified by this run: 01-app-amoled.png, 02-notification-extras-launch.png, 03-settings.png, 04-detail-episodes.png
@@ -41,8 +41,8 @@ ANR verdict: no ANR named the app
 files in screenshots/ at the end of this run (a directory listing, NOT proof
 that this run wrote them - see the capture lines above, and read the
 committed image itself before trusting what it shows):
-  screenshots/01-app-amoled.png (1644244 bytes)
-  screenshots/02-notification-extras-launch.png (1675830 bytes)
-  screenshots/03-settings.png (301590 bytes)
-  screenshots/04-detail-episodes.png (458649 bytes)
+  screenshots/01-app-amoled.png (1643961 bytes)
+  screenshots/02-notification-extras-launch.png (1675122 bytes)
+  screenshots/03-settings.png (300786 bytes)
+  screenshots/04-detail-episodes.png (457562 bytes)
 phase: done (0 problem(s) recorded)
