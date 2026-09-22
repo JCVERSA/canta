@@ -9,11 +9,12 @@ of a screen it cannot render.
 
 | File | Shows | Notes |
 | --- | --- | --- |
-| ![](01-app-amoled.png) `01-app-amoled.png` | The catalogue screen, AMOLED theme | Captured by run 8 after the capture gate confirmed the app's own window was in front. Shows the search field, the VF/VOSTFR switch, `Source : voir-anime.to · page 1` and the loading spinner: on a runner that cannot resolve the source site, the catalogue cannot load, and the app shows that rather than an invented list. |
+| ![](01-app-amoled.png) `01-app-amoled.png` | The catalogue, loaded from the live source | Run 16. Real items scraped from `voir-anime.to` — covers, titles, `VF` badges, `Source : voir-anime.to · page 2`. The earlier capture under this name showed the loading spinner because the emulator it ran on was broken (no KVM, then a harness bug); that was never a network limit, and this run proved it. |
+| ![](02-notification-extras-launch.png) `02-notification-extras-launch.png` | A VOSTFR search fallback | Run 16. Launched with the episode watcher's extras for an unknown id: the app searched the title (`One`) instead of opening nothing, and the results are badged `VOSTFR` because they come from the nakanime fallback and are labelled honestly. |
 | ![](03-settings.png) `03-settings.png` | Settings, AMOLED theme | Captured by the smoke test after it verified the tab was reached (by text unique to that screen) and that the app's own window was on screen. The version string in the frame names the build it came from. |
 | `smoke-report.txt` | The run's own record | Emulator API/ABI, package version, `am start -W` timing, resumed activity, per-screen visible text, per-capture verification lines, ANR lines. |
 
-The two captures above are the only ones this project currently vouches for, and
+The three captures above are the only ones this project currently vouches for, and
 the directory is thin on purpose: earlier runs produced files under these names
 whose frames were the **launcher** (the system ANR dialog had been dismissed with
 BACK, which also left the app) and then the app behind the emulator's own "not
@@ -44,8 +45,9 @@ dialog, stable), `-with-system-dialog` (dialog up, stable), or
 `-dialog-state-changed-mid-capture` (unsettled, and it says so).
 
 Not captured, and deliberately not implied: playback, the quality selector with
-measured sizes, a download in progress, and offline playback. Each needs network
-that reaches the sources, which the CI runner does not have. Capture them on a
+measured sizes, a download in progress, and offline playback. None of these is a
+network limit — run 16 reached both sources from the CI runner; they need the smoke
+test to walk into a series and an episode, which it does not do yet. Capture them on a
 real connection (procedure below) and update *Verification status* in the root
 README in the same change.
 

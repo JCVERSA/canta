@@ -48,28 +48,31 @@ frames actually contain.
 
 | Capture | What its frames contain |
 | --- | --- |
-| ![The catalogue loading on a real device](screenshots/01-app-amoled.png) | `01-app-amoled.png` — the catalogue screen on a real device: pure-black AMOLED background, "Rechercher une série", the VF/VOSTFR switch, `Source : voir-anime.to · page 1`, the loading spinner, and the four-tab bar (Catalogue / Favoris / Hors ligne / Réglages). The CI emulator cannot resolve `voir-anime.to`, so this is the state that runner can honestly reach — the app reporting progress while its source is unreachable, not a fabricated catalogue |
-| ![Settings on a real device](screenshots/03-settings.png) | `03-settings.png` — the Settings screen on a real device: theme, the VF/VOSTFR default, the watchlist note and the Media3/offline explanation, with the `Version Canta smoke-…` line naming the build that was running |
+| ![The catalogue, loaded from the live source](screenshots/01-app-amoled.png) | `01-app-amoled.png` — the catalogue with **real items scraped from `voir-anime.to`** on the CI emulator: pure-black AMOLED background, the search field, the VF/VOSTFR switch, `Source : voir-anime.to · page 2`, cover art, `Magilumiere Magical Girls Inc 2` with its `VF` badge, and the four-tab bar. The blur is the JPEG-free truth of a 720×1568 emulator screenshot of real posters, not a mock-up |
+| ![A VOSTFR search fallback](screenshots/02-notification-extras-launch.png) | `02-notification-extras-launch.png` — the app launched with the episode watcher's extras for an id this install does not know, so it searched the title instead: `One` in the field, results headed `Recherche`, and items badged **VOSTFR**, which is the nakanime fallback working and being labelled honestly rather than passed off as VF |
+| ![Settings on a real device](screenshots/03-settings.png) | `03-settings.png` — the Settings screen: the VF/VOSTFR default and what it means, the 12-hour watcher note, and the Media3/offline explanation, with `Version Canta smoke-4aa21e6 (com.jcversa.canta)` from the build under test |
 
-That capture comes from the run whose `Version` line is printed inside it
-(`smoke-7940dad`), which is why the label in the image and the report's own
-`sha:` line are the way to tell which commit a picture belongs to — not the file
-name.
+All three come from **run 16** of the `Device smoke test` workflow — one build, one
+emulator session, evidenced by `screenshots/smoke-report.txt` from that same run:
+`am start -W TotalTime 2831 ms`, `screen text: read`, three `capture verified:`
+lines each recording that the app's own window was in front and that the dialog
+state was the same before and after the screencap, `<none found in either buffer>`
+for ANRs, `0` fatal exceptions, and `phase: done (0 problem(s) recorded)`.
+
+The `Version Canta smoke-<sha>` line printed inside each frame is how to tell which
+commit a picture belongs to — the file names are reused across runs.
 
 `screenshots/smoke-report.txt` is the run's own record: emulator API/ABI, package
 version, `am start -W` timing, the resumed activity, the visible text of each
 screen, the per-capture verification lines and the ANR lines the platform logged.
-Read it before trusting an image — and read the image before trusting the
-report's file listing, which is only a directory listing.
+Read it before trusting an image — and read the image before trusting the report's
+file listing, which is only a directory listing.
 
-Two honest limits, both visible in that report. The CI runner cannot resolve
-`voir-anime.to` (no DNS for it), so the catalogue renders its **error state**:
-that is the app reporting the real cause instead of inventing an empty
-catalogue. And playback, downloads and offline playback have not been captured at
-all, because they need a network that reaches the sources — they stay in
-*Verification status* below rather than being implied by a screenshot.
-[`screenshots/README.md`](screenshots/README.md) explains how to capture the rest
-on a machine that can reach the sites.
+**What is still not captured**: playback, the quality selector with measured sizes,
+a completed download and offline playback. Those need taps into a series and an
+episode, which the smoke test does not yet do — it stays honest about that in
+*Verification status* below instead of implying them with a screenshot.
+[`screenshots/README.md`](screenshots/README.md) explains how to capture them.
 
 ## Honesty rules the app follows
 
@@ -294,10 +297,20 @@ Stated plainly, because it is easy to over-claim:
 * **Verified against live captures**: every selector and endpoint in
   `RECONNAISSANCE.md`, including the two master playlists with their measured
   variant tables and the six-combination referer matrix.
-* **Not yet verified on a device**: end-to-end playback, the download queue with
-  notifications, and the periodic episode watcher. These need an emulator or a
-  phone; the APKs from CI are the input for that pass, and anything found there
-  will be stated here rather than left implied.
+* **Verified on an emulator (CI, API 34 x86_64)**: the app launches cold in
+  2.8 s and reaches its first frame; the catalogue loads **real series from
+  `voir-anime.to`**; a search returns results, including the **VOSTFR** nakanime
+  fallback labelled as such; the Settings tab renders; a launch carrying the
+  episode watcher's extras for an unknown id resolves to a title search instead of
+  opening nothing; no ANR is logged against the app and the crash buffer is empty.
+  Three captures in `screenshots/` are from that run, and the report next to them
+  is its own record.
+* **Not yet verified on a device**: end-to-end playback (ExoPlayer reaching a
+  playing state on a resolved HLS stream), the download queue with its
+  notifications, offline playback, and the periodic episode watcher's actual
+  notification. These need a scripted walk into a series and an episode — the
+  harness does not do that yet, and they are listed here rather than implied by a
+  screenshot.
 
 ## Legal disclaimer
 
