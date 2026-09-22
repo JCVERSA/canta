@@ -1,22 +1,22 @@
 Canta device smoke report
-date: Tue Sep 22 01:42:46 UTC 2026
-sha: b27d161680ce7a67f832695933d41c8b885ac759
-run: 22
+date: Tue Sep 22 01:54:45 UTC 2026
+sha: b3e37f95fba029729d9f2f7d6ff9a4e52af30550
+run: 23
 emulator api: 34
 emulator abi: x86_64
-package: versionName=smoke-b27d161
-am start -W TotalTime (ms): 2407/2417
-resumed:     topResumedActivity=ActivityRecord{8971708 u0 com.jcversa.canta/.MainActivity t8}
+package: versionName=smoke-b3e37f9
+am start -W TotalTime (ms): 3192/3206
+resumed:     topResumedActivity=ActivityRecord{85b5bf3 u0 com.jcversa.canta/.MainActivity t8}
 
 screen text after cold start:
   Rechercher une série VF|VOSTFR Source : voir-anime.to · page 1 Magilumiere Magical Girls Inc 2|VF Page suivante… Catalogue|Favoris Hors ligne Réglages
 phase: report header written; capturing screens
-capture verified: 01-app-amoled.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{b4e4313 u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
-capture verified: 02-notification-extras-launch.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{3b1f854 u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
-capture verified: 03-settings.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{3b1f854 u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
+capture verified: 01-app-amoled.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{9f9d491 u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
+capture verified: 02-notification-extras-launch.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{50a9c0 u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
+capture verified: 03-settings.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{50a9c0 u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
 phase: walking into a series and an episode
-capture verified: 04-detail-episodes.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{c4991f0 u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
-capture verified: 05-player.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{c4991f0 u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
+capture verified: 04-detail-episodes.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{422bfab u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
+capture verified: 05-player.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{422bfab u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
 phase: collecting ANR evidence
 
 ANR / not-responding lines (events buffer am_anr + main buffer):
@@ -29,8 +29,8 @@ frames rendered (dumpsys gfxinfo): 3
 screen text: read
 first screen state: catalogue items or empty state
 settings tab: reached and captured (verified by its own text and by focus)
-playback walk: player reached, screen text: ← Retour Magilumiere Magical Girls Inc 2|Épisode 7 Télécharger Tous les lecteurs ont échoué ou dépassé les 25 s: voembed.net (VidMoly), mfw09.org (Voe), voe.sx (Voe), streamtape.com (Generic) 
-playback walk, step by step: cold-started catalogue: Rechercher une série VF|VOSTFR Source : voir-anime.to · page 2 Magilumiere Magical Girls Inc 2|VF Though I Am an Inept Villainess: Tale of the Butterfly-Rat Body Swap in the Maiden Court VF|Catalogue Favoris Hors ligne|Réglages  | tapped the catalogue card "Magilumiere Magical Girls Inc 2" | after the first result tap: Magilumiere Magical Girls Inc 2 VF|Source : voir-anime.to 11 épisodes Note source : 4.9|VF VOSTFR — indisponible Action|Adventure Chinese Comedy|Drama Ecchi Fantasy|Horror Mahou Shoujo Mecha|Music Mystery Psychological|Romance Sci-Fi Slice of Life|Sports Supernatural Thriller|Saison 2 de “Magilumiere Magical Girls Inc” Épisodes Magilumiere Magical Girls Inc 2 - 11 VF - 11|VF 4 minutes ago Lire  | after scrolling to the episode list: Magilumiere Magical Girls Inc 2 Magilumiere Magical Girls Inc 2 - 07 VF - 07|VF August 17, 2026 Lire|Magilumiere Magical Girls Inc 2 - 06 VF - 06 VF August 9, 2026|Lire Magilumiere Magical Girls Inc 2 - 05 VF - 05 VF|August 2, 2026 Lire Magilumiere Magical Girls Inc 2 - 04 VF - 04|VF July 26, 2026 Lire|Magilumiere Magical Girls Inc 2 - 03 VF - 03 VF July 19, 2026|Lire Magilumiere Magical Girls Inc 2 - 02 VF - 02 VF|July 12, 2026 Lire Magilumiere Magical Girls Inc 2 - 01 VF - 01|VF July 5, 2026 L | after the first episode tap: ← Retour Magilumiere Magical Girls Inc 2|Épisode 7 Télécharger Tous les lecteurs ont échoué ou dépassé les 25 s: voembed.net (VidMoly), mfw09.org (Voe), voe.sx (Voe), streamtape.com (Generic)  | decoder lines: <none> | voembed.net: PING voembed.net (104.21.54.47) 56(84) bytes of data. --- voembed.net ping statistics --- 1 packets transmitted, 0 recei | mfw09.org: PING mfw09.org (104.21.93.89) 56(84) bytes of data. --- mfw09.org ping statistics --- 1 packets transmitted, 0 received, | voe.sx: PING voe.sx (186.2.163.208) 56(84) bytes of data. --- voe.sx ping statistics --- 1 packets transmitted, 0 received, 100% | streamtape.com: PING streamtape.com (104.21.96.46) 56(84) bytes of data. --- streamtape.com ping statistics --- 1 packets transmitted, 0
+playback walk: player reached, screen text: ← Retour Magilumiere Magical Girls Inc 2|Épisode 7 Télécharger Tous les lecteurs ont échoué ou dépassé les 25 s: voembed.net (VidMoly: aucune réponse en 14 s), mfw09.org (Voe: com.jcversa.canta.extractor.DeanEdwards), voe.sx (Voe: com.jcversa.canta.e
+playback walk, step by step: cold-started catalogue: Rechercher une série VF|VOSTFR Source : voir-anime.to · page 2 Magilumiere Magical Girls Inc 2|VF Though I Am an Inept Villainess: Tale of the Butterfly-Rat Body Swap in the Maiden Court VF|Catalogue Favoris Hors ligne|Réglages  | tapped the catalogue card "Magilumiere Magical Girls Inc 2" | after the first result tap: Magilumiere Magical Girls Inc 2 VF|Source : voir-anime.to 11 épisodes Note source : 4.9|VF VOSTFR — indisponible Action|Adventure Chinese Comedy|Drama Ecchi Fantasy|Horror Mahou Shoujo Mecha|Music Mystery Psychological|Romance Sci-Fi Slice of Life|Sports Supernatural Thriller|Saison 2 de “Magilumiere Magical Girls Inc” Épisodes Magilumiere Magical Girls Inc 2 - 11 VF - 11|VF 4 minutes ago Lire  | after scrolling to the episode list: Magilumiere Magical Girls Inc 2 VF|August 22, 2026 Magilumiere Magical Girls Inc 2 - 07 VF - 07 VF|August 17, 2026 Lire Magilumiere Magical Girls Inc 2 - 06 VF - 06|VF August 9, 2026 Lire|Magilumiere Magical Girls Inc 2 - 05 VF - 05 VF August 2, 2026|Lire Magilumiere Magical Girls Inc 2 - 04 VF - 04 VF|July 26, 2026 Lire Magilumiere Magical Girls Inc 2 - 03 VF - 03|VF July 19, 2026 Lire|Magilumiere Magical Girls Inc 2 - 02 VF - 02 VF July 12, 2026|Lire Magilumiere Magical Girls Inc 2 - 01 VF - 0 | after the first episode tap: ← Retour Magilumiere Magical Girls Inc 2|Épisode 7 Télécharger Tous les lecteurs ont échoué ou dépassé les 25 s: voembed.net (VidMoly: aucune réponse en 14 s), mfw09.org (Voe: com.jcversa.canta.extractor.DeanEdwards), voe.sx (Voe: com.jcversa.canta.extractor.DeanEdwards), streamtape.com (Generic: com.jcversa.canta.extractor.DeanEdwards)  | decoder lines: 09-22 01:54:41.197  2170  2291 W m.jcversa.canta: Long monitor contention with owner DefaultDispatcher-worker-1 (2281) at void androidx.media3.exoplayer.offline.DefaultDownloadIndex.ensureInitialized()(DefaultDownloadIndex.java:315) waiters=0 in void androidx.media3.exoplayer.offline.DefaultDownloadIndex.ensureInitialized() for 170ms | voembed.net: PING voembed.net (172.67.223.153) 56(84) bytes of data. --- voembed.net ping statistics --- 1 packets transmitted, 0 rec | mfw09.org: PING mfw09.org (172.67.208.53) 56(84) bytes of data. --- mfw09.org ping statistics --- 1 packets transmitted, 0 received | voe.sx: PING voe.sx (186.2.163.208) 56(84) bytes of data. --- voe.sx ping statistics --- 1 packets transmitted, 0 received, 100% | streamtape.com: PING streamtape.com (172.67.173.3) 56(84) bytes of data. --- streamtape.com ping statistics --- 1 packets transmitted, 0
 screen text after the notification-extras launch: One VF|VOSTFR Recherche I’m Dating a Dark Summoner|VOSTFR Assassination Classroom the Movie: Our Time VOSTFR|Catalogue Favoris Hors ligne|Réglages
 system dialog in front after that launch: no
 captures verified by this run: 01-app-amoled.png, 02-notification-extras-launch.png, 03-settings.png, 04-detail-episodes.png, 05-player.png
@@ -41,9 +41,9 @@ ANR verdict: no ANR named the app
 files in screenshots/ at the end of this run (a directory listing, NOT proof
 that this run wrote them - see the capture lines above, and read the
 committed image itself before trusting what it shows):
-  screenshots/01-app-amoled.png (1644151 bytes)
-  screenshots/02-notification-extras-launch.png (1675405 bytes)
-  screenshots/03-settings.png (300751 bytes)
-  screenshots/04-detail-episodes.png (524972 bytes)
-  screenshots/05-player.png (79712 bytes)
+  screenshots/01-app-amoled.png (1644255 bytes)
+  screenshots/02-notification-extras-launch.png (1675095 bytes)
+  screenshots/03-settings.png (300793 bytes)
+  screenshots/04-detail-episodes.png (525247 bytes)
+  screenshots/05-player.png (119169 bytes)
 phase: done (0 problem(s) recorded)

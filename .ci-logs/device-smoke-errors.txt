@@ -1,5 +1,5 @@
 job: device-smoke
-sha: b27d161680ce7a67f832695933d41c8b885ac759
+sha: b3e37f95fba029729d9f2f7d6ff9a4e52af30550
 
 --- errors ---
 FATAL EXCEPTION entries in the crash buffer: 0
