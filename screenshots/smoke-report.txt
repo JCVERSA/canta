@@ -1,19 +1,21 @@
 Canta device smoke report
-date: Tue Sep 22 00:15:25 UTC 2026
-sha: 4aa21e64d635622d89b0fea9e2f0596ab034bc62
-run: 16
+date: Tue Sep 22 00:24:52 UTC 2026
+sha: fca45c16d2f893b799286ba0ebe05546246fc009
+run: 17
 emulator api: 34
 emulator abi: x86_64
-package: versionName=smoke-4aa21e6
-am start -W TotalTime (ms): 2831/2844
-resumed:     topResumedActivity=ActivityRecord{217034f u0 com.jcversa.canta/.MainActivity t8}
+package: versionName=smoke-fca45c1
+am start -W TotalTime (ms): 3580/3585
+resumed:     topResumedActivity=ActivityRecord{b1570d0 u0 com.jcversa.canta/.MainActivity t8}
 
 screen text after cold start:
-  Rechercher une série VF|VOSTFR Source : voir-anime.to · page 1 Magilumiere Magical Girls Inc 2|VF Page suivante… Catalogue|Favoris Hors ligne Réglages
+  Rechercher une série VF|VOSTFR Source : voir-anime.to · page 1 Chargement du catalogue…|Catalogue Favoris Hors ligne|Réglages
 phase: report header written; capturing screens
-capture verified: 01-app-amoled.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{516a0d8 u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
-capture verified: 02-notification-extras-launch.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{85a8b74 u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
-capture verified: 03-settings.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{85a8b74 u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
+capture verified: 01-app-amoled.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{91326c0 u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
+capture verified: 02-notification-extras-launch.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{c1963bb u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
+capture verified: 03-settings.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{c1963bb u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
+phase: walking into a series and an episode
+capture verified: 04-detail-episodes.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{e940213 u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
 phase: collecting ANR evidence
 
 ANR / not-responding lines (events buffer am_anr + main buffer):
@@ -24,11 +26,14 @@ phase: writing the summary
 
 frames rendered (dumpsys gfxinfo): 3
 screen text: read
-first screen state: catalogue items or empty state
+first screen state: still loading
 settings tab: reached and captured (verified by its own text and by focus)
+playback walk: series detail reached (not recognised), but no episode row was found in the accessibility dump
+playback walk, step by step: search screen: One VF|VOSTFR Recherche I’m Dating a Dark Summoner|VOSTFR Assassination Classroom the Movie: Our Time VOSTFR|Catalogue Favoris Hors ligne|Réglages | tapped the result card "smoke: first result card is "I’m Dating a Dark Summoner" - tapping 284 1299
+I’m Dating a Dark Summoner" | after the first result tap: I’m Dating a Dark Summoner VOSTFR|Source : voir-anime.to VF — indisponible VOSTFR|Action Adventure Chinese|Comedy Drama Ecchi|Fantasy Horror Mahou Shoujo|Mecha Music Mystery|Psychological Romance Sci-Fi|Slice of Life Sports Supernatural|Thriller La nouvelle venue dans le groupe du prêtre coincé Ronnie est Amona, une invocatrice sombre et une semi-démone utilisant la magie et les pouvoirs infernaux. On pensait que les deux allaient s’entendre comme chiens et chats et rester en mauvais termes… À la grande surprise du reste du groupe, lors de la première soirée, ils se sont retrouvés à coucher ensemble !
 screen text after the notification-extras launch: One VF|VOSTFR Recherche I’m Dating a Dark Summoner|VOSTFR Assassination Classroom the Movie: Our Time VOSTFR|Catalogue Favoris Hors ligne|Réglages
 system dialog in front after that launch: no
-captures verified by this run: 01-app-amoled.png, 02-notification-extras-launch.png, 03-settings.png
+captures verified by this run: 01-app-amoled.png, 02-notification-extras-launch.png, 03-settings.png, 04-detail-episodes.png
 
 ANR in com.jcversa.canta: <none>
 ANR verdict: no ANR named the app
@@ -36,7 +41,8 @@ ANR verdict: no ANR named the app
 files in screenshots/ at the end of this run (a directory listing, NOT proof
 that this run wrote them - see the capture lines above, and read the
 committed image itself before trusting what it shows):
-  screenshots/01-app-amoled.png (1644292 bytes)
-  screenshots/02-notification-extras-launch.png (1675578 bytes)
-  screenshots/03-settings.png (300392 bytes)
+  screenshots/01-app-amoled.png (602729 bytes)
+  screenshots/02-notification-extras-launch.png (1675523 bytes)
+  screenshots/03-settings.png (299805 bytes)
+  screenshots/04-detail-episodes.png (458202 bytes)
 phase: done (0 problem(s) recorded)
