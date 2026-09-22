@@ -146,6 +146,18 @@ jobs:
             echo "installed system images:"
             sdkmanager --list_installed 2>/dev/null | grep -i "system-images" | sed 's/^/  /' || echo "  (sdkmanager unavailable)"
             echo
+            echo
+            echo "HTTP reachability from the runner (the emulator shares this path via NAT):"
+            for url in https://voir-anime.to/ https://nakanime.tv/ https://voembed.net/ https://mfw09.org/ https://voe.sx/ https://streamtape.com/; do
+              # -o /dev/null: only the status and timing matter. A 403 from a CDN is
+              # still proof the network path exists, which is the question being asked
+              # here - the app's own failure is a separate question and the walk's
+              # report answers that one.
+              printf '  %-28s ' "$url"
+              curl -sS -o /dev/null -w "http=%{http_code} dns=%{time_namelookup}s connect=%{time_connect}s total=%{time_total}s\n" \
+                --max-time 12 --location "$url" 2>&1 | tail -1
+            done
+
             echo "avd directory:"
             ls -la "$HOME/.android/avd" 2>&1 | sed 's/^/  /'
           } > .ci-logs/runner-preflight.txt 2>&1
