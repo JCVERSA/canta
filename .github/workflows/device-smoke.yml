@@ -94,6 +94,35 @@ jobs:
       # and `dumpsys gfxinfo` frequently unusable, and boots that took minutes and
       # have now started failing outright (373-560s in runs 10-14 against 1072s for
       # the last run that finished).
+      # The app reported "NoClassDefFoundError: com.jcversa.canta.extractor.DeanEdwards"
+      # for three mirrors, and that message has two possible meanings: the class is not
+      # in the APK, or its static initialiser threw and ART refuses to try again. The
+      # dex files are the artefact that answers it, so this asks them directly -
+      # `unzip` + a string search, no build step, no guessing from source layout.
+      - name: Check the built APK for the classes the resolver reports missing
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: |
+          APK=$(ls app/build/outputs/apk/debug/*.apk | head -n1)
+          echo "apk: $APK"
+          mkdir -p /tmp/apkdex && unzip -o -q "$APK" 'classes*.dex' -d /tmp/apkdex || true
+          ls -la /tmp/apkdex | sed 's/^/  /'
+          for name in DeanEdwards StreamScanner MirrorResolver VidmolyExtractor VoeExtractor; do
+            n=$(cat /tmp/apkdex/*.dex 2>/dev/null | grep -ao "com/jcversa/canta/extractor/$name" | wc -l)
+            printf '  %-18s occurrences in dex: %s\n' "$name" "$n"
+          done
+          {
+            echo
+            echo "dex class-name check (0 occurrences means the class is not in the APK;"
+            echo "a non-zero count with a runtime NoClassDefFoundError means its static"
+            echo "initialiser threw and ART is refusing to try again):"
+            for name in DeanEdwards StreamScanner MirrorResolver VidmolyExtractor VoeExtractor; do
+              n=$(cat /tmp/apkdex/*.dex 2>/dev/null | grep -ao "com/jcversa/canta/extractor/$name" | wc -l)
+              printf '  %-18s %s\n' "$name" "$n"
+            done
+          } >> .ci-logs/runner-preflight.txt
+
       - name: Enable KVM group perms
         if: always()
         continue-on-error: true

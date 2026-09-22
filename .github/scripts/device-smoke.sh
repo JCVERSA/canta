@@ -696,9 +696,21 @@ if [ -n "${WIDTH:-}" ] && [ -n "${HEIGHT:-}" ]; then
       # The app logs every mirror failure, with the throwable, under one tag. That
       # log is the only place a stack trace exists - the error card on screen shows a
       # class and a message by design - so it travels into the report.
-      RESOLVE_LOG=$(adb logcat -d -s CantaResolve:W 2>/dev/null | tail -n 40)
+      # Stack frames are dropped on purpose: `Log.w(tag, msg, throwable)` prints the
+      # message and then one line per frame, and run 24's 40-line window was filled
+      # with frames before it reached the interesting part. The frames are in the log
+      # if anyone needs them; what the report needs is the exception's own text.
+      # Two sources. Our own tag prints the exception each mirror threw; ART itself
+      # prints why a class could not be initialised - "Rejecting re-init on
+      # previously-failed class" and the original ExceptionInInitializerError - which
+      # is the only place the *first* failure appears, since the app catches it.
+      RESOLVE_LOG=$(adb logcat -d -s CantaResolve:W 2>/dev/null | grep -v "	at " | tail -n 14)
+      CLASS_LOG=$(adb logcat -d 2>/dev/null | grep -iE "previously-failed|ExceptionInInitializer|NoClassDefFound|ClassNotFound" | tail -n 6)
+      if [ -n "${CLASS_LOG:-}" ]; then
+        RESOLVE_LOG="$RESOLVE_LOG; class-init evidence: $(printf '%s' "$CLASS_LOG" | tr '\n' '; ')"
+      fi
       if [ -n "${RESOLVE_LOG:-}" ]; then
-        PLAYBACK_STEPS="$PLAYBACK_STEPS | app resolve log: $(printf '%s' "$RESOLVE_LOG" | tr '\n' '; ' | cut -c1-1200)"
+        PLAYBACK_STEPS="$PLAYBACK_STEPS | app resolve log: $(printf '%s' "$RESOLVE_LOG" | sed 's/^[0-9-]* *[0-9:.]* *[0-9]* *[0-9]* *W CantaResolve: //' | tr '\n' '; ' | cut -c1-1200)"
       else
         PLAYBACK_STEPS="$PLAYBACK_STEPS | app resolve log: <none>"
       fi
