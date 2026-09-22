@@ -128,11 +128,28 @@ object MirrorResolver {
     ): MirrorResult? {
         for (mirror in ordered) {
             val extractor = extractors.firstOrNull { it.supports(mirror) } ?: continue
+            // Why it failed matters as much as that it failed: the message this
+            // produces is shown to the user, and "voembed.net (VidMoly)" alone is not
+            // something anyone can act on. The reason is carried out of the swallowed
+            // exception (and out of the cancellation, where the exception never
+            // reaches us) and capped, so one verbose cause cannot turn the error card
+            // into a wall of text.
+            var reason: String? = null
             val stream = withTimeoutOrNull(PER_MIRROR_TIMEOUT_MS) {
-                runCatching { extractor.extract(mirror) }.getOrNull()
+                runCatching { extractor.extract(mirror) }
+                    .onFailure { reason = it.message ?: it.javaClass.simpleName }
+                    .getOrNull()
             }
             if (stream == null || stream.url.isBlank()) {
-                failures += "${mirror.host} (${extractor.name})"
+                // A captured `var` cannot be smart-cast, so it is read into a local
+                // instead of asserted with `!!`.
+                val caught = reason
+                val why = when {
+                    caught != null -> caught
+                    stream == null -> "aucune réponse en ${PER_MIRROR_TIMEOUT_MS / 1000} s"
+                    else -> "flux sans URL"
+                }.replace('\n', ' ').take(60)
+                failures += "${mirror.host} (${extractor.name}: $why)"
                 continue
             }
             val resolved = QualityGuard.resolve(stream, requestedQuality, stream.playbackHeaders())
