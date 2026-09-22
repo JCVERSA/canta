@@ -600,7 +600,7 @@ if [ -n "${WIDTH:-}" ] && [ -n "${HEIGHT:-}" ]; then
     PLAYBACK_STEPS="$PLAYBACK_STEPS | after the first result tap: ${DETAIL_TEXT:-<text unavailable>}"
     DETAIL_OK="unknown"
     case "$DETAIL_TEXT" in
-      *"Épisode"*|*"Episode"*|*"Saison"*|*"Lire"*|*"Lecture"*|*"Télécharger"*|*"Favori"*) DETAIL_OK="yes" ;;
+      *"Épisodes"*|*"Lire"*|*"Épisode"*|*"VF — indisponible"*|*"VOSTFR"*) DETAIL_OK="yes" ;;
       "") DETAIL_OK="unknown (no text)" ;;
       *) DETAIL_OK="not recognised" ;;
     esac
@@ -609,10 +609,23 @@ if [ -n "${WIDTH:-}" ] && [ -n "${HEIGHT:-}" ]; then
       CAPTURES_OK=$((CAPTURES_OK + 1))
     fi
 
-    if tap_node_matching "Épisode [0-9]|Episode [0-9]|Ép\. ?[0-9]|Ep\. ?[0-9]"; then
-      # A resolve ladder, a quality measurement and a player start all happen here;
-      # 30s is generous for a 92 MB 480p master's first segments on CI networking.
-      sleep 30
+    # The episode list is below the fold on this screen (cover, badges, synopsis and
+    # a genre block come first), so the walk scrolls to it. Its rows end in a "Lire"
+    # button, which is the one string on the screen that belongs to an episode and
+    # nothing else - better than matching a title, which the synopsis could echo.
+    for _ in 1 2 3; do
+      adb shell input swipe $((WIDTH / 2)) $((HEIGHT * 70 / 100)) $((WIDTH / 2)) $((HEIGHT * 30 / 100)) 300 >/dev/null 2>&1 || true
+      sleep 2
+    done
+    sleep 3
+    SCROLLED_TEXT=$(ui_text) || SCROLLED_TEXT=""
+    PLAYBACK_STEPS="$PLAYBACK_STEPS | after scrolling to the episode list: ${SCROLLED_TEXT:-<text unavailable>}"
+
+    if tap_node_matching "Lire"; then
+      # A resolve ladder, a quality measurement and the first segments all happen
+      # here; 40s is generous for a 92 MB 480p master on CI networking, and the
+      # quality guard measures segment sizes over the network before playback starts.
+      sleep 40
       PLAYER_TEXT=$(ui_text) || PLAYER_TEXT=""
       PLAYBACK_STEPS="$PLAYBACK_STEPS | after the first episode tap: ${PLAYER_TEXT:-<text unavailable>}"
       CODEC_LINES=$(adb logcat -d 2>/dev/null | grep -iE "MediaCodec|ExoPlayer|HlsMediaSource|c2\.|OMX\." | tail -n 8)
@@ -626,10 +639,10 @@ if [ -n "${WIDTH:-}" ] && [ -n "${HEIGHT:-}" ]; then
         CAPTURES_OK=$((CAPTURES_OK + 1))
       fi
       case "$PLAYER_TEXT" in
-        *"Erreur"*|*"Impossible"*|*"non disponible"*|*"indisponible"*)
-          PLAYBACK_VERDICT="player reached, but it reports an error state: ${PLAYER_TEXT:0:200}" ;;
-        "") PLAYBACK_VERDICT="player reached; screen text unavailable, so the state is not judged" ;;
-        *) PLAYBACK_VERDICT="player reached: ${PLAYER_TEXT:0:200}" ;;
+        *"Erreur"*|*"Impossible"*|*"non disponible"*|*"indisponible"*|*"Aucun"*)
+          PLAYBACK_VERDICT="player reached, but the app reports a problem: ${PLAYER_TEXT:0:250}" ;;
+        "") PLAYBACK_VERDICT="a player screen was reached; the accessibility dump gave no text, so its state is not judged from here (see the capture and the decoder lines above)" ;;
+        *) PLAYBACK_VERDICT="player reached, screen text: ${PLAYER_TEXT:0:250}" ;;
       esac
     else
       PLAYBACK_VERDICT="series detail reached (${DETAIL_OK}), but no episode row was found in the accessibility dump"
