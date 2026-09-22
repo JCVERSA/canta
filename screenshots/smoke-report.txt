@@ -1,65 +1,42 @@
 Canta device smoke report
-date: Mon Sep 21 22:40:27 UTC 2026
-sha: 45a9805fd999d59b5af961b15f61cd23116bf578
-run: 9
+date: Tue Sep 22 00:15:25 UTC 2026
+sha: 4aa21e64d635622d89b0fea9e2f0596ab034bc62
+run: 16
 emulator api: 34
 emulator abi: x86_64
-package: versionName=smoke-45a9805
-am start -W TotalTime (ms): 18266
-resumed:     topResumedActivity=ActivityRecord{324a7b3 u0 com.jcversa.canta/.MainActivity t8}
+package: versionName=smoke-4aa21e6
+am start -W TotalTime (ms): 2831/2844
+resumed:     topResumedActivity=ActivityRecord{217034f u0 com.jcversa.canta/.MainActivity t8}
 
 screen text after cold start:
-  <none>
-capture verified: 01-app-amoled-with-system-dialog.png (on screen because: window manager reports isOnScreen=true; sampled immediately before the screencap - system dialog in front: yes; focused window:  mCurrentFocus=Window{2268d1c u0 Application Not Responding: system})
-capture skipped: no proof the app was on screen (none of: focus, accessibility dump, window manager); focused window:   mCurrentFocus=Window{3b955fd u0 Application Not Responding: com.jcversa.canta}
-capture verified: 03-settings-with-system-dialog.png (on screen because: accessibility dump contains com.jcversa.canta nodes; sampled immediately before the screencap - system dialog in front: yes; focused window:  mCurrentFocus=Window{3b955fd u0 Application Not Responding: com.jcversa.canta})
+  Rechercher une série VF|VOSTFR Source : voir-anime.to · page 1 Magilumiere Magical Girls Inc 2|VF Page suivante… Catalogue|Favoris Hors ligne Réglages
+phase: report header written; capturing screens
+capture verified: 01-app-amoled.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{516a0d8 u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
+capture verified: 02-notification-extras-launch.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{85a8b74 u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
+capture verified: 03-settings.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{85a8b74 u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
+phase: collecting ANR evidence
 
 ANR / not-responding lines (events buffer am_anr + main buffer):
-  09-21 22:37:06.646   548  1346 I am_anr  : [0,1172,com.android.bluetooth,550026821,executing service com.android.bluetooth/.btservice.AdapterService]
-  09-21 22:37:40.222   548  1346 I am_anr  : [0,955,com.android.systemui,818462221,executing service com.android.systemui/.SystemUIService]
-  09-21 22:38:26.719   548  1346 I am_anr  : [0,548,system,818462217,Timed out while trying to bind]
-  09-21 22:39:09.739   548  1346 I am_anr  : [0,1592,com.android.providers.media.module,684211781,executing service com.android.providers.media.module/com.android.providers.media.fuse.ExternalStorageServiceImpl]
-  09-21 22:39:30.142   548  2248 I am_anr  : [0,1201,com.android.phone,952647245,executing service com.android.phone/com.android.internal.telephony.data.CellularDataService]
-  09-21 22:39:36.975   548  2248 E ActivityManager: ANR in com.android.phone
-  09-21 22:40:10.637   548  2465 I am_anr  : [0,2335,com.android.phone,952647245,executing service com.android.ons/.OpportunisticNetworkService]
-  09-21 22:40:24.152   548  2465 E ActivityManager: ANR in com.android.phone
-  09-21 22:40:30.145   548  2465 I am_anr  : [0,2364,com.android.providers.media.module,684211781,executing service com.android.providers.media.module/com.android.providers.media.fuse.ExternalStorageServiceImpl]
-  09-21 22:40:40.022   548  2465 E ActivityManager: ANR in com.android.providers.media.module
-  09-21 22:41:00.673   548  2685 I am_anr  : [0,2570,com.android.phone,952647245,executing service com.android.ons/.OpportunisticNetworkService]
-  09-21 22:41:00.966   548   667 W InputDispatcher: Window 2268d1c Application Not Responding: system (server) is unresponsive: 2268d1c Application Not Responding: system (server) is not responding. Waited 5002ms for FocusEvent(hasFocus=true)
-  09-21 22:41:09.575   548   667 I WindowManager: ANR in Window{2268d1c u0 Application Not Responding: system}. Reason:Input dispatching timed out (2268d1c Application Not Responding: system (server) is not responding. Waited 5002ms for FocusEvent(hasFocus=true))
-  09-21 22:41:09.762   548   667 I ActivityManager: Skip ANR being predumped, pid=548 Input dispatching timed out (2268d1c Application Not Responding: system (server) is not responding. Waited 5002ms for FocusEvent(hasFocus=true))
-  09-21 22:41:11.909   548  2685 E ActivityManager: ANR in com.android.phone
-  09-21 22:41:21.227   548  2770 I am_anr  : [0,2299,com.jcversa.canta,549994054,Timed out while trying to bind]
-  09-21 22:41:57.862   548  2770 E ActivityManager: ANR in com.jcversa.canta
-  09-21 22:41:59.965   548  2770 I am_anr  : [0,2639,com.android.providers.media.module,684211781,executing service com.android.providers.media.module/com.android.providers.media.fuse.ExternalStorageServiceImpl]
-  09-21 22:42:27.747   548   667 W InputDispatcher: Window 4774a25 Application Not Responding: com.android.systemui (server) is unresponsive: 4774a25 Application Not Responding: com.android.systemui (server) is not responding. Waited 5001ms for FocusEvent(hasFocus=false)
-  09-21 22:42:27.867   548   667 I WindowManager: ANR in Window{4774a25 u0 Application Not Responding: com.android.systemui}. Reason:Input dispatching timed out (4774a25 Application Not Responding: com.android.systemui (server) is not responding. Waited 5001ms for FocusEvent(hasFocus=false))
-  09-21 22:42:27.873   548   667 I ActivityManager: Skip ANR being predumped, pid=548 Input dispatching timed out (4774a25 Application Not Responding: com.android.systemui (server) is not responding. Waited 5001ms for FocusEvent(hasFocus=false))
-  09-21 22:42:43.578   548  2770 E ActivityManager: ANR in com.android.providers.media.module
-  09-21 22:42:43.656   548  2770 I am_anr  : [0,2769,com.android.phone,952647245,executing service com.android.ons/.OpportunisticNetworkService]
-  09-21 22:42:48.916   548  2770 E ActivityManager: ANR in com.android.phone
-  09-21 22:43:11.230   548  3120 I am_anr  : [0,3066,com.android.providers.media.module,684211781,Timed out while trying to bind]
-  09-21 22:43:27.242   548  3120 E ActivityManager: ANR in com.android.providers.media.module
-  09-21 22:43:27.624   548  3120 I am_anr  : [0,3049,com.android.phone,952647245,executing service com.android.ons/.OpportunisticNetworkService]
-  09-21 22:43:30.542   548  3120 E ActivityManager: ANR in com.android.phone
-  09-21 22:43:54.267   548  3309 I am_anr  : [0,3194,com.android.phone,952647245,executing service com.android.ons/.OpportunisticNetworkService]
-  09-21 22:43:57.098   548  3309 E ActivityManager: ANR in com.android.phone
-  09-21 22:44:22.129   548  3471 I am_anr  : [0,3321,com.android.phone,952647245,executing service com.android.ons/.OpportunisticNetworkService]
-  09-21 22:44:25.573   548  3471 E ActivityManager: ANR in com.android.phone
-  09-21 22:44:50.510   548  3586 I am_anr  : [0,3500,com.android.phone,952647245,executing service com.android.ons/.OpportunisticNetworkService]
-  09-21 22:44:52.258   548  3586 E ActivityManager: ANR in com.android.phone
-  09-21 22:45:15.294   548  3666 I am_anr  : [0,3595,com.android.phone,952647245,executing service com.android.ons/.OpportunisticNetworkService]
-  09-21 22:45:16.891   548  3666 E ActivityManager: ANR in com.android.phone
-  09-21 22:45:38.327   548  3793 I am_anr  : [0,3672,com.android.phone,952647245,executing service com.android.ons/.OpportunisticNetworkService]
-  09-21 22:45:42.490   548  3793 E ActivityManager: ANR in com.android.phone
-  09-21 22:46:03.948   548  3916 I am_anr  : [0,3800,com.android.phone,952647245,executing service com.android.ons/.OpportunisticNetworkService]
-  09-21 22:46:05.991   548  3916 E ActivityManager: ANR in com.android.phone
-  09-21 22:46:28.587   548  4038 I am_anr  : [0,3938,com.android.phone,952647245,executing service com.android.ons/.OpportunisticNetworkService]
-  09-21 22:46:31.804   548  4038 E ActivityManager: ANR in com.android.phone
-  09-21 22:46:54.291   548  4182 I am_anr  : [0,4045,com.android.phone,952647245,executing service com.android.ons/.OpportunisticNetworkService]
-  09-21 22:46:55.730   548  4182 E ActivityManager: ANR in com.android.phone
-  09-21 22:47:19.178   548  4300 I am_anr  : [0,4193,com.android.phone,952647245,executing service com.android.ons/.OpportunisticNetworkService]
-  09-21 22:47:21.329   548  4300 E ActivityManager: ANR in com.android.phone
-  09-21 22:47:45.518   548  4419 I am_anr  : [0,4323,com.android.phone,952647245,executing service com.android.ons/.OpportunisticNetworkService]
-  09-21 22:47:49.257   548  4419 E ActivityManager: ANR in com.android.phone
+  <none found in either buffer>
+app ANR verdict: no ANR named the app
+FATAL EXCEPTION entries in the crash buffer: 0
+phase: writing the summary
+
+frames rendered (dumpsys gfxinfo): 3
+screen text: read
+first screen state: catalogue items or empty state
+settings tab: reached and captured (verified by its own text and by focus)
+screen text after the notification-extras launch: One VF|VOSTFR Recherche I’m Dating a Dark Summoner|VOSTFR Assassination Classroom the Movie: Our Time VOSTFR|Catalogue Favoris Hors ligne|Réglages
+system dialog in front after that launch: no
+captures verified by this run: 01-app-amoled.png, 02-notification-extras-launch.png, 03-settings.png
+
+ANR in com.jcversa.canta: <none>
+ANR verdict: no ANR named the app
+
+files in screenshots/ at the end of this run (a directory listing, NOT proof
+that this run wrote them - see the capture lines above, and read the
+committed image itself before trusting what it shows):
+  screenshots/01-app-amoled.png (1644292 bytes)
+  screenshots/02-notification-extras-launch.png (1675578 bytes)
+  screenshots/03-settings.png (300392 bytes)
+phase: done (0 problem(s) recorded)

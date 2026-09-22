@@ -1,8 +1,8 @@
 job: device-smoke
-sha: ee3051fdd03766fc678f384c4e111a8104f11077
-run: 15
-job status: failure
-date: Tue Sep 22 00:05:57 UTC 2026
+sha: 4aa21e64d635622d89b0fea9e2f0596ab034bc62
+run: 16
+job status: success
+date: Tue Sep 22 00:16:07 UTC 2026
 
 --- build.log tail ---
 To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.7.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
@@ -25,9 +25,9 @@ Daemon will be stopped at the end of the build
 > Task :app:desugarDebugFileDependencies FROM-CACHE
 > Task :app:mergeExtDexDebug FROM-CACHE
 > Task :app:mergeLibDexDebug FROM-CACHE
+> Task :app:checkDebugAarMetadata
 > Task :app:mapDebugSourceSetPaths
 > Task :app:compileDebugNavigationResources FROM-CACHE
-> Task :app:checkDebugAarMetadata
 > Task :app:mergeDebugResources FROM-CACHE
 > Task :app:createDebugCompatibleScreenManifests
 > Task :app:extractDeepLinksDebug FROM-CACHE
@@ -36,11 +36,11 @@ Daemon will be stopped at the end of the build
 > Task :app:mergeDebugJniLibFolders
 > Task :app:mergeDebugNativeLibs
 > Task :app:validateSigningDebug
-> Task :app:writeDebugAppMetadata
 > Task :app:processDebugManifestForPackage
+> Task :app:writeDebugAppMetadata
 > Task :app:writeDebugSigningConfigVersions
-> Task :app:stripDebugDebugSymbols
 > Task :app:processDebugResources
+> Task :app:stripDebugDebugSymbols
 
 > Task :app:compileDebugKotlin
 w: file:///home/runner/work/canta/canta/app/src/main/java/com/jcversa/canta/manager/DownloadManager.kt:1:13 Annotation 'androidx.media3.common.util.UnstableApi' is not annotated with '@RequiresOptIn'. '@OptIn' has no effect.
@@ -57,13 +57,84 @@ w: file:///home/runner/work/canta/canta/app/src/main/java/com/jcversa/canta/ui/D
 > Task :app:packageDebug
 > Task :app:createDebugApkListingFileRedirect
 > Task :app:assembleDebug
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1790035400903.json
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1790036011813.json
 
 [Incubating] Problems report is available at: file:///home/runner/work/canta/canta/build/reports/problems/problems-report.html
 
-BUILD SUCCESSFUL in 48s
+BUILD SUCCESSFUL in 41s
 38 actionable tasks: 24 executed, 14 from cache
 Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.7.1/userguide/configuration_cache_enabling.html
 
 --- smoke.log tail ---
-(no smoke.log)
+device state as the smoke script starts:
+  List of devices attached
+  emulator-5554	device
+  
+sys.boot_completed=1
+ro.build.version.sdk=34
+
+smoke: installing app/build/outputs/apk/debug/app-debug.apk
+smoke: cold start
+Starting: Intent { cmp=com.jcversa.canta/.MainActivity }
+Status: ok
+LaunchState: COLD
+Activity: com.jcversa.canta/.MainActivity
+TotalTime: 2831
+WaitTime: 2844
+Complete
+smoke: waiting for the app to draw frames
+smoke: frames rendered: 3
+smoke: phase: report header written; capturing screens
+smoke: capturing the app screen
+smoke: captured 01-app-amoled.png (system dialog in front: no, stable across the capture)
+smoke: launch with the episode watcher's notification extras
+smoke: captured 02-notification-extras-launch.png (system dialog in front: no, stable across the capture)
+smoke: captured 03-settings.png (system dialog in front: no, stable across the capture)
+smoke: settings: reached and captured (verified by its own text and by focus)
+smoke: checking for ANRs and crashes
+smoke: phase: collecting ANR evidence
+smoke: process is alive
+smoke: phase: writing the summary
+Canta device smoke report
+date: Tue Sep 22 00:15:25 UTC 2026
+sha: 4aa21e64d635622d89b0fea9e2f0596ab034bc62
+run: 16
+emulator api: 34
+emulator abi: x86_64
+package: versionName=smoke-4aa21e6
+am start -W TotalTime (ms): 2831/2844
+resumed:     topResumedActivity=ActivityRecord{217034f u0 com.jcversa.canta/.MainActivity t8}
+
+screen text after cold start:
+  Rechercher une série VF|VOSTFR Source : voir-anime.to · page 1 Magilumiere Magical Girls Inc 2|VF Page suivante… Catalogue|Favoris Hors ligne Réglages
+phase: report header written; capturing screens
+capture verified: 01-app-amoled.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{516a0d8 u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
+capture verified: 02-notification-extras-launch.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{85a8b74 u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
+capture verified: 03-settings.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{85a8b74 u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
+phase: collecting ANR evidence
+
+ANR / not-responding lines (events buffer am_anr + main buffer):
+  <none found in either buffer>
+app ANR verdict: no ANR named the app
+FATAL EXCEPTION entries in the crash buffer: 0
+phase: writing the summary
+
+frames rendered (dumpsys gfxinfo): 3
+screen text: read
+first screen state: catalogue items or empty state
+settings tab: reached and captured (verified by its own text and by focus)
+screen text after the notification-extras launch: One VF|VOSTFR Recherche I’m Dating a Dark Summoner|VOSTFR Assassination Classroom the Movie: Our Time VOSTFR|Catalogue Favoris Hors ligne|Réglages
+system dialog in front after that launch: no
+captures verified by this run: 01-app-amoled.png, 02-notification-extras-launch.png, 03-settings.png
+
+ANR in com.jcversa.canta: <none>
+ANR verdict: no ANR named the app
+
+files in screenshots/ at the end of this run (a directory listing, NOT proof
+that this run wrote them - see the capture lines above, and read the
+committed image itself before trusting what it shows):
+  screenshots/01-app-amoled.png (1644292 bytes)
+  screenshots/02-notification-extras-launch.png (1675578 bytes)
+  screenshots/03-settings.png (300392 bytes)
+smoke: phase: done (0 problem(s) recorded)
+smoke: PASS

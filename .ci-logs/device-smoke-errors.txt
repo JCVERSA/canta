@@ -1,6 +1,19 @@
 job: device-smoke
-sha: ee3051fdd03766fc678f384c4e111a8104f11077
+sha: 4aa21e64d635622d89b0fea9e2f0596ab034bc62
 
 --- errors ---
+FATAL EXCEPTION entries in the crash buffer: 0
 
 --- smoke.log, first 12 lines (device state at the start) ---
+device state as the smoke script starts:
+  List of devices attached
+  emulator-5554	device
+  
+sys.boot_completed=1
+ro.build.version.sdk=34
+
+smoke: installing app/build/outputs/apk/debug/app-debug.apk
+smoke: cold start
+Starting: Intent { cmp=com.jcversa.canta/.MainActivity }
+Status: ok
+LaunchState: COLD
