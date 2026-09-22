@@ -1,5 +1,7 @@
 package com.jcversa.canta.extractor
 
+import android.util.Log
+
 import com.jcversa.canta.model.Language
 import com.jcversa.canta.model.MirrorRef
 import com.jcversa.canta.model.MirrorResult
@@ -60,6 +62,12 @@ fun hostPriority(url: String): Int {
         else -> 6
     }
 }
+
+/**
+ * One tag for every mirror failure, so a run's logcat can be read for exactly this
+ * and nothing else. `adb logcat -s CantaResolve` is the whole recipe.
+ */
+const val LOG_TAG_RESOLVE = "CantaResolve"
 
 /** Host fragments of the rotating VidMoly CDN family (audit §8.43). */
 val VIDMOLY_CDN_HOSTS = listOf("vmeas.", "vmget.", "vmnow.", "vmbox.", "vmcld.")
@@ -137,7 +145,18 @@ object MirrorResolver {
             var reason: String? = null
             val stream = withTimeoutOrNull(PER_MIRROR_TIMEOUT_MS) {
                 runCatching { extractor.extract(mirror) }
-                    .onFailure { reason = it.message ?: it.javaClass.simpleName }
+                    .onFailure { failure ->
+                        // The UI gets the class and the message; the full throwable goes
+                        // to logcat under one tag, because a stack trace belongs in a
+                        // log and not in an error card. Without this, a failure whose
+                        // message is something like a bare class name is undiagnosable
+                        // from the screen - which is exactly what run 23 showed.
+                        reason = buildString {
+                            append(failure.javaClass.simpleName)
+                            failure.message?.takeIf { it.isNotBlank() }?.let { append(": ").append(it) }
+                        }
+                        Log.w(LOG_TAG_RESOLVE, "mirror ${mirror.host} via ${extractor.name} failed", failure)
+                    }
                     .getOrNull()
             }
             if (stream == null || stream.url.isBlank()) {

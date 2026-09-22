@@ -693,6 +693,16 @@ if [ -n "${WIDTH:-}" ] && [ -n "${HEIGHT:-}" ]; then
       # packets. ICMP can be blocked while HTTP works, so this is read as one-way
       # evidence: unreachable here does not prove the CDN is down, reachable does prove
       # the network path exists.
+      # The app logs every mirror failure, with the throwable, under one tag. That
+      # log is the only place a stack trace exists - the error card on screen shows a
+      # class and a message by design - so it travels into the report.
+      RESOLVE_LOG=$(adb logcat -d -s CantaResolve:W 2>/dev/null | tail -n 40)
+      if [ -n "${RESOLVE_LOG:-}" ]; then
+        PLAYBACK_STEPS="$PLAYBACK_STEPS | app resolve log: $(printf '%s' "$RESOLVE_LOG" | tr '\n' '; ' | cut -c1-1200)"
+      else
+        PLAYBACK_STEPS="$PLAYBACK_STEPS | app resolve log: <none>"
+      fi
+
       HOST_EVIDENCE=""
       for host in voembed.net mfw09.org voe.sx streamtape.com; do
         OUT=$(adb shell ping -c 1 -W 2 "$host" 2>&1 | tr '\n' ' ' | tr -s ' ' | cut -c1-120)
