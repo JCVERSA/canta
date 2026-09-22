@@ -1,21 +1,22 @@
 Canta device smoke report
-date: Tue Sep 22 01:18:35 UTC 2026
-sha: 886cc4e3f1209d7116768cbc42f3f59f3e47d14b
-run: 19
+date: Tue Sep 22 01:27:47 UTC 2026
+sha: 03234919b64f2cf258985f0f86bf456652dd1502
+run: 20
 emulator api: 34
 emulator abi: x86_64
-package: versionName=smoke-886cc4e
-am start -W TotalTime (ms): 3973/4017
-resumed:     topResumedActivity=ActivityRecord{de8db5e u0 com.jcversa.canta/.MainActivity t8}
+package: versionName=smoke-0323491
+am start -W TotalTime (ms): 2351/2355
+resumed:     topResumedActivity=ActivityRecord{fee02d4 u0 com.jcversa.canta/.MainActivity t8}
 
 screen text after cold start:
   Rechercher une série VF|VOSTFR Source : voir-anime.to · page 1 Magilumiere Magical Girls Inc 2|VF Page suivante… Catalogue|Favoris Hors ligne Réglages
 phase: report header written; capturing screens
-capture verified: 01-app-amoled.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{f7a1042 u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
-capture verified: 02-notification-extras-launch.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{24c0d3b u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
-capture verified: 03-settings.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{24c0d3b u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
+capture verified: 01-app-amoled.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{124949e u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
+capture verified: 02-notification-extras-launch.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{acb7513 u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
+capture verified: 03-settings.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{acb7513 u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
 phase: walking into a series and an episode
-capture verified: 04-detail-episodes.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{24c0d3b u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
+capture verified: 04-detail-episodes.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{880e325 u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
+capture verified: 05-player.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{880e325 u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
 phase: collecting ANR evidence
 
 ANR / not-responding lines (events buffer am_anr + main buffer):
@@ -24,16 +25,15 @@ app ANR verdict: no ANR named the app
 FATAL EXCEPTION entries in the crash buffer: 0
 phase: writing the summary
 
-frames rendered (dumpsys gfxinfo): 3
+frames rendered (dumpsys gfxinfo): 4
 screen text: read
 first screen state: catalogue items or empty state
 settings tab: reached and captured (verified by its own text and by focus)
-playback walk: series detail reached (yes), but no episode row was found in the accessibility dump
-playback walk, step by step: catalogue: One VF|VOSTFR Recherche I’m Dating a Dark Summoner|VOSTFR Assassination Classroom the Movie: Our Time VOSTFR|Catalogue Favoris Hors ligne|Réglages | tapped the catalogue card "smoke: first result card is "I’m Dating a Dark Summoner" - tapping 284 1299
-I’m Dating a Dark Summoner" | after the first result tap: I’m Dating a Dark Summoner VOSTFR|Source : voir-anime.to VF — indisponible VOSTFR|Action Adventure Chinese|Comedy Drama Ecchi|Fantasy Horror Mahou Shoujo|Mecha Music Mystery|Psychological Romance Sci-Fi|Slice of Life Sports Supernatural|Thriller La nouvelle venue dans le groupe du prêtre coincé Ronnie est Amona, une invocatrice sombre et une semi-démone utilisant la magie et les pouvoirs infernaux. On pensait que les deux allaient s’entendre comme chiens et chats et rester en mauvais termes… À la grande surprise du reste du groupe, lors de la première soirée, ils se sont retrouvés à coucher ensemble ! | after scrolling to the episode list: I’m Dating a Dark Summoner VF — indisponible|VOSTFR Action Adventure|Chinese Comedy Drama|Ecchi Fantasy Horror|Mahou Shoujo Mecha Music|Mystery Psychological Romance|Sci-Fi Slice of Life Sports|Supernatural Thriller La nouvelle venue dans le groupe du prêtre coincé Ronnie est Amona, une invocatrice sombre et une semi-démone utilisant la magie et les pouvoirs infernaux. On pensait que les deux allaient s’entendre comme chiens et chats et rester en mauvais termes… À la grande surprise du reste du groupe, lors de la première soirée, ils se sont retrouvés à coucher ensemble !|Épisodes Aucun épisode listé pour VF — la langue n'est peut-être pas disponible. | no episodes in VF - switching the episode list to VOSTFR | after switching to VOSTFR: I’m Dating a Dark Summoner VOSTFR|Source : voir-anime.to VF — indisponible VOSTFR|Action Adventure Chinese|Comedy Drama Ecchi|Fantasy Horror Mahou Shoujo|Mecha Music Mystery|Psychological Romance Sci-Fi|Slice of Life Sports Supernatural|Thriller La nouvelle venue dans le groupe du prêtre coincé Ronnie est Amona, une invocatrice sombre et une semi-démone utilisant la magie et les pouvoirs infernaux. On pensait que les deux allaient s’entendre comme chiens et chats et rester en mauvais termes… À la grande surprise du reste du groupe, lors de la première soirée, ils se sont retrouvés à coucher ensemble !
+playback walk: player reached, screen text: ← Retour Magilumiere Magical Girls Inc 2|Épisode 8 Télécharger Tous les lecteurs ont échoué ou dépassé les 25 s: voembed.net (VidMoly), mfw09.org (Voe), voe.sx (Voe), streamtape.com (Generic) 
+playback walk, step by step: cold-started catalogue: Rechercher une série VF|VOSTFR Source : voir-anime.to · page 2 Magilumiere Magical Girls Inc 2|VF Though I Am an Inept Villainess: Tale of the Butterfly-Rat Body Swap in the Maiden Court VF|Catalogue Favoris Hors ligne|Réglages  | tapped the catalogue card "Magilumiere Magical Girls Inc 2" | after the first result tap: Magilumiere Magical Girls Inc 2 VF|Source : voir-anime.to 11 épisodes Note source : 4.9|VF VOSTFR — indisponible Action|Adventure Chinese Comedy|Drama Ecchi Fantasy|Horror Mahou Shoujo Mecha|Music Mystery Psychological|Romance Sci-Fi Slice of Life|Sports Supernatural Thriller|Saison 2 de “Magilumiere Magical Girls Inc” Épisodes Magilumiere Magical Girls Inc 2 - 11 VF - 11|VF 4 minutes ago Lire  | after scrolling to the episode list: Magilumiere Magical Girls Inc 2 Magilumiere Magical Girls Inc 2 - 08 VF - 08|VF August 22, 2026 Lire|Magilumiere Magical Girls Inc 2 - 07 VF - 07 VF August 17, 2026|Lire Magilumiere Magical Girls Inc 2 - 06 VF - 06 VF|August 9, 2026 Lire Magilumiere Magical Girls Inc 2 - 05 VF - 05|VF August 2, 2026 Lire|Magilumiere Magical Girls Inc 2 - 04 VF - 04 VF July 26, 2026|Lire Magilumiere Magical Girls Inc 2 - 03 VF - 03 VF|July 19, 2026 Lire Magilumiere Magical Girls Inc 2 - 02 VF - 02|VF July 12, 202 | after the first episode tap: ← Retour Magilumiere Magical Girls Inc 2|Épisode 8 Télécharger Tous les lecteurs ont échoué ou dépassé les 25 s: voembed.net (VidMoly), mfw09.org (Voe), voe.sx (Voe), streamtape.com (Generic)  | decoder lines: 09-22 01:27:44.601  2060  2267 W m.jcversa.canta: Long monitor contention with owner DefaultDispatcher-worker-1 (2265) at androidx.media3.exoplayer.offline.DownloadManager com.jcversa.canta.manager.CantaDownloadManager.get(android.content.Context)(DownloadManager.kt:94) waiters=0 in androidx.media3.exoplayer.offline.DownloadManager com.jcversa.canta.manager.CantaDownloadManager.get(android.content.Context) for 213ms
 screen text after the notification-extras launch: One VF|VOSTFR Recherche I’m Dating a Dark Summoner|VOSTFR Assassination Classroom the Movie: Our Time VOSTFR|Catalogue Favoris Hors ligne|Réglages
 system dialog in front after that launch: no
-captures verified by this run: 01-app-amoled.png, 02-notification-extras-launch.png, 03-settings.png, 04-detail-episodes.png
+captures verified by this run: 01-app-amoled.png, 02-notification-extras-launch.png, 03-settings.png, 04-detail-episodes.png, 05-player.png
 
 ANR in com.jcversa.canta: <none>
 ANR verdict: no ANR named the app
@@ -41,8 +41,9 @@ ANR verdict: no ANR named the app
 files in screenshots/ at the end of this run (a directory listing, NOT proof
 that this run wrote them - see the capture lines above, and read the
 committed image itself before trusting what it shows):
-  screenshots/01-app-amoled.png (1643961 bytes)
-  screenshots/02-notification-extras-launch.png (1675122 bytes)
-  screenshots/03-settings.png (300786 bytes)
-  screenshots/04-detail-episodes.png (457562 bytes)
+  screenshots/01-app-amoled.png (1643746 bytes)
+  screenshots/02-notification-extras-launch.png (1675543 bytes)
+  screenshots/03-settings.png (302044 bytes)
+  screenshots/04-detail-episodes.png (525816 bytes)
+  screenshots/05-player.png (81147 bytes)
 phase: done (0 problem(s) recorded)
