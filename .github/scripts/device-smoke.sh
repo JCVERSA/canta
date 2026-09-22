@@ -684,6 +684,22 @@ if [ -n "${WIDTH:-}" ] && [ -n "${HEIGHT:-}" ]; then
         PRODUCED="$PRODUCED, $LAST_CAPTURE"
         CAPTURES_OK=$((CAPTURES_OK + 1))
       fi
+      # Why did every mirror fail? The app reports *that* they failed (naming each
+      # one, which is its own honesty feature), but not why. If the runner's network
+      # cannot reach the CDNs at all, that is a fact about CI, not about the app - and
+      # it changes what "playback unverified" means. The ping output is kept, not just
+      # the exit status, because it distinguishes the two failures that matter: a name
+      # that does not resolve ("bad address") from a host that resolves but drops
+      # packets. ICMP can be blocked while HTTP works, so this is read as one-way
+      # evidence: unreachable here does not prove the CDN is down, reachable does prove
+      # the network path exists.
+      HOST_EVIDENCE=""
+      for host in voembed.net mfw09.org voe.sx streamtape.com; do
+        OUT=$(adb shell ping -c 1 -W 2 "$host" 2>&1 | tr '\n' ' ' | tr -s ' ' | cut -c1-120)
+        HOST_EVIDENCE="$HOST_EVIDENCE | $host: ${OUT:-<no output>}"
+      done
+      PLAYBACK_STEPS="$PLAYBACK_STEPS$HOST_EVIDENCE"
+
       case "$PLAYER_TEXT" in
         *"Erreur"*|*"Impossible"*|*"non disponible"*|*"indisponible"*|*"Aucun"*)
           PLAYBACK_VERDICT="player reached, but the app reports a problem: ${PLAYER_TEXT:0:250}" ;;
