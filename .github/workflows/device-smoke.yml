@@ -178,28 +178,16 @@ jobs:
           # 600s to 900s for the same reason: a cold runner here takes minutes.
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -no-snapshot
           emulator-boot-timeout: 900
-          # The action runs this instead of the script directly, so that a device
-          # that never booted still leaves a file behind to publish. Run 10 failed
-          # exactly that way: no report, no smoke.log, and the action's own error
-          # text unreachable from the sandbox - a red run nobody could diagnose.
-          script: |
-            {
-              echo "device state as the smoke script was about to start:"
-              adb devices
-              echo "sys.boot_completed=$(adb shell getprop sys.boot_completed 2>&1 | tr -d '\r')"
-              echo "ro.build.version.sdk=$(adb shell getprop ro.build.version.sdk 2>&1 | tr -d '\r')"
-              echo
-            } > smoke.log 2>&1
-            # No pipelines and no PIPESTATUS here: it is not documented which shell
-            # runs this block, and a `sh` without pipefail (or a wrapper with
-            # `set -e`) would either lose the script's exit status or skip the copy
-            # below entirely - in both cases a failing run could look green.
-            set +e
-            bash .github/scripts/device-smoke.sh > smoke-run.out 2>&1
-            rc=$?
-            tee -a smoke.log < smoke-run.out
-            exit $rc
-
+          # SINGLE LINE ONLY. The action parses this input by splitting it on
+          # newlines and running each resulting line as its own `sh -c` command
+          # (script-parser.ts). A multi-line block is therefore not a block at all:
+          # its first line `{` is a shell syntax error, the remaining lines run in
+          # different shells so no variable can survive between them, and the action
+          # reports "/usr/bin/sh failed with exit code 2" immediately after boot.
+          # That mistake cost runs 11-15 and it looked exactly like an emulator
+          # failure from the outside. Anything that needs more than one line lives in
+          # the script this calls, which is bash and can have all the lines it likes.
+          script: bash .github/scripts/device-smoke.sh
       - name: Upload screenshots
         if: always()
         # The artifact is a convenience: an intermediary 403 from the artifact

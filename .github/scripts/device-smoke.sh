@@ -28,6 +28,20 @@
 # until a run demonstrates them.
 set -uo pipefail
 
+# Everything this script prints also lands in smoke.log, which the publish step
+# commits. The emulator action's own output goes to the job log, and the job log is
+# not reachable from the development sandbox where this project is worked on - so
+# anything the run needs to explain itself with has to be written to a file.
+# `tee` keeps the normal GitHub output too.
+LOG="smoke.log"
+exec > >(tee -a "$LOG") 2>&1
+
+echo "device state as the smoke script starts:"
+adb devices 2>&1 | sed 's/^/  /'
+echo "sys.boot_completed=$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')"
+echo "ro.build.version.sdk=$(adb shell getprop ro.build.version.sdk 2>/dev/null | tr -d '\r')"
+echo
+
 APP_ID="com.jcversa.canta"
 APK=$(ls app/build/outputs/apk/debug/*.apk | head -n1)
 SHOTS="screenshots"
