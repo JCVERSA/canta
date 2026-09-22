@@ -332,6 +332,26 @@ tap_node_matching() {
 # pattern for a title only works if that title happens to be in the results. This
 # filters by position (below the search header, above the navigation bar) and by the
 # known chrome strings, so it taps a card whatever came back from the source.
+# Same as tap_node_matching, but the *last* match: on the detail screen "VOSTFR"
+# appears both as the cover badge and as the episode section's language chip, and the
+# chip - the one that actually switches the list - is the lower one.
+tap_last_node_matching() {
+  local pattern="$1" dump=/sdcard/canta-ui.xml
+  adb shell uiautomator dump "$dump" >/dev/null 2>&1 || return 1
+  local xml bounds
+  xml=$(adb shell cat "$dump" 2>/dev/null) || return 1
+  bounds=$(printf '%s' "$xml" | tr '>' '\n' \
+    | grep -iE "text=\"[^\"]*($pattern)" \
+    | grep -oE "bounds=\"\[[0-9]+,[0-9]+\]\[[0-9]+,[0-9]+\]\"" | tail -n1 \
+    | grep -oE "[0-9]+")
+  [ -n "${bounds:-}" ] || return 1
+  set -- $bounds
+  [ "$#" -eq 4 ] || return 1
+  local cx=$(( ($1 + $3) / 2 )) cy=$(( ($2 + $4) / 2 ))
+  log "tapping the last node matching /$pattern/ at ${cx},${cy}"
+  adb shell input tap "$cx" "$cy" >/dev/null 2>&1
+}
+
 tap_first_result_card() {
   local dump=/sdcard/canta-ui.xml
   [ -n "${WIDTH:-}" ] && [ -n "${HEIGHT:-}" ] || return 1
@@ -581,20 +601,21 @@ PLAYBACK_STEPS=""
 PLAYBACK_VERDICT="not attempted"
 if [ -n "${WIDTH:-}" ] && [ -n "${HEIGHT:-}" ]; then
   phase "walking into a series and an episode"
-  # Back to the catalogue, then a search for a title that exists. The launch extras
-  # path is used deliberately: if this install does not know the id, the app
-  # searches the title instead of opening nothing (which is what run 16 verified).
+  # Start from the catalogue itself. Run 18 walked in through a *search* result and
+  # landed on a VOSTFR series while this install defaults to VF, so the detail screen
+  # honestly said "Aucun épisode listé pour VF - la langue n'est peut-être pas
+  # disponible" and there was no episode row to tap. That is a real app state and
+  # worth capturing, but it is not the flagship path: this app is VF-first, and the
+  # catalogue's own cards carry VF badges. So the walk opens the first VF card the
+  # catalogue shows, and only falls back to the VOSTFR chip if that series turns out
+  # to have no episodes in VF either.
   adb shell input tap $((WIDTH * 1 / 8)) $((HEIGHT * 92 / 100)) >/dev/null 2>&1 || true
-  sleep 3
-  adb shell am start -n "$APP_ID/.MainActivity" \
-    --es open_series_id "voir-anime:does-not-exist" \
-    --es open_series_title "One Piece" >/dev/null 2>&1 || true
-  sleep 12
+  sleep 8
   RESULTS_TEXT=$(ui_text) || RESULTS_TEXT=""
-  PLAYBACK_STEPS="search screen: ${RESULTS_TEXT:-<text unavailable>}"
+  PLAYBACK_STEPS="catalogue: ${RESULTS_TEXT:-<text unavailable>}"
 
   if TAPPED_CARD=$(tap_first_result_card); then
-    PLAYBACK_STEPS="$PLAYBACK_STEPS | tapped the result card \"$TAPPED_CARD\""
+    PLAYBACK_STEPS="$PLAYBACK_STEPS | tapped the catalogue card \"$TAPPED_CARD\""
     sleep 10
     DETAIL_TEXT=$(ui_text) || DETAIL_TEXT=""
     PLAYBACK_STEPS="$PLAYBACK_STEPS | after the first result tap: ${DETAIL_TEXT:-<text unavailable>}"
@@ -620,6 +641,18 @@ if [ -n "${WIDTH:-}" ] && [ -n "${HEIGHT:-}" ]; then
     sleep 3
     SCROLLED_TEXT=$(ui_text) || SCROLLED_TEXT=""
     PLAYBACK_STEPS="$PLAYBACK_STEPS | after scrolling to the episode list: ${SCROLLED_TEXT:-<text unavailable>}"
+
+    # The episode list may be empty in the current language. Switching the episode
+    # section's own language chip to VOSTFR and looking again is what a user would do;
+    # if that still shows nothing, the report says so rather than looping.
+    if ! echo "$SCROLLED_TEXT" | grep -q "Lire" && echo "$SCROLLED_TEXT" | grep -q "Aucun épisode"; then
+      PLAYBACK_STEPS="$PLAYBACK_STEPS | no episodes in VF - switching the episode list to VOSTFR"
+      if tap_last_node_matching "VOSTFR"; then
+        sleep 15
+        SCROLLED_TEXT=$(ui_text) || SCROLLED_TEXT=""
+        PLAYBACK_STEPS="$PLAYBACK_STEPS | after switching to VOSTFR: ${SCROLLED_TEXT:-<text unavailable>}"
+      fi
+    fi
 
     if tap_node_matching "Lire"; then
       # A resolve ladder, a quality measurement and the first segments all happen
