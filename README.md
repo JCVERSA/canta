@@ -48,11 +48,12 @@ frames actually contain.
 
 | Capture | What its frames contain |
 | --- | --- |
-| ![The catalogue, loaded from the live source](screenshots/01-app-amoled.png) | `01-app-amoled.png` — the catalogue with **real items scraped from `voir-anime.to`** on the CI emulator: pure-black AMOLED background, the search field, the VF/VOSTFR switch, `Source : voir-anime.to · page 2`, cover art, `Magilumiere Magical Girls Inc 2` with its `VF` badge, and the four-tab bar. The blur is the JPEG-free truth of a 720×1568 emulator screenshot of real posters, not a mock-up |
+| ![The catalogue, loaded from the live source](screenshots/01-app-amoled.png) | `01-app-amoled.png` — the catalogue with **real items scraped from `voir-anime.to`** on the CI emulator: pure-black AMOLED background, the search field, the VF/VOSTFR switch, `Source : voir-anime.to · page 1`, cover art, `Magilumiere Magical Girls Inc 2` with its `VF` badge, and the four-tab bar catching the next page (`Page suivante…`). Real posters on a 720×1568 emulator, not a mock-up |
 | ![A VOSTFR search fallback](screenshots/02-notification-extras-launch.png) | `02-notification-extras-launch.png` — the app launched with the episode watcher's extras for an id this install does not know, so it searched the title instead: `One` in the field, results headed `Recherche`, and items badged **VOSTFR**, which is the nakanime fallback working and being labelled honestly rather than passed off as VF |
+| ![A series detail screen, scraped live](screenshots/04-detail-episodes.png) | `04-detail-episodes.png` — the series detail screen reached by the smoke test's own walk: cover, `VOSTFR` badge, `Source : voir-anime.to`, the **`VF — indisponible`** label (the honest fallback, live), nineteen genre chips, the French synopsis, and the episode list below the fold |
 | ![Settings on a real device](screenshots/03-settings.png) | `03-settings.png` — the Settings screen: the VF/VOSTFR default and what it means, the 12-hour watcher note, and the Media3/offline explanation, with `Version Canta smoke-4aa21e6 (com.jcversa.canta)` from the build under test |
 
-All three come from **run 16** of the `Device smoke test` workflow — one build, one
+These come from the `Device smoke test` workflow's recent runs — one build, one
 emulator session, evidenced by `screenshots/smoke-report.txt` from that same run:
 `am start -W TotalTime 2831 ms`, `screen text: read`, three `capture verified:`
 lines each recording that the app's own window was in front and that the dialog
@@ -68,10 +69,12 @@ screen, the per-capture verification lines and the ANR lines the platform logged
 Read it before trusting an image — and read the image before trusting the report's
 file listing, which is only a directory listing.
 
-**What is still not captured**: playback, the quality selector with measured sizes,
-a completed download and offline playback. Those need taps into a series and an
-episode, which the smoke test does not yet do — it stays honest about that in
-*Verification status* below instead of implying them with a screenshot.
+**What is still not captured**: a playing stream, the quality selector with measured
+sizes, a completed download and offline playback. The smoke test walks as far as a
+series and taps `Lire` on the first episode; whether that reaches a playing frame
+depends on the mirror ladder resolving a third-party CDN at that moment, and each
+run's report says exactly how far it got. Anything not captured is listed in
+*Verification status* below rather than implied by a screenshot.
 [`screenshots/README.md`](screenshots/README.md) explains how to capture them.
 
 ## Honesty rules the app follows
