@@ -304,6 +304,68 @@ capture_app_screen() {
   LAST_CAPTURE="$name"
   return 0
 }
+# Tap the centre of the first node whose text matches a pattern, using the
+# accessibility dump to *find* it rather than guessing coordinates. Returns 1 when
+# the dump is unusable or nothing matches - the caller says so in the report
+# instead of tapping blind. `input tap` needs integers, so the bounds are divided
+# down by 2 in shell arithmetic.
+tap_node_matching() {
+  local pattern="$1" dump=/sdcard/canta-ui.xml
+  adb shell uiautomator dump "$dump" >/dev/null 2>&1 || return 1
+  local xml bounds
+  xml=$(adb shell cat "$dump" 2>/dev/null) || return 1
+  bounds=$(printf '%s' "$xml" | tr '>' '\n' \
+    | grep -iE "text=\"[^\"]*($pattern)" \
+    | grep -oE "bounds=\"\[[0-9]+,[0-9]+\]\[[0-9]+,[0-9]+\]\"" | head -n1 \
+    | grep -oE "[0-9]+")
+  [ -n "${bounds:-}" ] || return 1
+  set -- $bounds
+  [ "$#" -eq 4 ] || return 1
+  local cx=$(( ($1 + $3) / 2 )) cy=$(( ($2 + $4) / 2 ))
+  log "tapping the node matching /$pattern/ at ${cx},${cy}"
+  adb shell input tap "$cx" "$cy" >/dev/null 2>&1
+}
+
+# Tap the first *result card*: the first text node in the grid area that is not
+# app chrome. Matching on a title pattern was the obvious approach and it is wrong -
+# a pattern like "VF" matches the VF/VOSTFR toggle at the top of the screen, and a
+# pattern for a title only works if that title happens to be in the results. This
+# filters by position (below the search header, above the navigation bar) and by the
+# known chrome strings, so it taps a card whatever came back from the source.
+tap_first_result_card() {
+  local dump=/sdcard/canta-ui.xml
+  [ -n "${WIDTH:-}" ] && [ -n "${HEIGHT:-}" ] || return 1
+  adb shell uiautomator dump "$dump" >/dev/null 2>&1 || return 1
+  local xml line bounds b cx cy text tap=
+  xml=$(adb shell cat "$dump" 2>/dev/null) || return 1
+  while IFS= read -r line; do
+    text=$(printf '%s' "$line" | sed -n 's/.*text="\([^"]*\)".*/\1/p')
+    [ -n "$text" ] || continue
+    case "$text" in
+      VF|VOSTFR|"" ) continue ;;
+      "Rechercher une série"|Recherche|Catalogue|Favoris|"Hors ligne"|Réglages) continue ;;
+      *"Page suivante"*|*"Source :"*|*"Chargement"*|*"Requête échouée"*) continue ;;
+    esac
+    bounds=$(printf '%s' "$line" | grep -oE "bounds=\"\[[0-9]+,[0-9]+\]\[[0-9]+,[0-9]+\]\"")
+    [ -n "$bounds" ] || continue
+    set -- $(printf '%s' "$bounds" | grep -oE "[0-9]+")
+    [ "$#" -eq 4 ] || continue
+    cy=$(( ($2 + $4) / 2 ))
+    # the grid lives between the header and the tab bar
+    [ "$cy" -gt $((HEIGHT * 22 / 100)) ] || continue
+    [ "$cy" -lt $((HEIGHT * 88 / 100)) ] || continue
+    cx=$(( ($1 + $3) / 2 ))
+    tap="$cx $cy"
+    log "first result card is \"$text\" - tapping ${tap}"
+    adb shell input tap $tap >/dev/null 2>&1
+    echo "$text"
+    return 0
+  done <<EOF
+$(printf '%s' "$xml" | tr '>' '\n')
+EOF
+  return 1
+}
+
 frames_rendered() {
   # How many frames this app has actually drawn. This is the check that replaces
   # "an activity was resumed": a resumed activity can still be showing the splash
@@ -499,6 +561,87 @@ if [ "$CAPTURES_OK" -eq 0 ]; then
   fail "no verified capture of the app could be produced (see the report for why)"
 fi
 
+
+# ---------------------------------------------------------------------------
+# Walk into a series and an episode, and try to capture the player.
+#
+# This is the part of the app the emulator run could not reach before: the first
+# nine runs never got the UI to render reliably, and the next six failed in the
+# harness, so playback was listed as unverified. Now that both sources are
+# reachable from the runner, this walks the real path - search result -> series
+# detail -> episode -> player - and reports what happened at each step.
+#
+# It does NOT fail the run when it cannot reach the player: whether a third-party
+# CDN serves a stream is not something this repository controls, and a red build
+# would say "the app is broken" when the truth would be "the source did not answer
+# this time". The three core captures above remain the pass criterion, and this
+# walk's outcome is written into the report either way. What *would* fail the run
+# is the app crashing or ANR'ing here - that is checked regardless, right after.
+PLAYBACK_STEPS=""
+PLAYBACK_VERDICT="not attempted"
+if [ -n "${WIDTH:-}" ] && [ -n "${HEIGHT:-}" ]; then
+  phase "walking into a series and an episode"
+  # Back to the catalogue, then a search for a title that exists. The launch extras
+  # path is used deliberately: if this install does not know the id, the app
+  # searches the title instead of opening nothing (which is what run 16 verified).
+  adb shell input tap $((WIDTH * 1 / 8)) $((HEIGHT * 92 / 100)) >/dev/null 2>&1 || true
+  sleep 3
+  adb shell am start -n "$APP_ID/.MainActivity" \
+    --es open_series_id "voir-anime:does-not-exist" \
+    --es open_series_title "One Piece" >/dev/null 2>&1 || true
+  sleep 12
+  RESULTS_TEXT=$(ui_text) || RESULTS_TEXT=""
+  PLAYBACK_STEPS="search screen: ${RESULTS_TEXT:-<text unavailable>}"
+
+  if TAPPED_CARD=$(tap_first_result_card); then
+    PLAYBACK_STEPS="$PLAYBACK_STEPS | tapped the result card \"$TAPPED_CARD\""
+    sleep 10
+    DETAIL_TEXT=$(ui_text) || DETAIL_TEXT=""
+    PLAYBACK_STEPS="$PLAYBACK_STEPS | after the first result tap: ${DETAIL_TEXT:-<text unavailable>}"
+    DETAIL_OK="unknown"
+    case "$DETAIL_TEXT" in
+      *"Épisode"*|*"Episode"*|*"Saison"*|*"Lire"*|*"Lecture"*|*"Télécharger"*|*"Favori"*) DETAIL_OK="yes" ;;
+      "") DETAIL_OK="unknown (no text)" ;;
+      *) DETAIL_OK="not recognised" ;;
+    esac
+    if [ "$FRAMES" != "0" ] && capture_app_screen "04-detail-episodes.png"; then
+      PRODUCED="$PRODUCED, $LAST_CAPTURE"
+      CAPTURES_OK=$((CAPTURES_OK + 1))
+    fi
+
+    if tap_node_matching "Épisode [0-9]|Episode [0-9]|Ép\. ?[0-9]|Ep\. ?[0-9]"; then
+      # A resolve ladder, a quality measurement and a player start all happen here;
+      # 30s is generous for a 92 MB 480p master's first segments on CI networking.
+      sleep 30
+      PLAYER_TEXT=$(ui_text) || PLAYER_TEXT=""
+      PLAYBACK_STEPS="$PLAYBACK_STEPS | after the first episode tap: ${PLAYER_TEXT:-<text unavailable>}"
+      CODEC_LINES=$(adb logcat -d 2>/dev/null | grep -iE "MediaCodec|ExoPlayer|HlsMediaSource|c2\.|OMX\." | tail -n 8)
+      if [ -n "${CODEC_LINES:-}" ]; then
+        PLAYBACK_STEPS="$PLAYBACK_STEPS | decoder lines: $(printf '%s' "$CODEC_LINES" | tr '\n' '; ')"
+      else
+        PLAYBACK_STEPS="$PLAYBACK_STEPS | decoder lines: <none>"
+      fi
+      if [ "$FRAMES" != "0" ] && capture_app_screen "05-player.png"; then
+        PRODUCED="$PRODUCED, $LAST_CAPTURE"
+        CAPTURES_OK=$((CAPTURES_OK + 1))
+      fi
+      case "$PLAYER_TEXT" in
+        *"Erreur"*|*"Impossible"*|*"non disponible"*|*"indisponible"*)
+          PLAYBACK_VERDICT="player reached, but it reports an error state: ${PLAYER_TEXT:0:200}" ;;
+        "") PLAYBACK_VERDICT="player reached; screen text unavailable, so the state is not judged" ;;
+        *) PLAYBACK_VERDICT="player reached: ${PLAYER_TEXT:0:200}" ;;
+      esac
+    else
+      PLAYBACK_VERDICT="series detail reached (${DETAIL_OK}), but no episode row was found in the accessibility dump"
+    fi
+  else
+    PLAYBACK_VERDICT="no search result could be tapped (accessibility dump unusable or no match)"
+  fi
+  log "$PLAYBACK_VERDICT"
+else
+  PLAYBACK_VERDICT="skipped: the screen size could not be read"
+fi
+
 log "checking for ANRs and crashes"
 phase "collecting ANR evidence"
 ANR=$(anr_lines)
@@ -570,6 +713,8 @@ phase "writing the summary"
   echo "screen text: $TEXT_STATE"
   echo "first screen state: $CATALOGUE_STATE"
   echo "settings tab: $SETTINGS_VERDICT"
+  echo "playback walk: $PLAYBACK_VERDICT"
+  [ -n "${PLAYBACK_STEPS:-}" ] && echo "playback walk, step by step: $PLAYBACK_STEPS"
   echo "screen text after the notification-extras launch: ${DEEPLINK_TEXT:-<none>}"
   echo "system dialog in front after that launch: ${DEEPLINK_DIALOG:-no}"
   echo "captures verified by this run: ${PRODUCED:-<none>}"
