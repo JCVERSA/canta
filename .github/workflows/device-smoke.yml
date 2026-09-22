@@ -84,6 +84,32 @@ jobs:
       # x86_64 emulator usable here. API 34 is the interesting target: it is the
       # strictest foreground-service and notification-permission behaviour the
       # app claims to support (targetSdk 36).
+      # The action's README states this is required on Linux runners, and the
+      # preflight added below is what proved it was missing: /dev/kvm was
+      # `crw-rw---- root:kvm` and the runner user was in `runner, adm, users,
+      # docker, systemd-journal` - not `kvm`. Without VM acceleration the emulator
+      # falls back to software CPU emulation, which is the root of everything
+      # observed across this session's runs: system_server itself going
+      # "not responding", six system processes ANR'ing in a loop, `uiautomator dump`
+      # and `dumpsys gfxinfo` frequently unusable, and boots that took minutes and
+      # have now started failing outright (373-560s in runs 10-14 against 1072s for
+      # the last run that finished).
+      - name: Enable KVM group perms
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+          echo "/dev/kvm now: $(ls -l /dev/kvm 2>&1)"
+          if [ -r /dev/kvm ] && [ -w /dev/kvm ]; then
+            echo "::notice title=KVM usable::/dev/kvm is readable and writable by $(id -un) - the emulator can use VM acceleration"
+          else
+            echo "::warning title=KVM not usable::/dev/kvm is still not accessible by $(id -un) ($(ls -l /dev/kvm 2>&1)) - the emulator will fall back to software emulation and boot slowly"
+          fi
+
       # Runs 10-13 all died inside the emulator action's boot phase - before the
       # smoke script, so before anything of mine could run and before smoke.log
       # existed. Nothing in the job log is readable from the development sandbox,
@@ -108,6 +134,11 @@ jobs:
             echo "df -h (root and workspace):"; df -h / "$PWD" | sed 's/^/  /'
             echo
             echo "/dev/kvm: $(ls -l /dev/kvm 2>&1)"
+            if [ -r /dev/kvm ] && [ -w /dev/kvm ]; then
+              echo "/dev/kvm accessibility: READABLE+WRITABLE by $(id -un) (VM acceleration possible)"
+            else
+              echo "/dev/kvm accessibility: NOT usable by $(id -un) - software emulation, slow boot (groups: $(id -Gn))"
+            fi
             echo "groups: $(id)"
             echo
             echo "adb: $(adb version 2>&1 | head -2)"
