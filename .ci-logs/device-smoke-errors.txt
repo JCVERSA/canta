@@ -1,5 +1,5 @@
 job: device-smoke
-sha: 544869606e6c193a321b8e1b940ba303ca6276e6
+sha: ee3051fdd03766fc678f384c4e111a8104f11077
 
 --- errors ---
 

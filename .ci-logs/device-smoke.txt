@@ -1,8 +1,8 @@
 job: device-smoke
-sha: 544869606e6c193a321b8e1b940ba303ca6276e6
-run: 14
+sha: ee3051fdd03766fc678f384c4e111a8104f11077
+run: 15
 job status: failure
-date: Tue Sep 22 00:01:23 UTC 2026
+date: Tue Sep 22 00:05:57 UTC 2026
 
 --- build.log tail ---
 To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.7.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
@@ -34,13 +34,13 @@ Daemon will be stopped at the end of the build
 > Task :app:processDebugMainManifest
 > Task :app:processDebugManifest
 > Task :app:mergeDebugJniLibFolders
-> Task :app:processDebugManifestForPackage
 > Task :app:mergeDebugNativeLibs
-> Task :app:stripDebugDebugSymbols
-> Task :app:processDebugResources
 > Task :app:validateSigningDebug
 > Task :app:writeDebugAppMetadata
+> Task :app:processDebugManifestForPackage
 > Task :app:writeDebugSigningConfigVersions
+> Task :app:stripDebugDebugSymbols
+> Task :app:processDebugResources
 
 > Task :app:compileDebugKotlin
 w: file:///home/runner/work/canta/canta/app/src/main/java/com/jcversa/canta/manager/DownloadManager.kt:1:13 Annotation 'androidx.media3.common.util.UnstableApi' is not annotated with '@RequiresOptIn'. '@OptIn' has no effect.
@@ -57,11 +57,11 @@ w: file:///home/runner/work/canta/canta/app/src/main/java/com/jcversa/canta/ui/D
 > Task :app:packageDebug
 > Task :app:createDebugApkListingFileRedirect
 > Task :app:assembleDebug
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1790034754876.json
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1790035400903.json
 
 [Incubating] Problems report is available at: file:///home/runner/work/canta/canta/build/reports/problems/problems-report.html
 
-BUILD SUCCESSFUL in 52s
+BUILD SUCCESSFUL in 48s
 38 actionable tasks: 24 executed, 14 from cache
 Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.7.1/userguide/configuration_cache_enabling.html
 
