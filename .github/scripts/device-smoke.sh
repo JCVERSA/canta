@@ -309,6 +309,11 @@ capture_app_screen() {
 # the dump is unusable or nothing matches - the caller says so in the report
 # instead of tapping blind. `input tap` needs integers, so the bounds are divided
 # down by 2 in shell arithmetic.
+# Screen text used to be appended to the report as it came, and a dump can contain
+# carriage returns and embedded newlines - run 19's step list arrived broken across
+# two lines because of it. Fields are flattened and bounded here instead.
+flatten_text() { tr -d '\r' | tr '\n' ' ' | sed 's/  */ /g' | cut -c1-500; }
+
 tap_node_matching() {
   local pattern="$1" dump=/sdcard/canta-ui.xml
   adb shell uiautomator dump "$dump" >/dev/null 2>&1 || return 1
@@ -376,7 +381,9 @@ tap_first_result_card() {
     [ "$cy" -lt $((HEIGHT * 88 / 100)) ] || continue
     cx=$(( ($1 + $3) / 2 ))
     tap="$cx $cy"
-    log "first result card is \"$text\" - tapping ${tap}"
+    # No log line here on purpose: this function's stdout is captured by the caller,
+    # so anything logged from inside it ends up inside the captured card title. That
+    # put a newline in the report and split the walk's step list in run 19.
     adb shell input tap $tap >/dev/null 2>&1
     echo "$text"
     return 0
@@ -609,15 +616,21 @@ if [ -n "${WIDTH:-}" ] && [ -n "${HEIGHT:-}" ]; then
   # catalogue's own cards carry VF badges. So the walk opens the first VF card the
   # catalogue shows, and only falls back to the VOSTFR chip if that series turns out
   # to have no episodes in VF either.
-  adb shell input tap $((WIDTH * 1 / 8)) $((HEIGHT * 92 / 100)) >/dev/null 2>&1 || true
-  sleep 8
-  RESULTS_TEXT=$(ui_text) || RESULTS_TEXT=""
-  PLAYBACK_STEPS="catalogue: ${RESULTS_TEXT:-<text unavailable>}"
+  # Force-stop first: the catalogue tab keeps whatever query the extras launch put in
+  # it, so run 19's "catalogue" step was really the same VOSTFR search results screen
+  # and the walk tapped the same card again. A cold start is the state a user sees on
+  # launching the app, which is a VF grid of VF series - the flagship path.
+  adb shell am force-stop "$APP_ID" >/dev/null 2>&1 || true
+  sleep 3
+  adb shell am start -n "$APP_ID/.MainActivity" >/dev/null 2>&1 || true
+  sleep 15
+  RESULTS_TEXT=$(ui_text | flatten_text) || RESULTS_TEXT=""
+  PLAYBACK_STEPS="cold-started catalogue: ${RESULTS_TEXT:-<text unavailable>}"
 
   if TAPPED_CARD=$(tap_first_result_card); then
     PLAYBACK_STEPS="$PLAYBACK_STEPS | tapped the catalogue card \"$TAPPED_CARD\""
     sleep 10
-    DETAIL_TEXT=$(ui_text) || DETAIL_TEXT=""
+    DETAIL_TEXT=$(ui_text | flatten_text) || DETAIL_TEXT=""
     PLAYBACK_STEPS="$PLAYBACK_STEPS | after the first result tap: ${DETAIL_TEXT:-<text unavailable>}"
     DETAIL_OK="unknown"
     case "$DETAIL_TEXT" in
@@ -639,7 +652,7 @@ if [ -n "${WIDTH:-}" ] && [ -n "${HEIGHT:-}" ]; then
       sleep 2
     done
     sleep 3
-    SCROLLED_TEXT=$(ui_text) || SCROLLED_TEXT=""
+    SCROLLED_TEXT=$(ui_text | flatten_text) || SCROLLED_TEXT=""
     PLAYBACK_STEPS="$PLAYBACK_STEPS | after scrolling to the episode list: ${SCROLLED_TEXT:-<text unavailable>}"
 
     # The episode list may be empty in the current language. Switching the episode
@@ -649,7 +662,7 @@ if [ -n "${WIDTH:-}" ] && [ -n "${HEIGHT:-}" ]; then
       PLAYBACK_STEPS="$PLAYBACK_STEPS | no episodes in VF - switching the episode list to VOSTFR"
       if tap_last_node_matching "VOSTFR"; then
         sleep 15
-        SCROLLED_TEXT=$(ui_text) || SCROLLED_TEXT=""
+        SCROLLED_TEXT=$(ui_text | flatten_text) || SCROLLED_TEXT=""
         PLAYBACK_STEPS="$PLAYBACK_STEPS | after switching to VOSTFR: ${SCROLLED_TEXT:-<text unavailable>}"
       fi
     fi
@@ -659,7 +672,7 @@ if [ -n "${WIDTH:-}" ] && [ -n "${HEIGHT:-}" ]; then
       # here; 40s is generous for a 92 MB 480p master on CI networking, and the
       # quality guard measures segment sizes over the network before playback starts.
       sleep 40
-      PLAYER_TEXT=$(ui_text) || PLAYER_TEXT=""
+      PLAYER_TEXT=$(ui_text | flatten_text) || PLAYER_TEXT=""
       PLAYBACK_STEPS="$PLAYBACK_STEPS | after the first episode tap: ${PLAYER_TEXT:-<text unavailable>}"
       CODEC_LINES=$(adb logcat -d 2>/dev/null | grep -iE "MediaCodec|ExoPlayer|HlsMediaSource|c2\.|OMX\." | tail -n 8)
       if [ -n "${CODEC_LINES:-}" ]; then
