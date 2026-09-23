@@ -51,6 +51,7 @@ frames actually contain.
 | ![The catalogue, loaded from the live source](screenshots/01-app-amoled.png) | `01-app-amoled.png` — the catalogue with **real items scraped from `voir-anime.to`** on the CI emulator: pure-black AMOLED background, the search field, the VF/VOSTFR switch, `Source : voir-anime.to · page 1`, cover art, `Magilumiere Magical Girls Inc 2` with its `VF` badge, and the four-tab bar catching the next page (`Page suivante…`). Real posters on a 720×1568 emulator, not a mock-up |
 | ![A VOSTFR search fallback](screenshots/02-notification-extras-launch.png) | `02-notification-extras-launch.png` — the app launched with the episode watcher's extras for an id this install does not know, so it searched the title instead: `One` in the field, results headed `Recherche`, and items badged **VOSTFR**, which is the nakanime fallback working and being labelled honestly rather than passed off as VF |
 | ![A series detail screen, scraped live](screenshots/04-detail-episodes.png) | `04-detail-episodes.png` — the series detail screen reached by the smoke test's own walk: cover, `VOSTFR` badge, `Source : voir-anime.to`, the **`VF — indisponible`** label (the honest fallback, live), nineteen genre chips, the French synopsis, and the episode list below the fold |
+| ![The player, with a resolved stream](screenshots/05-player.png) | `05-player.png` — the player after the smoke test tapped `Lire`: the episode's own title, the `VF` badge, the **resolved mirror `Voe`**, the measured size (`Taille mesurée : 5.0 Mo (tous les segments mesurés) · 1 segments`), the quality selector, and the note explaining the automatic 480P→360P policy. Nothing here is estimated — the size is measured segment by segment and the label comes from the playlist |
 | ![Settings on a real device](screenshots/03-settings.png) | `03-settings.png` — the Settings screen: the VF/VOSTFR default and what it means, the 12-hour watcher note, and the Media3/offline explanation, with `Version Canta smoke-4aa21e6 (com.jcversa.canta)` from the build under test |
 
 These come from the `Device smoke test` workflow's recent runs — one build, one
@@ -69,12 +70,13 @@ screen, the per-capture verification lines and the ANR lines the platform logged
 Read it before trusting an image — and read the image before trusting the report's
 file listing, which is only a directory listing.
 
-**What is still not captured**: a playing stream, the quality selector with measured
-sizes, a completed download and offline playback. The smoke test walks as far as a
-series and taps `Lire` on the first episode; whether that reaches a playing frame
-depends on the mirror ladder resolving a third-party CDN at that moment, and each
-run's report says exactly how far it got. Anything not captured is listed in
-*Verification status* below rather than implied by a screenshot.
+**What is still not captured**: video frames on screen, a completed download and
+offline playback. The smoke test walks catalogue → series → episode → player, and the
+Ladder resolves a stream (Voe, measured) — but the captures of the video area are
+black, and the run's report says why it cannot yet tell whether that is a very short
+clip that has ended or a surface the walk has not caught. Guessing between those two
+is exactly the kind of claim this project does not make; *Verification status* below
+states what is proven and what is not.
 [`screenshots/README.md`](screenshots/README.md) explains how to capture them.
 
 ## Honesty rules the app follows
@@ -308,12 +310,16 @@ Stated plainly, because it is easy to over-claim:
   opening nothing; no ANR is logged against the app and the crash buffer is empty.
   Three captures in `screenshots/` are from that run, and the report next to them
   is its own record.
-* **Not yet verified on a device**: end-to-end playback (ExoPlayer reaching a
-  playing state on a resolved HLS stream), the download queue with its
-  notifications, offline playback, and the periodic episode watcher's actual
-  notification. These need a scripted walk into a series and an episode — the
-  harness does not do that yet, and they are listed here rather than implied by a
-  screenshot.
+* **Verified on an emulator (CI), by the smoke test's own walk**: catalogue → series
+  → episode → player. The mirror ladder resolves a stream from **Voe**, the quality
+  guard measures it segment by segment (`Taille mesurée : 5.0 Mo … · 1 segments`) and
+  the label shown comes from the playlist, not from a guess. `MediaCodec` logcat
+  lines show a decoder created and bound to a surface
+  (`[c2.android.av1.decoder] setting surface generation to …`).
+* **Not yet verified on a device**: video *frames* visible on screen (the captures of
+  the video area are black; see above), the download queue with its notifications,
+  offline playback and the periodic episode watcher's notification. Each is listed
+  here rather than implied by a screenshot, and each has a stated reason.
 
 ## Legal disclaimer
 

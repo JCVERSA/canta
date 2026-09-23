@@ -11,11 +11,12 @@ of a screen it cannot render.
 | --- | --- | --- |
 | ![](01-app-amoled.png) `01-app-amoled.png` | The catalogue, loaded from the live source | Run 16. Real items scraped from `voir-anime.to` — covers, titles, `VF` badges, `Source : voir-anime.to · page 2`. The earlier capture under this name showed the loading spinner because the emulator it ran on was broken (no KVM, then a harness bug); that was never a network limit, and this run proved it. |
 | ![](02-notification-extras-launch.png) `02-notification-extras-launch.png` | A VOSTFR search fallback | Run 16. Launched with the episode watcher's extras for an unknown id: the app searched the title (`One`) instead of opening nothing, and the results are badged `VOSTFR` because they come from the nakanime fallback and are labelled honestly. |
+| ![](05-player.png) `05-player.png` | The player, stream resolved | Runs 26-27. Reached by the walk tapping `Lire`. Shows the resolved mirror (`Voe`), the measured size, the quality selector and the 480P→360P policy note. The video area is black in these captures and the report says why that is not yet judged either way. |
 | ![](04-detail-episodes.png) `04-detail-episodes.png` | A series detail screen | Run 17. Reached by the smoke test's walk (search result → detail). Scraped live: cover, `VOSTFR`, `Source : voir-anime.to`, the `VF — indisponible` fallback label, genre chips, synopsis. The episode list is below the fold; the walk scrolls to it and taps `Lire` in the next run. |
 | ![](03-settings.png) `03-settings.png` | Settings, AMOLED theme | Captured by the smoke test after it verified the tab was reached (by text unique to that screen) and that the app's own window was on screen. The version string in the frame names the build it came from. |
 | `smoke-report.txt` | The run's own record | Emulator API/ABI, package version, `am start -W` timing, resumed activity, per-screen visible text, per-capture verification lines, ANR lines. |
 
-The three captures above are the only ones this project currently vouches for, and
+The captures above are the only ones this project currently vouches for, and
 the directory is thin on purpose: earlier runs produced files under these names
 whose frames were the **launcher** (the system ANR dialog had been dismissed with
 BACK, which also left the app) and then the app behind the emulator's own "not
