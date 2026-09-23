@@ -712,7 +712,15 @@ if [ -n "${WIDTH:-}" ] && [ -n "${HEIGHT:-}" ]; then
       # answers that directly - `--latency` reports the timestamps of the frames a
       # layer has actually presented, so two samples a few seconds apart show whether
       # the layer is still producing frames.
-      VIDEO_LAYER=$(adb shell dumpsys SurfaceFlinger --list 2>/dev/null | grep -iE "SurfaceView|canta" | head -n1 | tr -d '\r')
+      # Match the video surface specifically. The first version of this probe grepped
+      # for "SurfaceView|canta" and picked
+      # "848d00c ActivityRecordInputSink com.jcversa.canta/.MainActivity#178" - an
+      # input-sink layer, whose zero frame count says nothing about video - because
+      # every layer name contains the package. The whole layer list goes into the
+      # report as well, so a miss is visible instead of silent.
+      LAYER_LIST=$(adb shell dumpsys SurfaceFlinger --list 2>/dev/null | grep -iE "surfaceview|video|exoplayer" | head -n 6 | tr '\r' ' ')
+      PLAYBACK_STEPS="$PLAYBACK_STEPS | surface layers: ${LAYER_LIST:-<none matching surfaceview/video/exoplayer>}"
+      VIDEO_LAYER=$(adb shell dumpsys SurfaceFlinger --list 2>/dev/null | grep -i "surfaceview" | head -n1 | tr -d '\r')
       if [ -n "${VIDEO_LAYER:-}" ]; then
         F1=$(adb shell dumpsys SurfaceFlinger --latency "$VIDEO_LAYER" 2>/dev/null | awk 'NR>1 && $2 != 0 && $2 != 9223372036854775807 {c++} END {print c+0}')
         sleep 4
