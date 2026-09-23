@@ -1,22 +1,22 @@
 Canta device smoke report
-date: Tue Sep 22 02:13:45 UTC 2026
-sha: 601d767131dda138a0f455754141bacf956f4a4b
-run: 25
+date: Wed Sep 23 17:51:19 UTC 2026
+sha: c7a11775136b22544bd24c4a822d02c2dfec5159
+run: 26
 emulator api: 34
 emulator abi: x86_64
-package: versionName=smoke-601d767
-am start -W TotalTime (ms): 3620/3621
-resumed:     topResumedActivity=ActivityRecord{3ed992 u0 com.jcversa.canta/.MainActivity t8}
+package: versionName=smoke-c7a1177
+am start -W TotalTime (ms): 2726/2780
+resumed:     topResumedActivity=ActivityRecord{aea20ca u0 com.jcversa.canta/.MainActivity t8}
 
 screen text after cold start:
-  Rechercher une série VF|VOSTFR Source : voir-anime.to · page 1 Chargement du catalogue…|Catalogue Favoris Hors ligne|Réglages
+  Rechercher une série VF|VOSTFR Source : voir-anime.to · page 1 From Old Country Bumpkin to Master Swordsman 2|VF Clevatess 2 VF|Catalogue Favoris Hors ligne|Réglages
 phase: report header written; capturing screens
-capture verified: 01-app-amoled.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{9d76a63 u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
-capture verified: 02-notification-extras-launch.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{a8c23ff u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
-capture verified: 03-settings.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{a8c23ff u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
+capture verified: 01-app-amoled.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{bac29a6 u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
+capture verified: 02-notification-extras-launch.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{5719986 u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
+capture verified: 03-settings.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{5719986 u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
 phase: walking into a series and an episode
-capture verified: 04-detail-episodes.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{358a7d1 u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
-capture verified: 05-player.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{358a7d1 u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
+capture verified: 04-detail-episodes.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{1caa56f u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
+capture verified: 05-player.png (on screen because: focused window is the app; system dialog in front: no - same answer sampled before and after the screencap; focused window:  mCurrentFocus=Window{1caa56f u0 com.jcversa.canta/com.jcversa.canta.MainActivity})
 phase: collecting ANR evidence
 
 ANR / not-responding lines (events buffer am_anr + main buffer):
@@ -27,10 +27,10 @@ phase: writing the summary
 
 frames rendered (dumpsys gfxinfo): 3
 screen text: read
-first screen state: still loading
+first screen state: catalogue items or empty state
 settings tab: reached and captured (verified by its own text and by focus)
-playback walk: player reached, screen text: ← Retour Magilumiere Magical Girls Inc 2|Épisode 8 Télécharger Tous les lecteurs ont échoué ou dépassé les 25 s: voembed.net (VidMoly: aucune réponse en 14 s), mfw09.org (Voe: NoClassDefFoundError: com.jcversa.canta.extractor.DeanEdward), voe.sx (Voe
-playback walk, step by step: cold-started catalogue: Rechercher une série VF|VOSTFR Source : voir-anime.to · page 2 Magilumiere Magical Girls Inc 2|VF Though I Am an Inept Villainess: Tale of the Butterfly-Rat Body Swap in the Maiden Court VF|Catalogue Favoris Hors ligne|Réglages  | tapped the catalogue card "Magilumiere Magical Girls Inc 2" | after the first result tap: Magilumiere Magical Girls Inc 2 VF|Source : voir-anime.to 11 épisodes Note source : 4.9|VF VOSTFR — indisponible Action|Adventure Chinese Comedy|Drama Ecchi Fantasy|Horror Mahou Shoujo Mecha|Music Mystery Psychological|Romance Sci-Fi Slice of Life|Sports Supernatural Thriller|Saison 2 de “Magilumiere Magical Girls Inc” Épisodes Magilumiere Magical Girls Inc 2 - 11 VF - 11|VF 4 minutes ago Lire  | after scrolling to the episode list: Magilumiere Magical Girls Inc 2 Magilumiere Magical Girls Inc 2 - 08 VF - 08|VF August 22, 2026 Lire|Magilumiere Magical Girls Inc 2 - 07 VF - 07 VF August 17, 2026|Lire Magilumiere Magical Girls Inc 2 - 06 VF - 06 VF|August 9, 2026 Lire Magilumiere Magical Girls Inc 2 - 05 VF - 05|VF August 2, 2026 Lire|Magilumiere Magical Girls Inc 2 - 04 VF - 04 VF July 26, 2026|Lire Magilumiere Magical Girls Inc 2 - 03 VF - 03 VF|July 19, 2026 Lire Magilumiere Magical Girls Inc 2 - 02 VF - 02|VF July 12, 202 | after the first episode tap: ← Retour Magilumiere Magical Girls Inc 2|Épisode 8 Télécharger Tous les lecteurs ont échoué ou dépassé les 25 s: voembed.net (VidMoly: aucune réponse en 14 s), mfw09.org (Voe: NoClassDefFoundError: com.jcversa.canta.extractor.DeanEdward), voe.sx (Voe: NoClassDefFoundError: com.jcversa.canta.extractor.DeanEdward), streamtape.com (Generic: NoClassDefFoundError: com.jcversa.canta.extractor.DeanEdward)  | decoder lines: <none> | app resolve log: Caused by: java.lang.ExceptionInInitializerError;	... 8 more;Caused by: java.util.regex.PatternSyntaxException: Syntax error in regexp pattern near index 52;eval\(function\(p,a,c,k,e,d\)\{[\s\S]*?return\s+p;?}\((?:'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)")\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(?:'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)")\.split\(['"]\|['"]\)(?:\s*,\s*[^)]*)?\);                                                    ^;	... 10 more;mirror streamtape.com via Generic failed;java.lang.NoClassDefFoundError: com.jcversa.canta.extractor.DeanEdwards;Caused by: java.lang.ExceptionInInitializerError;	... 7 more;Caused by: java.util.regex.PatternSyntaxException: Syntax error in regexp pattern near index 52;eval\(function\(p,a,c,k,e,d\)\{[\s\S]*?return\s+p;?}\((?:'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)")\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(?:'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)")\.split\(['"]\|['"]\)(?:\s*,\s*[^)]*)?\);                                                    ^;	... 10 more; class-init evidence: 09-22 02:15:22.468  2633  2654 I m.jcversa.canta: Rejecting re-init on previously-failed class java.lang.Class<com.jcversa.canta.extractor.DeanEdwards>: java.lang.ExceptionInInitializerError: ; | voembed.net: PING voembed.net (104.21.54.47) 56(84) bytes of data. --- voembed.net ping statistics --- 1 packets transmitted, 0 recei | mfw09.org: PING mfw09.org (172.67.208.53) 56(84) bytes of data. --- mfw09.org ping statistics --- 1 packets transmitted, 0 received | voe.sx: PING voe.sx (186.2.163.208) 56(84) bytes of data. --- voe.sx ping statistics --- 1 packets transmitted, 0 received, 100% | streamtape.com: PING streamtape.com (104.21.96.46) 56(84) bytes of data. --- streamtape.com ping statistics --- 1 packets transmitted, 0
+playback walk: player reached, screen text: ← Retour From Old Country Bumpkin to Master Swordsman 2|Épisode 9 Télécharger VF|Originale · 5.0 Mo Voe Taille mesurée : 5.0 Mo (tous les segments mesurés) · 1 segments|Qualité Originale · 5.0 Mo Sélection automatique : 480P puis 360P, jamais une éti
+playback walk, step by step: cold-started catalogue: Rechercher une série VF|VOSTFR Source : voir-anime.to · page 2 From Old Country Bumpkin to Master Swordsman 2|VF Clevatess 2 VF|Catalogue Favoris Hors ligne|Réglages  | tapped the catalogue card "From Old Country Bumpkin to Master Swordsman 2" | after the first result tap: From Old Country Bumpkin to Master Swordsman 2 VF|Source : voir-anime.to 12 épisodes Note source : 4.9|VF VOSTFR — indisponible Action|Adventure Chinese Comedy|Drama Ecchi Fantasy|Horror Mahou Shoujo Mecha|Music Mystery Psychological|Romance Sci-Fi Slice of Life|Sports Supernatural Thriller|Saison 2 de”From Old Country Bumpkin to Master Swordsman” Épisodes From Old Country Bumpkin to Master Swordsman 2 - 12 VF - 12|VF 20 seconds ago Lire  | after scrolling to the episode list: From Old Country Bumpkin to Master Swordsman 2 From Old Country Bumpkin to Master Swordsman 2 - 09 VF - 09|VF September 2, 2026 Lire|From Old Country Bumpkin to Master Swordsman 2 - 08 VF - 08 VF August 26, 2026|Lire From Old Country Bumpkin to Master Swordsman 2 - 07 VF - 07 VF|August 19, 2026 Lire From Old Country Bumpkin to Master Swordsman 2 - 06 VF - 06|VF August 12, 2026 Lire|From Old Country Bumpkin to Master Swordsman 2 - 05 VF - 05 VF August 5, 2026|Lire From Old Country Bumpkin to Mast | after the first episode tap: ← Retour From Old Country Bumpkin to Master Swordsman 2|Épisode 9 Télécharger VF|Originale · 5.0 Mo Voe Taille mesurée : 5.0 Mo (tous les segments mesurés) · 1 segments|Qualité Originale · 5.0 Mo Sélection automatique : 480P puis 360P, jamais une étiquette inventée. Si un flux « 480P » dépasse 200 Mo mesurés, l'app bascule sur la variante plus légère et l'écrit ici.  | decoder lines: 09-23 17:52:58.620  2597  2821 D MediaCodec: flushMediametrics;09-23 17:52:58.620  2597  2821 I MediaCodec: [c2.android.av1.decoder] setting surface generation to 2659329;09-23 17:52:58.620  2597  2822 D CCodec  : [c2.android.av1.decoder] buffers are bound to CCodec for this session;09-23 17:52:58.623  2597  2815 D MediaCodec: keep callback message for reclaim;09-23 17:52:58.630  2597  2822 D CCodecBufferChannel: [c2.android.av1.decoder#40] Created input block pool with allocatorID 16 => poolID 17 - OK (0);09-23 17:52:58.630  2597  2822 D CCodecBufferChannel: [c2.android.av1.decoder#40] Query output surface allocator returned 0 params => BAD_INDEX (6);09-23 17:52:58.630  2597  2822 I CCodecBufferChannel: [c2.android.av1.decoder#40] Created output block pool with allocatorID 18 => poolID 26 - OK;09-23 17:52:58.630  2597  2822 D CCodecBufferChannel: [c2.android.av1.decoder#40] Configured output block pool ids 26 => OK | app resolve log: <none> | voembed.net: PING voembed.net (104.21.54.47) 56(84) bytes of data. --- voembed.net ping statistics --- 1 packets transmitted, 0 recei | mfw09.org: PING mfw09.org (104.21.93.89) 56(84) bytes of data. --- mfw09.org ping statistics --- 1 packets transmitted, 0 received, | voe.sx: PING voe.sx (186.2.163.208) 56(84) bytes of data. --- voe.sx ping statistics --- 1 packets transmitted, 0 received, 100% | streamtape.com: PING streamtape.com (172.67.173.3) 56(84) bytes of data. --- streamtape.com ping statistics --- 1 packets transmitted, 0
 screen text after the notification-extras launch: One VF|VOSTFR Recherche I’m Dating a Dark Summoner|VOSTFR Assassination Classroom the Movie: Our Time VOSTFR|Catalogue Favoris Hors ligne|Réglages
 system dialog in front after that launch: no
 captures verified by this run: 01-app-amoled.png, 02-notification-extras-launch.png, 03-settings.png, 04-detail-episodes.png, 05-player.png
@@ -41,9 +41,9 @@ ANR verdict: no ANR named the app
 files in screenshots/ at the end of this run (a directory listing, NOT proof
 that this run wrote them - see the capture lines above, and read the
 committed image itself before trusting what it shows):
-  screenshots/01-app-amoled.png (602941 bytes)
-  screenshots/02-notification-extras-launch.png (1675298 bytes)
-  screenshots/03-settings.png (300818 bytes)
-  screenshots/04-detail-episodes.png (525519 bytes)
-  screenshots/05-player.png (135272 bytes)
+  screenshots/01-app-amoled.png (1591181 bytes)
+  screenshots/02-notification-extras-launch.png (1753526 bytes)
+  screenshots/03-settings.png (317195 bytes)
+  screenshots/04-detail-episodes.png (385785 bytes)
+  screenshots/05-player.png (113489 bytes)
 phase: done (0 problem(s) recorded)

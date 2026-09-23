@@ -1,0 +1,9 @@
+
+dex class-name check (0 occurrences means the class is not in the APK;
+a non-zero count with a runtime NoClassDefFoundError means its static
+initialiser threw and ART is refusing to try again):
+  DeanEdwards        3
+  StreamScanner      8
+  MirrorResolver     22
+  VidmolyExtractor   11
+  VoeExtractor       11
