@@ -705,6 +705,23 @@ if [ -n "${WIDTH:-}" ] && [ -n "${HEIGHT:-}" ]; then
       else
         PLAYBACK_STEPS="$PLAYBACK_STEPS | decoder lines: <none>"
       fi
+      # Is the video surface producing frames? Three captures at 8s, 15s and 40s were
+      # all black while the decoder was configured and no playback error was logged,
+      # which leaves two candidates: the clip is over by then, or `screencap` on this
+      # swiftshader emulator does not capture the video layer at all. SurfaceFlinger
+      # answers that directly - `--latency` reports the timestamps of the frames a
+      # layer has actually presented, so two samples a few seconds apart show whether
+      # the layer is still producing frames.
+      VIDEO_LAYER=$(adb shell dumpsys SurfaceFlinger --list 2>/dev/null | grep -iE "SurfaceView|canta" | head -n1 | tr -d '\r')
+      if [ -n "${VIDEO_LAYER:-}" ]; then
+        F1=$(adb shell dumpsys SurfaceFlinger --latency "$VIDEO_LAYER" 2>/dev/null | awk 'NR>1 && $2 != 0 && $2 != 9223372036854775807 {c++} END {print c+0}')
+        sleep 4
+        F2=$(adb shell dumpsys SurfaceFlinger --latency "$VIDEO_LAYER" 2>/dev/null | awk 'NR>1 && $2 != 0 && $2 != 9223372036854775807 {c++} END {print c+0}')
+        PLAYBACK_STEPS="$PLAYBACK_STEPS | video layer \"$VIDEO_LAYER\": presented frames ${F1:-0} then ${F2:-0} (a rising count means frames reached the display; equal counts mean the layer is idle)"
+      else
+        PLAYBACK_STEPS="$PLAYBACK_STEPS | video layer: none listed by SurfaceFlinger (no SurfaceView layer to sample)"
+      fi
+
       # Why did every mirror fail? The app reports *that* they failed (naming each
       # one, which is its own honesty feature), but not why. If the runner's network
       # cannot reach the CDNs at all, that is a fact about CI, not about the app - and
