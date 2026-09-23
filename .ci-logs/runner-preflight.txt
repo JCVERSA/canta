@@ -1,10 +1,10 @@
 runner state before the emulator step
-date: Wed Sep 23 18:19:15 UTC 2026
+date: Wed Sep 23 18:27:36 UTC 2026
 
 nproc: 4
 free -m:
                  total        used        free      shared  buff/cache   available
-  Mem:           15988        2256        9835          47        4290       13732
+  Mem:           15989        2219        9875          47        4288       13770
   Swap:           3071           0        3071
 
 df -h (root and workspace):
@@ -12,22 +12,22 @@ df -h (root and workspace):
   /dev/root       145G   60G   85G  42% /
   /dev/root       145G   60G   85G  42% /
 
-/dev/kvm: crw-rw-rw- 1 root kvm 10, 232 Sep 23 18:19 /dev/kvm
+/dev/kvm: crw-rw-rw- 1 root kvm 10, 232 Sep 23 18:27 /dev/kvm
 /dev/kvm accessibility: READABLE+WRITABLE by runner (VM acceleration possible)
 groups: uid=1001(runner) gid=1001(runner) groups=1001(runner),4(adm),100(users),118(docker),999(systemd-journal)
 
-adb: /home/runner/work/_temp/a829c052-1b3e-4443-bbee-c45095d28bc4.sh: line 19: adb: command not found
+adb: /home/runner/work/_temp/82f872ec-2135-4c80-aefd-fcbb7237f20b.sh: line 19: adb: command not found
 
 installed system images:
   (sdkmanager unavailable)
 
 
 HTTP reachability from the runner (the emulator shares this path via NAT):
-  https://voir-anime.to/       http=200 dns=0.039182s connect=0.061764s total=0.821199s
-  https://nakanime.tv/         http=404 dns=0.046492s connect=0.058703s total=0.100173s
-  https://voembed.net/         http=200 dns=0.126742s connect=0.140043s total=0.469864s
-  https://mfw09.org/           http=403 dns=0.159680s connect=0.183073s total=0.352287s
-  https://voe.sx/              http=200 dns=0.354894s connect=0.464912s total=0.934899s
-  https://streamtape.com/      http=200 dns=0.067934s connect=0.094505s total=0.251723s
+  https://voir-anime.to/       http=200 dns=0.042891s connect=0.074706s total=0.721938s
+  https://nakanime.tv/         http=404 dns=0.149559s connect=0.162494s total=0.203802s
+  https://voembed.net/         http=200 dns=0.063277s connect=0.088829s total=0.294730s
+  https://mfw09.org/           http=403 dns=0.042450s connect=0.065173s total=0.243102s
+  https://voe.sx/              http=200 dns=0.151218s connect=0.265001s total=0.765217s
+  https://streamtape.com/      http=200 dns=0.068693s connect=0.088396s total=0.262509s
 avd directory:
   ls: cannot access '/home/runner/.android/avd': No such file or directory
