@@ -720,7 +720,11 @@ if [ -n "${WIDTH:-}" ] && [ -n "${HEIGHT:-}" ]; then
       # report as well, so a miss is visible instead of silent.
       LAYER_LIST=$(adb shell dumpsys SurfaceFlinger --list 2>/dev/null | grep -iE "surfaceview|video|exoplayer" | head -n 6 | tr '\r' ' ')
       PLAYBACK_STEPS="$PLAYBACK_STEPS | surface layers: ${LAYER_LIST:-<none matching surfaceview/video/exoplayer>}"
-      VIDEO_LAYER=$(adb shell dumpsys SurfaceFlinger --list 2>/dev/null | grep -i "surfaceview" | head -n1 | tr -d '\r')
+      # "Background for SurfaceView[...]" is the SurfaceView's *background* layer and
+      # sits first in the list, so it is excluded: measuring it says nothing about
+      # video. The video layer itself is the plain "SurfaceView[...]" entry.
+      VIDEO_LAYER=$(adb shell dumpsys SurfaceFlinger --list 2>/dev/null \
+        | grep -i "surfaceview" | grep -vi "background for" | head -n1 | tr -d '\r')
       if [ -n "${VIDEO_LAYER:-}" ]; then
         F1=$(adb shell dumpsys SurfaceFlinger --latency "$VIDEO_LAYER" 2>/dev/null | awk 'NR>1 && $2 != 0 && $2 != 9223372036854775807 {c++} END {print c+0}')
         sleep 4
