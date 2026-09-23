@@ -675,7 +675,11 @@ if [ -n "${WIDTH:-}" ] && [ -n "${HEIGHT:-}" ]; then
       # 40s showed a black surface, most plausibly because a 5 MB single-segment clip
       # had already finished. The later read still harvests the screen text, which is
       # where a failure would appear if the ladder had not resolved.
-      sleep 15
+      # 8s, not 15s: the resolved stream in runs 26-27 was a single 5 MB segment
+      # ("Taille mesurée : 5.0 Mo … · 1 segments"), which is seconds of video, so even
+      # 15s can land after it has finished. The earliest moment the UI itself is drawn
+      # is the only chance to catch frames.
+      sleep 8
       if [ "$FRAMES" != "0" ] && capture_app_screen "05-player.png"; then
         PRODUCED="$PRODUCED, $LAST_CAPTURE"
         CAPTURES_OK=$((CAPTURES_OK + 1))
@@ -684,7 +688,18 @@ if [ -n "${WIDTH:-}" ] && [ -n "${HEIGHT:-}" ]; then
       sleep 25
       PLAYER_TEXT=$(ui_text | flatten_text) || PLAYER_TEXT=""
       PLAYBACK_STEPS="$PLAYBACK_STEPS | after the first episode tap: ${PLAYER_TEXT:-<text unavailable>}"
+      # Two levels of evidence. The codec lines show a decoder was created and bound;
+      # the renderer lines are what say whether a frame was actually rendered or the
+      # player errored - "renderedFirstFrame", "Dropping", "Video codec error",
+      # "Playback error". Without them, a black video area cannot be told apart from a
+      # finished clip, and the difference matters for what can be claimed.
       CODEC_LINES=$(adb logcat -d 2>/dev/null | grep -iE "MediaCodec|ExoPlayer|HlsMediaSource|c2\.|OMX\." | tail -n 8)
+      RENDER_LINES=$(adb logcat -d 2>/dev/null | grep -iE "ExoPlayerImpl|MediaCodecVideoRenderer|renderedFirstFrame|Video codec error|Playback error|ExoPlaybackException" | tail -n 10)
+      if [ -n "${RENDER_LINES:-}" ]; then
+        PLAYBACK_STEPS="$PLAYBACK_STEPS | renderer lines: $(printf '%s' "$RENDER_LINES" | tr '\n' '; ' | cut -c1-700)"
+      else
+        PLAYBACK_STEPS="$PLAYBACK_STEPS | renderer lines: <none>"
+      fi
       if [ -n "${CODEC_LINES:-}" ]; then
         PLAYBACK_STEPS="$PLAYBACK_STEPS | decoder lines: $(printf '%s' "$CODEC_LINES" | tr '\n' '; ')"
       else
