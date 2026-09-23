@@ -121,7 +121,10 @@ jobs:
               n=$(cat /tmp/apkdex/*.dex 2>/dev/null | grep -ao "com/jcversa/canta/extractor/$name" | wc -l)
               printf '  %-18s %s\n' "$name" "$n"
             done
-          } >> .ci-logs/runner-preflight.txt
+          # Deliberately NOT runner-preflight.txt: that file is created later in the
+          # job with `>`, which would wipe what is written here. Run 25's dex evidence
+          # was lost exactly that way.
+          } > .ci-logs/device-smoke-dex.txt
 
       - name: Enable KVM group perms
         if: always()

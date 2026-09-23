@@ -334,8 +334,13 @@ object StreamScanner {
  */
 object DeanEdwards {
 
-    private val PACKED = Regex(
-        """eval\(function\(p,a,c,k,e,d\)\{[\s\S]*?return\s+p;?}\((?:'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)")\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(?:'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)")\.split\(['"]\|['"]\)(?:\s*,\s*[^)]*)?\)""",
+    // `internal`, not `private`, so a unit test can assert the pattern's shape: the
+    // bug this guards against (a bare `}`) compiles on the JVM but throws
+    // PatternSyntaxException on Android, where ICU parses the pattern - so a test
+    // that only *uses* the regex cannot catch it on a JVM-only CI run. See
+    // StreamScannerTest.
+    internal val PACKED = Regex(
+        """eval\(function\(p,a,c,k,e,d\)\{[\s\S]*?return\s+p;?\}\((?:'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)")\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(?:'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)")\.split\(['"]\|['"]\)(?:\s*,\s*[^)]*)?\)""",
         RegexOption.IGNORE_CASE
     )
 
