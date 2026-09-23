@@ -668,10 +668,20 @@ if [ -n "${WIDTH:-}" ] && [ -n "${HEIGHT:-}" ]; then
     fi
 
     if tap_node_matching "Lire"; then
-      # A resolve ladder, a quality measurement and the first segments all happen
-      # here; 40s is generous for a 92 MB 480p master on CI networking, and the
-      # quality guard measures segment sizes over the network before playback starts.
-      sleep 40
+      # Two moments, because they answer different questions. At ~15s the resolve
+      # ladder and the quality measurement are done and the decoder is running
+      # (run 26 logged "[c2.android.av1.decoder] setting surface generation"), so a
+      # capture taken here can catch actual video frames - run 26's single capture at
+      # 40s showed a black surface, most plausibly because a 5 MB single-segment clip
+      # had already finished. The later read still harvests the screen text, which is
+      # where a failure would appear if the ladder had not resolved.
+      sleep 15
+      if [ "$FRAMES" != "0" ] && capture_app_screen "05-player.png"; then
+        PRODUCED="$PRODUCED, $LAST_CAPTURE"
+        CAPTURES_OK=$((CAPTURES_OK + 1))
+      fi
+
+      sleep 25
       PLAYER_TEXT=$(ui_text | flatten_text) || PLAYER_TEXT=""
       PLAYBACK_STEPS="$PLAYBACK_STEPS | after the first episode tap: ${PLAYER_TEXT:-<text unavailable>}"
       CODEC_LINES=$(adb logcat -d 2>/dev/null | grep -iE "MediaCodec|ExoPlayer|HlsMediaSource|c2\.|OMX\." | tail -n 8)
@@ -679,10 +689,6 @@ if [ -n "${WIDTH:-}" ] && [ -n "${HEIGHT:-}" ]; then
         PLAYBACK_STEPS="$PLAYBACK_STEPS | decoder lines: $(printf '%s' "$CODEC_LINES" | tr '\n' '; ')"
       else
         PLAYBACK_STEPS="$PLAYBACK_STEPS | decoder lines: <none>"
-      fi
-      if [ "$FRAMES" != "0" ] && capture_app_screen "05-player.png"; then
-        PRODUCED="$PRODUCED, $LAST_CAPTURE"
-        CAPTURES_OK=$((CAPTURES_OK + 1))
       fi
       # Why did every mirror fail? The app reports *that* they failed (naming each
       # one, which is its own honesty feature), but not why. If the runner's network
